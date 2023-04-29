@@ -17,5 +17,8 @@ RUN mkdir /tmp/ft_transcendence_fronted
 WORKDIR /tmp/ft_transcendence_fronted
 COPY ./srcs/ .
 
+# node_modules indir.
+RUN npm install
+
 # Up.
 CMD [ "npm", "start" ]
