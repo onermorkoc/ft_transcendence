@@ -1,0 +1,46 @@
+Genel:
+
+-Backend NestJS ile yazılmalı.
+-Frontend seçtiginiz bir Typescript framework ile yazılmalı.
+-Tüm kütüphaneleri kullanabilirsiniz ama kullanılan kütüphanelerin en son stable versiyonu kullanmak şartıyla.
+-PostgreSQL database kullanılmalı.Başka database yasak.
+-Web siteniz "tek sayfalı uygulama" şeklinde olmalı. (sanırım burada siteniz tek sekme de çalışmasından kast ediyor. Yeni sekme açmamalı)
+-Herşey tek komutla başlamalı: docker-compose up --build
+
+Güvenlik:
+
+-Database de saklanan tüm parolalar "hashed" işlemine tabi tutulmalıdır.
+-Web siteniz "SQL injections" karşı korunmalı.
+-You must implement some kind of server-side validation for forms and any user input.
+-Please make sure you use a strong password hashing algorithm
+-Bariz güvenlik nedenleriyle, tüm kimlik bilgileri, API anahtarları, env
+değişkenler vb. yerel olarak bir .env dosyasına kaydedilmeli.
+
+Kullanıcı Hesabı:
+
+- Kullanıcı 42 OAuht intranet sistemi kullanarak giriş yapmalı.
+- Kullanıcın ekranda görüntülenecek name değiştirebilmeli ve Name herkese özel olmalı.
+- Kullanıcı bir avatar yükleyebilmelidir. Kullanıcı bir avatar yüklemezse, bir varsayılan ayarlanmalıdır.
+- Kullanıcı, iki faktörlü kimlik doğrulamayı etkinleştirebilmelidir. Örneğin, Google Auth veya telefonlarına kısa mesaj gönderme.
+- Kullanıcı, diğer kullanıcıları arkadaş olarak ekleyebilmeli ve mevcut durumlarını görebilmelidir. (çevrimiçi, çevrimdışı, oyunda vb)
+- Kullanıcı profilinde İstatistikler görünmeli (örneğin: galibiyetler, yenilgiler, ladder level, başarılar vb.)
+- Her kullanıcının, 1'e 1 oyunlar, ladder ve diğer yararlı her şeyi içeren bir Maç Geçmişi olmalıdır. Giriş yapan herkes o profile gidip bakabilmeli
+
+Sohbet:
+
+- Kullanıcı, herkese açık(public), özel(private),  yada şifre ile korunan (protected) sohbet odaları oluşturabilmelidir.
+- Kullanıcı, diğer kullanıcılara doğrudan mesaj gönderebilmelidir.(direct message)
+- Kullanıcı diğer kullanıcıları engelleyebilmelidir. Bu şekilde artık engelledikleri hesaptan gelen mesajları göremeyecek.
+- Kanalı oluşturan kullanıcı otomatik olarak kanal sahibi(owner) olarak atanır. Taki kendi isteği ile bırakana kadar.
+- Kanal sahibi, kanala erişmek için gereken bir şifre belirleyebilir, şifreyi değiştirebilir ve ayrıca kaldırabilir.
+- Kanal sahibi, kanal yöneticisidir. Diğer kullanıcılarıda yöneticilik verebilir.
+- Bir kanalın yöneticisi kanaldaki diğer kullanıcıları, tekmeleyebilir, yasaklayabilir veya sessize alabilir ( sınırlı süreli). Ama kanal sahibine bunu yapamaz
+- Kullanıcı, diğer kullanıcıları sohbet yoluyla bir Pong oyunu oynamaya davet(kabul et reddet secenegi olan arayüz) edebilmelidir.
+- Kullanıcı, sohbet arayüzü aracılığıyla diğer oyuncuların profillerine erişebilmelidir.
+
+Oyun:
+
+- Doğrudan web sitesinde, kullanıcılar başka bir oyuncuya karşı canlı bir Pong oyunu oynayabilmelidir.
+- Kullanıcı, bir kuyruğa girer ve rastgele biriyle eşleşene kadar bekler. Eşleşince oyun başlar.
+- Oyun görünüşü orijinal Pong'a (1972) benzemelidir.
+- Bazı özelleştirme seçenekleri sunmalısınız (örneğin, güçlendirmeler veya farklı haritalar). Ancak, kullanıcı oyunun varsayılan bir sürümünü seçebilmelidir.
