@@ -1,0 +1,81 @@
+.flexBox, .row1-2 {
+    display: flex;
+    flex-direction: column;
+}
+
+.roomsFlexBox, .row1, .tabsFlexBox {
+    display: flex;
+    flex-direction: row;
+}
+
+.gameRooms, .chatRooms, .friendsRooms {
+    flex: 1;
+    height: 400px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.userInfoTabDiv, .userStatisticsTabDiv {
+    margin: 10px;
+    padding: 10px;
+    text-align: center;
+    flex: 1;
+    border-radius: 360px;
+    background-color: rgb(195, 229, 248);
+    transition: 0.5s;
+}
+
+.userInfoTabDiv:hover, .userStatisticsTabDiv:hover {
+    background-color: rgb(129, 205, 249);
+}
+
+.userInfoTabDiv:active, .userStatisticsTabDiv:active {
+    opacity: 0.5;
+}
+
+.row1 {
+    height: 280px;
+}
+
+.row1-2 {
+    flex: 1;
+    margin-left:20px;
+}
+
+.row2 {
+
+}
+
+.chatRooms {
+
+}
+
+.friendsRooms {
+    
+}
+
+.avatarImage {
+    width: 250px;
+    height: 250px;
+    border-radius: 125px;
+    object-fit: cover;
+}
+
+.editAvatarButton {
+    height: 30px;
+    width: 30px;
+    margin-left: -30px;
+    cursor: pointer;
+}
+
+.editAvatarButton:hover {
+    opacity: 0.4;
+}
+
+.tabsFlexBox {
+    font-size: 2.0em;
+}
+
+.row1-1 {
+    margin: 20px;
+}
