@@ -19,7 +19,7 @@ interface UserInfo {
     name: string,
     nickname: string,
     email: string,
-    google: boolean,
+    google: "etkin" | "devredışı",
     photoUrl: string,
     status: "çevrimiçi" | "çevrimdışı" | "oyunda"
     statistics: UserGameStatistics
@@ -55,11 +55,23 @@ const testUser: UserInfo = {
     name: "Öner Morkoç",
     nickname: "omorkoç",
     email: "omorkoc@student.42istanbul.com.tr",
-    google: false,
+    google: "devredışı",
     photoUrl: "https://cdn.intra.42.fr/users/be2eeaebbc2be8a4f6289b5996d64362/omorkoc.jpg",
     status: "çevrimiçi",
     statistics: testUserGameStatistics
 }
+
+const testGameRoomsArray: Array<GameRooms> = [
+    {name: "Test-Oyun-Odası-1", founder: testUser, rival: testUser}, 
+    {name: "Test-Oyun-Odası-2", founder: testUser, rival: testUser},
+    {name: "Test-Oyun-Odası-3", founder: testUser, rival: testUser}
+]
+
+const testChatRoomsArray: Array<ChatRooms> = [
+    {owner: testUser, admins: [testUser], name: "Test-Sohbet-Odası-1", roomStatus: "public", banList: [], users: [testUser]},
+    {owner: testUser, admins: [testUser], name: "Test-Sohbet-Odası-2", roomStatus: "private", banList: [], users: [testUser, testUser]},
+    {owner: testUser, admins: [testUser], name: "Test-Sohbet-Odası-3", roomStatus: "protected", banList: [], users: [testUser]},
+]
 
 // ####################################################################################################
 
@@ -87,8 +99,8 @@ const HomeScreen = () => {
                 </div>
                 <div className="row2">
                     <div className="roomsFlexBox">
-                        <div className="gameRooms">{<GameRoomsCmp/>}</div>
-                        <div className="chatRooms">{<ChatRoomsCmp/>}</div>
+                        <div className="gameRooms">{<GameRoomsCmp data={testGameRoomsArray}/>}</div>
+                        <div className="chatRooms">{<ChatRoomsCmp data={testChatRoomsArray}/>}</div>
                         <div className="friendsRooms">{<FriendsRoomsCmp/>}</div>
                     </div>
                 </div>
@@ -99,3 +111,5 @@ const HomeScreen = () => {
 
 export default HomeScreen
 export {type UserInfo}
+export {type GameRooms}
+export {type ChatRooms}

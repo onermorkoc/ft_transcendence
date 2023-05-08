@@ -11,7 +11,7 @@ const UserInfoCmp = (props: {data: UserInfo}) => {
 
             <div>
                 <img src={require("../../ui-design/images/nickname.png")} className="img2" alt=""/>
-                <p className="text2">Kullanıcı adı: {props.data.name}</p>
+                <p className="text2">Kullanıcı adı: {props.data.nickname}</p>
             </div>
             
             <div>
