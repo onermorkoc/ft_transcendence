@@ -7,6 +7,12 @@ const GameRoomsCmp = (props: {data: Array<GameRooms>}) => {
             <p className="roomsHeader">Oyun Odaları</p>
             <hr/>
             <div className="roomsBodyDiv">
+
+                <div style={{display: "flex", flexDirection: "row"}}>
+                    <button className="roomsButton">Oda kur</button>
+                    <button className="roomsButton">Rastgele eşleş</button>
+                </div>
+            
                 {
                     props.data.map((value, index) => (
                         <div key={index}>

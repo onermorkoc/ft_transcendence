@@ -7,6 +7,13 @@ const ChatRoomsCmp = (props: {data: Array<ChatRooms>}) => {
             <p className="roomsHeader">Sohbet Odaları</p>
             <hr/>
             <div className="roomsBodyDiv">
+                
+                <div style={{display: "flex", flexDirection: "row"}}>
+                    <button className="roomsButton">Oda Kur</button>
+                    <button className="roomsButton">Odalarım</button>
+                    <button className="roomsButton">Oda ara</button>
+                </div>
+                
                 {
                     props.data.map((value, index) => (
                         <div key={index}>
