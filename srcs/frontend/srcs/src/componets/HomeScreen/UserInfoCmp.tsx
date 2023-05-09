@@ -1,4 +1,4 @@
-import { UserInfo } from "../../pages/HomeScreen"
+import { UserInfo } from "../../App"
 import "../../ui-design/styles/CmpMix.css"
 
 const UserInfoCmp = (props: {data: UserInfo}) => {

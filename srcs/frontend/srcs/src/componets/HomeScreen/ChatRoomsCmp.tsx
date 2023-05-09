@@ -1,4 +1,4 @@
-import { ChatRooms } from "../../pages/HomeScreen"
+import { ChatRooms } from "../../App"
 import "../../ui-design/styles/CmpMix.css"
 
 const ChatRoomsCmp = (props: {data: Array<ChatRooms>}) => {

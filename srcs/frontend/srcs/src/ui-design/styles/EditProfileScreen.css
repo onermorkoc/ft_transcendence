@@ -1,0 +1,79 @@
+.avatarImgs {
+    height: 100px;
+    width: 100px;
+    margin: 10px;
+}
+
+.avatarScroolDiv {
+    width: 700px;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    overflow-x: auto;
+    margin-top: 30px;
+}
+
+.inputBox {
+    width: 350px;
+    height: 50px;
+    border-radius: 360px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 10px;
+    font-size: 1.2em;
+    border-style: none;
+    text-align: center;
+    margin-top: 50px;
+}
+
+.selectImageButton {
+    display: inline-block;
+    height: 45px;
+    width: 45px;
+    margin-left: -30px;
+    margin-bottom: -10px;
+}
+
+.selectImageButton:hover {
+    opacity: 0.5;
+}
+
+.currentProfileImage {
+    display: inline-block;
+    width: 250px;
+    height: 250px;
+    border-radius: 125px;
+    object-fit: cover;
+}
+
+.box {
+    height: 260px;
+    width: 265px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 75px;
+}
+
+.updateProfıleInfoButton {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 35px;
+    height: 60px;
+    width: 170px;
+    margin-top: 50px;
+    border-width: 3px;
+    background-color: rgb(195, 229, 248);
+    font-size: 1.3em;
+    cursor: pointer;
+    transition: 0.5s;
+}
+
+.updateProfıleInfoButton:hover {
+    background-color: rgb(229, 248, 195);
+}
+
+.avatarImgs:hover {
+    opacity: 0.5;
+}

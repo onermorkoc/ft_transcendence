@@ -1,4 +1,4 @@
-import { GameRooms } from "../../pages/HomeScreen"
+import { GameRooms } from "../../App"
 import "../../ui-design/styles/CmpMix.css"
 
 const GameRoomsCmp = (props: {data: Array<GameRooms>}) => {

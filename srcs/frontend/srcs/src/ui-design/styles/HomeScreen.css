@@ -15,7 +15,7 @@
     margin-right: 10px;
 }
 
-.userInfoTabDiv, .userStatisticsTabDiv {
+.textTabDiv {
     margin: 10px;
     padding: 10px;
     text-align: center;
@@ -25,11 +25,20 @@
     transition: 0.5s;
 }
 
-.userInfoTabDiv:hover, .userStatisticsTabDiv:hover {
+.imgTabDiv {
+    width: 40px;
+    height: 40px;
+    background-color: rgb(195, 229, 248);
+    margin: 10px;
+    padding: 10px;
+    border-radius: 360px;
+}
+
+.textTabDiv:hover, .imgTabDiv:hover {
     background-color: rgb(129, 205, 249);
 }
 
-.userInfoTabDiv:active, .userStatisticsTabDiv:active {
+.textTabDiv:active, .imgTabDiv:active {
     opacity: 0.5;
 }
 
@@ -61,14 +70,14 @@
     object-fit: cover;
 }
 
-.editAvatarButton {
+.editProfileButton {
     height: 30px;
     width: 30px;
     margin-left: -30px;
     cursor: pointer;
 }
 
-.editAvatarButton:hover {
+.editProfileButton:hover {
     opacity: 0.4;
 }
 
