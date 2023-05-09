@@ -6,20 +6,22 @@ const GameRoomsCmp = (props: {data: Array<GameRooms>}) => {
         <>
             <p className="roomsHeader">Oyun Odaları</p>
             <hr/>
-            {
-                props.data.map((value, index) => (
-                    <div key={index}>
-                        <div className="listView">
-                            <img src={require("../../ui-design/images/swords.png")} alt="" className="img3"/>
-                            <div className="listViewInfoDiv">
-                                <p className="text3">Oda adı: {value.name}</p>
-                                <p className="text3">Kurucu: {value.founder.name}</p>
+            <div className="roomsBodyDiv">
+                {
+                    props.data.map((value, index) => (
+                        <div key={index}>
+                            <div className="listView">
+                                <img src={require("../../ui-design/images/swords.png")} alt="" className="img3"/>
+                                <div className="listViewInfoDiv">
+                                    <p className="text3">Oda adı: {value.name}</p>
+                                    <p className="text3">Kurucu: {value.founder.name}</p>
+                                </div>
+                                <hr/>
                             </div>
-                            <hr/>
                         </div>
-                    </div>
-                ))
-            }
+                    ))
+                }
+            </div>
         </>
     )
 }

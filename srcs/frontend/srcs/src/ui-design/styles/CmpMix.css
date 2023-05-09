@@ -6,6 +6,25 @@
     padding: 10px;
     font-size: 2.0em;
 }
+
+.listViewInfoDiv {
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 10px;
+    font-size: 1.2em;
+}
+
+.listView {
+    margin-top: 20px;
+}
+
+.roomsBodyDiv {
+    background-color: lightgray;
+    border-radius: 50px;
+    padding: 30px;
+    /*height: 400px; sabit eşit */
+}
+
 /* ####################### */
 
 
@@ -39,6 +58,8 @@
 }
 /* ####################### */
 
+
+/* ChatRoomsCmp ve GameRoomsCmp */
 .img3 {
     width: 60px;
 }
@@ -47,18 +68,22 @@
     margin-top: 0px;
 }
 
-.listViewInfoDiv {
-    display: inline-block;
-    vertical-align: top;
-    margin-left: 10px;
-    font-size: 1.2em;
-}
-
-.listView {
-    margin-top: 20px;
-}
-
 .text4 {
     margin-top: 0px;
     margin-bottom: 0px;
 }
+
+
+/* FriendsRoomsCmp */
+.img4 {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    object-fit: cover;
+}
+
+.text5 {
+    margin-top: 5px;
+    margin-bottom: 0px;
+}
+/* ####################### */

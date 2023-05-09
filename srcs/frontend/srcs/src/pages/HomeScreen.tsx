@@ -73,6 +73,10 @@ const testChatRoomsArray: Array<ChatRooms> = [
     {owner: testUser, admins: [testUser], name: "Test-Sohbet-Odası-3", roomStatus: "protected", banList: [], users: [testUser]},
 ]
 
+const testFriendsArray: Array<UserInfo> = [
+    testUser, testUser, testUser
+]
+
 // ####################################################################################################
 
 const HomeScreen = () => {
@@ -101,7 +105,7 @@ const HomeScreen = () => {
                     <div className="roomsFlexBox">
                         <div className="gameRooms">{<GameRoomsCmp data={testGameRoomsArray}/>}</div>
                         <div className="chatRooms">{<ChatRoomsCmp data={testChatRoomsArray}/>}</div>
-                        <div className="friendsRooms">{<FriendsRoomsCmp/>}</div>
+                        <div className="friendsRooms">{<FriendsRoomsCmp data={testFriendsArray}/>}</div>
                     </div>
                 </div>
             </div>
