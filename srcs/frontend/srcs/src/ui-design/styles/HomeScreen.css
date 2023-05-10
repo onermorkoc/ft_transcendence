@@ -1,14 +1,4 @@
-.flexBox, .row1-2 {
-    display: flex;
-    flex-direction: column;
-}
-
-.roomsFlexBox, .row1, .tabsFlexBox {
-    display: flex;
-    flex-direction: row;
-}
-
-.gameRooms, .chatRooms, .friendsRooms {
+.roomsDiv {
     flex: 1;
     height: auto;
     margin-left: 10px;
@@ -22,7 +12,9 @@
     flex: 1;
     border-radius: 360px;
     background-color: rgb(195, 229, 248);
+    font-size: 2.0em;
     transition: 0.5s;
+    min-width: 350px;
 }
 
 .imgTabDiv {
@@ -42,28 +34,7 @@
     opacity: 0.5;
 }
 
-.row1 {
-    height: 280px;
-}
-
-.row1-2 {
-    flex: 1;
-    margin-left:20px;
-}
-
-.row2 {
-
-}
-
-.chatRooms {
-
-}
-
-.friendsRooms {
-    
-}
-
-.avatarImage {
+.homeAvatarImg {
     width: 250px;
     height: 250px;
     border-radius: 125px;
@@ -79,12 +50,4 @@
 
 .editProfileButton:hover {
     opacity: 0.4;
-}
-
-.tabsFlexBox {
-    font-size: 2.0em;
-}
-
-.row1-1 {
-    margin: 20px;
 }

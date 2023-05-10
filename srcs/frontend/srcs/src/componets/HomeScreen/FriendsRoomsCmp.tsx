@@ -4,19 +4,18 @@ import "../../ui-design/styles/CmpMix.css"
 const FriendsRoomsCmp = (props: {data: Array<UserInfo>}) => {
     return (
         <>
-            <p className="roomsHeader">Arkadaşlarım</p>
-            <hr/>
+            <div className="roomsHeader">Arkadaşlarım</div>
+            
             <div className="roomsBodyDiv">
                 {
                     props.data.map((value, index) => (
                         <div key={index}>
-                            <div className="listView">
-                                <img src={value.photoUrl} alt="" className="img4"/>
+                            <div className="listViewDiv" style={{display: "flex", flexDirection: "row"}}>
+                                <img src={value.photoUrl} alt="" className="friendsAvatarImg"/>
                                 <div className="listViewInfoDiv">
-                                    <p className="text5">Ad: {value.name}</p>
-                                    <p className="text5">Durum: {value.status}</p>
+                                    <div>Ad: {value.name}</div>
+                                    <div>Durum: {value.status}</div>
                                 </div>
-                                <hr/>
                             </div>
                         </div>
                     ))

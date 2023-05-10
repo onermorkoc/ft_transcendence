@@ -1,37 +1,35 @@
-.img, .button {
+/* mavi: #C3E5F8(195, 229, 248) kırmızı: #F8C3C3(258, 195, 195) yeşil: #E5F8C3(229, 248, 195) */
+
+.logo, .loginButton {
     display: block;
     margin-right: auto;
     margin-left: auto;
 }
 
-.img {
+.logo {
     width: 400px;
     margin-top: 125px;
 }
 
-.text {
-    text-align: center;
-    margin-top: 50px;
-    font-size: 3.5em;
-}
-
-.button {
+.loginButton {
     margin-top:50px;
     width: 250px;
     height: 70px;
     border-radius: 35px;
     border-width: 3px;
-    background-color: rgb(195, 229, 248); /*# mavi: C3E5F8 kırmızı: #F8C3C3 yeşil: #E5F8C3*/
+    background-color: rgb(195, 229, 248);
     font-size: 1.4em;
     cursor: pointer;
     transition: 0.5s;
 }
 
-.button:hover {
+.loginButton:hover {
     background-color: rgb(229, 248, 195);
 }
 
 body {
+    margin: 0px;
+    padding: 10px;
     background: linear-gradient(lightgray, skyblue);
     background-repeat: no-repeat;
     background-attachment: fixed;

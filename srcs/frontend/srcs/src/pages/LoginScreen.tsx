@@ -10,9 +10,9 @@ const LoginScreen = () => {
 
     return (
         <>
-            <img src={require("../ui-design/images/logo.png")} alt="" className="img"/>
-            <h1 className="text">Pong Oyuna Hoşgeldin !</h1>
-            <button onClick={loginIntra} className="button">İntra Girişi</button>
+            <img src={require("../ui-design/images/logo.png")} alt="" className="logo"/>
+            <h1 style={{textAlign: "center", marginTop: "50px", fontSize: "3.5em"}}>Pong Oyuna Hoşgeldin !</h1>
+            <button onClick={loginIntra} className="loginButton">İntra Girişi</button>
         </>
     )
 }

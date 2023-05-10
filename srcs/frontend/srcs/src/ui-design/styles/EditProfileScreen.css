@@ -4,6 +4,10 @@
     margin: 10px;
 }
 
+.avatarImgs:hover {
+    opacity: 0.5;
+}
+
 .avatarScroolDiv {
     width: 700px;
     display: flex;
@@ -27,19 +31,20 @@
     margin-top: 50px;
 }
 
-.selectImageButton {
+.selectImgButton {
     display: inline-block;
     height: 45px;
     width: 45px;
     margin-left: -30px;
     margin-bottom: -10px;
+    cursor: pointer;
 }
 
-.selectImageButton:hover {
+.selectImgButton:hover {
     opacity: 0.5;
 }
 
-.currentProfileImage {
+.previewProfileImg {
     display: inline-block;
     width: 250px;
     height: 250px;
@@ -47,7 +52,7 @@
     object-fit: cover;
 }
 
-.box {
+.previewDiv {
     height: 260px;
     width: 265px;
     margin-left: auto;
@@ -55,7 +60,7 @@
     margin-top: 75px;
 }
 
-.updateProfıleInfoButton {
+.updateProfileInfoButton {
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -70,10 +75,6 @@
     transition: 0.5s;
 }
 
-.updateProfıleInfoButton:hover {
+.updateProfileInfoButton:hover {
     background-color: rgb(229, 248, 195);
-}
-
-.avatarImgs:hover {
-    opacity: 0.5;
 }

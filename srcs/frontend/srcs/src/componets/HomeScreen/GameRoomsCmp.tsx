@@ -2,27 +2,33 @@ import { GameRooms } from "../../App"
 import "../../ui-design/styles/CmpMix.css"
 
 const GameRoomsCmp = (props: {data: Array<GameRooms>}) => {
+
+    function toEnterGameRoom(id: string) {
+        const win: Window = window
+        win.location = `/matchroom/${id}`
+    }
+
     return (
         <>
-            <p className="roomsHeader">Oyun Odaları</p>
-            <hr/>
+            <div className="roomsHeader">Oyun Odaları</div>
+            
             <div className="roomsBodyDiv">
 
                 <div style={{display: "flex", flexDirection: "row"}}>
                     <button className="roomsButton">Oda kur</button>
                     <button className="roomsButton">Rastgele eşleş</button>
                 </div>
+                <hr/>
             
                 {
                     props.data.map((value, index) => (
-                        <div key={index}>
-                            <div className="listView">
-                                <img src={require("../../ui-design/images/swords.png")} alt="" className="img3"/>
+                        <div onClick={() => toEnterGameRoom(value.id)} key={index}>
+                            <div className="listViewDiv" style={{display: "flex", flexDirection: "row"}}>
+                                <img src={require("../../ui-design/images/swords.png")} alt="" style={{width: "60px"}}/>
                                 <div className="listViewInfoDiv">
-                                    <p className="text3">Oda adı: {value.name}</p>
-                                    <p className="text3">Kurucu: {value.founder.name}</p>
+                                    <div>Oda adı: {value.name}</div>
+                                    <div>Kurucu: {value.founder.name}</div>
                                 </div>
-                                <hr/>
                             </div>
                         </div>
                     ))

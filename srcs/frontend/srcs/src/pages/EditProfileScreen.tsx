@@ -24,7 +24,7 @@ const EditProfileScreen = (props: {data: UserInfo}) => {
     useEffect(() => {
         nameInputRef.current!!.value = props.data.name
         nicknameInputRef.current!!.value = props.data.nickname
-    }, [])
+    }, [props.data])
 
     function updateProfileInfo() {
         // backend database tarafında kullanıcının bilgileri güncellenecek.
@@ -35,22 +35,22 @@ const EditProfileScreen = (props: {data: UserInfo}) => {
 
     return (
         <>
-            <div className="box">
-                <img src={previewImg} className="currentProfileImage" alt=""/>
-                <img src={require("../ui-design/images/add-image.png")} className="selectImageButton"/>
+            <div className="previewDiv">
+                <img src={previewImg} className="previewProfileImg" alt=""/>
+                <img src={require("../ui-design/images/add-image.png")} className="selectImgButton" alt=""/>
             </div>
         
             <div className="avatarScroolDiv">
                 {
                     avatarImgArray.map((value, index) => (
-                        <img onClick={() => setPreviewImg(require("../ui-design/images/avatar/" + value))} key={index} src={require("../ui-design/images/avatar/" + value)} className="avatarImgs"/>
+                        <img onClick={() => setPreviewImg(require("../ui-design/images/avatar/" + value))} key={index} src={require("../ui-design/images/avatar/" + value)} className="avatarImgs" alt=""/>
                     ))
                 }
             </div>
 
             <input ref={nameInputRef} type="text" placeholder="Adınız: " className="inputBox"></input>
             <input ref={nicknameInputRef} type="text" placeholder="Kullanıcı adınız: " className="inputBox"></input>
-            <button onClick={updateProfileInfo} className="updateProfıleInfoButton">Kaydet</button>
+            <button onClick={updateProfileInfo} className="updateProfileInfoButton">Kaydet</button>
         </>
     )
 }
