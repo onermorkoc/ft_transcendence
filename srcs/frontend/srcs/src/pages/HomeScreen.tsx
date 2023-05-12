@@ -7,7 +7,7 @@ import ChatRoomsCmp from "../componets/ChatRoomsCmp"
 import FriendsRoomsCmp from "../componets/FriendsRoomsCmp"
 import { ChatRooms, GameRooms, UserInfo } from "../App"
 
-const HomeScreen = (props: {currentUser: UserInfo, gameRoomsList: Array<GameRooms>, chatRoomList: Array<ChatRooms>, friendsList: Array<UserInfo>}) => {
+const HomeScreen = (props: {currentUser: UserInfo, gameRoomList: Array<GameRooms>, chatRoomList: Array<ChatRooms>, userList: Array<UserInfo>}) => {
 
     const [tab, setTab] = useState<JSX.Element>(<UserInfoCmp data={props.currentUser} />)
     
@@ -46,9 +46,9 @@ const HomeScreen = (props: {currentUser: UserInfo, gameRoomsList: Array<GameRoom
                 </div>
                 <div style={{flex: "70vh"}}>
                     <div style={{display: "flex", flexDirection: "row"}}>
-                        <div className="roomsDiv">{<GameRoomsCmp data={props.gameRoomsList}/>}</div>
+                        <div className="roomsDiv">{<GameRoomsCmp data={props.gameRoomList}/>}</div>
                         <div className="roomsDiv">{<ChatRoomsCmp data={props.chatRoomList}/>}</div>
-                        <div className="roomsDiv">{<FriendsRoomsCmp data={props.friendsList}/>}</div>
+                        <div className="roomsDiv">{<FriendsRoomsCmp data={props.currentUser.friends}/>}</div>
                     </div>
                 </div>
             </div>

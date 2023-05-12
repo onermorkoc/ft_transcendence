@@ -5,6 +5,10 @@ import EditProfileScreen from './pages/EditProfileScreen';
 import GameScreen from './pages/GameScreen';
 import { v4 as uuidv4 } from 'uuid';
 
+function calculateWinRate(totalWin: number, totalGame: number): number {
+  return ((100 * totalWin) / totalGame)
+}
+
 export interface UserGameStatistics {
   totalGame: number,
   totalWin: number,
@@ -22,6 +26,8 @@ export interface UserInfo {
   photoUrl: string,
   status: "çevrimiçi" | "çevrimdışı" | "oyunda"
   statistics: UserGameStatistics
+  chatRooms: Array<ChatRooms>
+  friends: Array<UserInfo>
 }
 
 export interface GameRooms {
@@ -42,45 +48,95 @@ export interface ChatRooms {
 
 // ################################### => Test Object <= ##############################################
 
-const testUserGameStatistics: UserGameStatistics = {
+const user1Statistics: UserGameStatistics =  {
   totalGame: 10,
-  totalWin: 7,
-  totalLose: 3,
-  winRate: 70,
-  title: "Çaylak",
+  totalWin: 4,
+  totalLose: 6,
+  winRate: calculateWinRate(4, 10),
+  title: 'Çaylak',
+  globalRank: 4
+}
+
+const user2Statistics: UserGameStatistics =  {
+  totalGame: 17,
+  totalWin: 11,
+  totalLose: 6,
+  winRate: calculateWinRate(11, 17),
+  title: 'Çaylak',
+  globalRank: 3
+}
+
+const user3Statistics: UserGameStatistics =  {
+  totalGame: 65,
+  totalWin: 33,
+  totalLose: 32,
+  winRate: calculateWinRate(33, 65),
+  title: 'Usta',
+  globalRank: 2
+}
+
+const user4Statistics: UserGameStatistics =  {
+  totalGame: 234,
+  totalWin: 201,
+  totalLose: 33,
+  winRate: calculateWinRate(201, 234),
+  title: 'Efsane',
   globalRank: 1
 }
 
-const testUser: UserInfo = {
-  name: "Öner Morkoç",
-  nickname: "omorkoç",
-  email: "omorkoc@student.42istanbul.com.tr",
+const currentUser: UserInfo = {
+  name: 'Öner Morkoç',
+  nickname: 'omorkoc',
+  email: 'omorkoc@student.42istanbul.com.tr',
   google: false,
-  photoUrl: "https://cdn.intra.42.fr/users/be2eeaebbc2be8a4f6289b5996d64362/omorkoc.jpg",
-  status: "çevrimiçi",
-  statistics: testUserGameStatistics
+  photoUrl: 'https://cdn.intra.42.fr/users/be2eeaebbc2be8a4f6289b5996d64362/omorkoc.jpg',
+  status: 'çevrimiçi',
+  statistics: user1Statistics,
+  chatRooms: [],
+  friends: []
 }
 
-// uuidv4()
+const user2: UserInfo = {
+  name: 'Ermand Haruni',
+  nickname: 'eharuni',
+  email: 'eharuni@student.42istanbul.com.tr',
+  google: false,
+  photoUrl: 'https://cdn.intra.42.fr/users/51a12ee29d82643fffbba247a3c90a5a/eharuni.jpg',
+  status: 'çevrimdışı',
+  statistics: user2Statistics,
+  chatRooms: [],
+  friends: []
+}
 
-export const testGameRoomsList: Array<GameRooms> = [
-  {name: "Test-Oyun-Odası-1", founder: testUser, rival: testUser, id: "3d0327b9-16e7-4811-8782-adfe02f0395e"}, 
-  {name: "Test-Oyun-Odası-2", founder: testUser, rival: testUser, id: "52662cc5-ed54-46a1-8b40-2fb171a4b62c"},
-  {name: "Test-Oyun-Odası-3", founder: testUser, rival: testUser, id: "09671086-d811-4e10-ad51-97768c86b864"},
-  {name: "Test-Oyun-Odası-4", founder: testUser, rival: testUser, id: "3d0327b9-16e7-4811-8782-adfe02f0395e"}, 
-  {name: "Test-Oyun-Odası-5", founder: testUser, rival: testUser, id: "52662cc5-ed54-46a1-8b40-2fb171a4b62c"},
-  {name: "Test-Oyun-Odası-6", founder: testUser, rival: testUser, id: "09671086-d811-4e10-ad51-97768c86b864"}
-]
+const user3: UserInfo = {
+  name: 'Altuğ Alpcan Yaşar',
+  nickname: 'alyasar',
+  email: 'alyasar@student.42istanbul.com.tr',
+  google: false,
+  photoUrl: 'https://cdn.intra.42.fr/users/3519bd7260eb9395ef762149957b6f43/alyasar.jpg',
+  status: 'oyunda',
+  statistics: user3Statistics,
+  chatRooms: [],
+  friends: []
+}
 
-const testChatRoomsList: Array<ChatRooms> = [
-  {owner: testUser, admins: [testUser], name: "Test-Sohbet-Odası-1", roomStatus: "public", banList: [], users: [testUser]},
-  {owner: testUser, admins: [testUser], name: "Test-Sohbet-Odası-2", roomStatus: "private", banList: [], users: [testUser, testUser]},
-  {owner: testUser, admins: [testUser], name: "Test-Sohbet-Odası-3", roomStatus: "protected", banList: [], users: [testUser]},
-]
+const user4: UserInfo = {
+  name: 'Yusuf Aysu',
+  nickname: 'yaysu',
+  email: 'yaysu@student.42istanbul.com.tr',
+  google: false,
+  photoUrl: 'https://cdn.intra.42.fr/users/49e40735ae192aaa888d96b545698e42/yaysu.jpg',
+  status: 'çevrimdışı',
+  statistics: user4Statistics,
+  chatRooms: [],
+  friends: []
+}
 
-const testFriendsList: Array<UserInfo> = [
-  testUser, testUser, testUser
-]
+const allUserList: Array<UserInfo> = [currentUser, user2, user3, user4]
+
+const allChatRoomList: Array<ChatRooms> = []
+
+export const allGameRoomList: Array<GameRooms> = []
 
 // ####################################################################################################
 
@@ -91,8 +147,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<LoginScreen/>}/>
-          <Route path='/home' element={<HomeScreen currentUser={testUser} gameRoomsList={testGameRoomsList} chatRoomList={testChatRoomsList} friendsList={testFriendsList}/>}/>
-          <Route path='/editprofile' element={<EditProfileScreen data={testUser}/>}/>
+          <Route path='/home' element={<HomeScreen currentUser={user2} gameRoomList={allGameRoomList} chatRoomList={allChatRoomList} userList={allUserList}/>}/>
+          <Route path='/editprofile' element={<EditProfileScreen data={currentUser}/>}/>
           <Route path='/matchroom/:matchID' element={<GameScreen/>}/>
         </Routes>
       </BrowserRouter>
