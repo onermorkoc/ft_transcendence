@@ -1,29 +1,27 @@
 .roomsDiv {
     flex: 1;
-    height: auto;
     margin-left: 10px;
     margin-right: 10px;
 }
 
-.textTabDiv {
+.textTabDiv, .imgTabDiv {
     margin: 10px;
     padding: 10px;
-    text-align: center;
-    flex: 1;
     border-radius: 360px;
     background-color: rgb(195, 229, 248);
-    font-size: 2.0em;
     transition: 0.5s;
+}
+
+.textTabDiv {
+    flex: 1;
+    text-align: center;
+    font-size: 2.0em;
     min-width: 350px;
 }
 
 .imgTabDiv {
     width: 40px;
     height: 40px;
-    background-color: rgb(195, 229, 248);
-    margin: 10px;
-    padding: 10px;
-    border-radius: 360px;
 }
 
 .textTabDiv:hover, .imgTabDiv:hover {
@@ -49,5 +47,5 @@
 }
 
 .editProfileButton:hover {
-    opacity: 0.4;
+    opacity: 0.5;
 }

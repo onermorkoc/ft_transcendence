@@ -1,12 +1,9 @@
-import { UserInfo } from "../../App"
-import "../../ui-design/styles/CmpMix.css"
+import { UserInfo } from "../App"
 
-const FriendsRoomsCmp = (props: {data: Array<UserInfo>}) => {
-    return (
+const MyFriendsRoomCmp = (props: {data: Array<UserInfo>}) => {
+    return(
         <>
-            <div className="roomsHeader">Arkadaşlarım</div>
-            
-            <div className="roomsBodyDiv">
+            <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
                 {
                     props.data.map((value, index) => (
                         <div key={index}>
@@ -25,4 +22,4 @@ const FriendsRoomsCmp = (props: {data: Array<UserInfo>}) => {
     )
 }
 
-export default FriendsRoomsCmp
+export default MyFriendsRoomCmp

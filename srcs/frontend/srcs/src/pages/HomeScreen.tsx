@@ -1,10 +1,10 @@
 import { useState } from "react"
 import "../ui-design/styles/HomeScreen.css"
-import UserInfoCmp from "../componets/HomeScreen/UserInfoCmp"
-import UserStatisticsCmp from "../componets/HomeScreen/UserStatisticsCmp"
-import GameRoomsCmp from "../componets/HomeScreen/GameRoomsCmp"
-import ChatRoomsCmp from "../componets/HomeScreen/ChatRoomsCmp"
-import FriendsRoomsCmp from "../componets/HomeScreen/FriendsRoomsCmp"
+import UserInfoCmp from "../componets/UserInfoCmp"
+import UserStatisticsCmp from "../componets/UserStatisticsCmp"
+import GameRoomsCmp from "../componets/GameRoomsCmp"
+import ChatRoomsCmp from "../componets/ChatRoomsCmp"
+import FriendsRoomsCmp from "../componets/FriendsRoomsCmp"
 import { ChatRooms, GameRooms, UserInfo } from "../App"
 
 const HomeScreen = (props: {currentUser: UserInfo, gameRoomsList: Array<GameRooms>, chatRoomList: Array<ChatRooms>, friendsList: Array<UserInfo>}) => {

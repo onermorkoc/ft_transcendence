@@ -18,7 +18,7 @@ export interface UserInfo {
   name: string,
   nickname: string,
   email: string,
-  google: "etkin" | "devredışı",
+  google: boolean,
   photoUrl: string,
   status: "çevrimiçi" | "çevrimdışı" | "oyunda"
   statistics: UserGameStatistics
@@ -55,7 +55,7 @@ const testUser: UserInfo = {
   name: "Öner Morkoç",
   nickname: "omorkoç",
   email: "omorkoc@student.42istanbul.com.tr",
-  google: "devredışı",
+  google: false,
   photoUrl: "https://cdn.intra.42.fr/users/be2eeaebbc2be8a4f6289b5996d64362/omorkoc.jpg",
   status: "çevrimiçi",
   statistics: testUserGameStatistics
@@ -66,7 +66,10 @@ const testUser: UserInfo = {
 export const testGameRoomsList: Array<GameRooms> = [
   {name: "Test-Oyun-Odası-1", founder: testUser, rival: testUser, id: "3d0327b9-16e7-4811-8782-adfe02f0395e"}, 
   {name: "Test-Oyun-Odası-2", founder: testUser, rival: testUser, id: "52662cc5-ed54-46a1-8b40-2fb171a4b62c"},
-  {name: "Test-Oyun-Odası-3", founder: testUser, rival: testUser, id: "09671086-d811-4e10-ad51-97768c86b864"}
+  {name: "Test-Oyun-Odası-3", founder: testUser, rival: testUser, id: "09671086-d811-4e10-ad51-97768c86b864"},
+  {name: "Test-Oyun-Odası-4", founder: testUser, rival: testUser, id: "3d0327b9-16e7-4811-8782-adfe02f0395e"}, 
+  {name: "Test-Oyun-Odası-5", founder: testUser, rival: testUser, id: "52662cc5-ed54-46a1-8b40-2fb171a4b62c"},
+  {name: "Test-Oyun-Odası-6", founder: testUser, rival: testUser, id: "09671086-d811-4e10-ad51-97768c86b864"}
 ]
 
 const testChatRoomsList: Array<ChatRooms> = [

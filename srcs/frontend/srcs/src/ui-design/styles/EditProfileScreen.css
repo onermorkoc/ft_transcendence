@@ -1,10 +1,30 @@
-.avatarImgs {
-    height: 100px;
-    width: 100px;
-    margin: 10px;
+.previewDiv {
+    height: 260px;
+    width: 265px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 75px;
 }
 
-.avatarImgs:hover {
+.previewProfileImg {
+    display: inline-block;
+    width: 250px;
+    height: 250px;
+    border-radius: 125px;
+    object-fit: cover;
+}
+
+.selectImgButton {
+    display: inline-block;
+    height: 45px;
+    width: 45px;
+    margin-left: -30px;
+    margin-bottom: -10px;
+    transition: 0.5;
+    cursor: pointer;
+}
+
+.selectImgButton:hover {
     opacity: 0.5;
 }
 
@@ -15,6 +35,17 @@
     margin-right: auto;
     overflow-x: auto;
     margin-top: 30px;
+}
+
+.avatarImgs {
+    height: 100px;
+    width: 100px;
+    margin: 10px;
+    transition: 0.5;
+}
+
+.avatarImgs:hover {
+    opacity: 0.5;
 }
 
 .inputBox {
@@ -31,44 +62,15 @@
     margin-top: 50px;
 }
 
-.selectImgButton {
-    display: inline-block;
-    height: 45px;
-    width: 45px;
-    margin-left: -30px;
-    margin-bottom: -10px;
-    cursor: pointer;
-}
-
-.selectImgButton:hover {
-    opacity: 0.5;
-}
-
-.previewProfileImg {
-    display: inline-block;
-    width: 250px;
-    height: 250px;
-    border-radius: 125px;
-    object-fit: cover;
-}
-
-.previewDiv {
-    height: 260px;
-    width: 265px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 75px;
-}
-
 .updateProfileInfoButton {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    border-radius: 35px;
+    border-radius: 30px;
     height: 60px;
     width: 170px;
     margin-top: 50px;
-    border-width: 3px;
+    border-width: 2px;
     background-color: rgb(195, 229, 248);
     font-size: 1.3em;
     cursor: pointer;
