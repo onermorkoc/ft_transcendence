@@ -1,6 +1,8 @@
-FROM debian:stable
+FROM node:current-alpine3.17
 
-# Yerel paketleri güncelle.
-RUN apt update && apt upgrade -y
+RUN mkdir /tmp/ft_transcendence_backend
+WORKDIR /tmp/ft_transcendence_backend
+COPY ./srcs/ .
+RUN npm install
 
-CMD [ "echo", "=> [TEST]: backend çalışıyor ..." ]
+CMD [ "npm", "start" ]

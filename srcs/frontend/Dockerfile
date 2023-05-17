@@ -1,24 +1,8 @@
-FROM debian:stable
+FROM node:current-alpine3.17
 
-# Yerel paketleri güncelle.
-RUN apt update && apt upgrade -y
-
-# npm ve typescript yükle.
-RUN apt install npm -y
-RUN npm install typescript -g
-
-# node son versiyona güncelle.
-RUN npm install -g n
-RUN apt install curl -y
-RUN n latest
-
-# Tmpde klasör oluştur ve src dosyalarını kopyala.
-RUN mkdir /tmp/ft_transcendence_fronted
-WORKDIR /tmp/ft_transcendence_fronted
+RUN mkdir /tmp/ft_transcendence_frontend
+WORKDIR /tmp/ft_transcendence_frontend
 COPY ./srcs/ .
-
-# node_modules indir.
 RUN npm install
 
-# Up.
 CMD [ "npm", "start" ]

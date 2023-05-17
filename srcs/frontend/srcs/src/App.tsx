@@ -3,7 +3,6 @@ import LoginScreen from './pages/LoginScreen';
 import HomeScreen from './pages/HomeScreen';
 import EditProfileScreen from './pages/EditProfileScreen';
 import GameScreen from './pages/GameScreen';
-import { v4 as uuidv4 } from 'uuid';
 
 function calculateWinRate(totalWin: number, totalGame: number): number {
   return ((100 * totalWin) / totalGame)
