@@ -27,6 +27,13 @@
     background-color: rgb(229, 248, 195);
 }
 
+.loadingAnimation{
+    width: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+}
+
 body {
     margin: 0px;
     background: linear-gradient(lightgray, skyblue);

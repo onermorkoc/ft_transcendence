@@ -139,14 +139,13 @@ export const allGameRoomList: Array<GameRooms> = []
 
 // ####################################################################################################
 
-
 function App() {
   return (
     <>
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<LoginScreen/>}/>
-          <Route path='/home' element={<HomeScreen currentUser={user2} gameRoomList={allGameRoomList} chatRoomList={allChatRoomList} userList={allUserList}/>}/>
+          <Route path='/home' element={<HomeScreen currentUser={currentUser} gameRoomList={allGameRoomList} chatRoomList={allChatRoomList} userList={allUserList}/>}/>
           <Route path='/editprofile' element={<EditProfileScreen data={currentUser}/>}/>
           <Route path='/matchroom/:matchID' element={<GameScreen/>}/>
         </Routes>
