@@ -1,6 +1,6 @@
-import { UserInfo } from "../App"
+import { User } from "../dto/DataObject"
 
-const MyFriendsRoomCmp = (props: {data: Array<UserInfo>}) => {
+const MyFriendsRoomCmp = (props: {data: Array<User>}) => {
     return(
         <>
             <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
@@ -8,9 +8,9 @@ const MyFriendsRoomCmp = (props: {data: Array<UserInfo>}) => {
                     props.data.map((value, index) => (
                         <div key={index}>
                             <div className="listViewDiv" style={{display: "flex", flexDirection: "row"}}>
-                                <img src={value.photoUrl} alt="" className="friendsAvatarImg"/>
+                                <img src={value.photourl} alt="" className="friendsAvatarImg"/>
                                 <div className="listViewInfoDiv">
-                                    <div>Ad: {value.name}</div>
+                                    <div>Ad: {value.displayname}</div>
                                     <div>Durum: {value.status}</div>
                                 </div>
                             </div>

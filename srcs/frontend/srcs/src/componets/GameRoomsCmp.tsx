@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { GameRooms } from "../App"
 import "../ui-design/styles/CmpMix.css"
 import SearchGameRoomCmp from "./SearchGameRoomCmp"
 import RandomMatchGameCmp from "./RandomMatchGameCmp"
 import CreateGameRoomCmp from "./CreateGameRoomCmp"
+import { GameRoom } from "../dto/DataObject"
 
-const GameRoomsCmp = (props: {data: Array<GameRooms>}) => {
+const GameRoomsCmp = (props: {data: Array<GameRoom>}) => {
 
     const [gameTab, setGameTab] = useState<JSX.Element>(<SearchGameRoomCmp data={props.data}/>)
 

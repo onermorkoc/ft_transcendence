@@ -1,29 +1,45 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import "../ui-design/styles/HomeScreen.css"
 import UserInfoCmp from "../componets/UserInfoCmp"
 import UserStatisticsCmp from "../componets/UserStatisticsCmp"
 import GameRoomsCmp from "../componets/GameRoomsCmp"
 import ChatRoomsCmp from "../componets/ChatRoomsCmp"
 import FriendsRoomsCmp from "../componets/FriendsRoomsCmp"
-import { ChatRooms, GameRooms, UserInfo } from "../App"
+import { useParams } from "react-router-dom"
+import axios from "axios"
+import { User } from "../dto/DataObject"
 
-const HomeScreen = (props: {currentUser: UserInfo, gameRoomList: Array<GameRooms>, chatRoomList: Array<ChatRooms>, userList: Array<UserInfo>}) => {
+const HomeScreen = () => {
 
-    const [tab, setTab] = useState<JSX.Element>(<UserInfoCmp data={props.currentUser} />)
-    
-    function editProfile(){
-        const win: Window = window
-        win.location = "/editprofile"
+    const { nickname } = useParams()
+    const [currentUserData, setCurrentUserData] = useState<User | null>(null)
+
+    const getCurrentUserInfo = async (): Promise<User>  => {
+        return ((await axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${nickname}`)).data)
     }
 
-    return (
-        <>
-            <div style={{display: "flex", flexDirection: "column"}}>
-                <div style={{flex: "30vh"}}>
+    getCurrentUserInfo().then((response) => {
+        setCurrentUserData(response)
+    })
+
+    function editProfile(){
+        window.location.assign(`/editprofile/${nickname}`)
+    }
+    const [tab, setTab] = useState<JSX.Element | null>(null)
+
+    const view = (): JSX.Element => {
+        if (currentUserData){
+
+            setTab(<UserInfoCmp data={currentUserData}/>)
+
+            return (
+                <>
+                    <div style={{display: "flex", flexDirection: "column"}}>
+                    <div style={{flex: "30vh"}}>
                     <div style={{display: "flex", flexDirection: "row"}}>
                         <div style={{width: "280px"}}>
                             <div style={{margin: "10px"}}>
-                                <img src={props.currentUser.photoUrl} className="homeAvatarImg" alt=""/>
+                                <img src={currentUserData.photourl} className="homeAvatarImg" alt=""/>
                                 <img onClick={editProfile} src={require("../ui-design/images/edit.png")} className="editProfileButton" alt=""/>
                             </div>
                         </div>
@@ -31,27 +47,40 @@ const HomeScreen = (props: {currentUser: UserInfo, gameRoomList: Array<GameRooms
                             <div style={{display: "flex", flexDirection: "column"}}>
                                 <div>
                                     <div style={{display: "flex", flexDirection: "row"}}>
-                                        <div onClick={() => setTab(<UserInfoCmp data={props.currentUser}/>)} className="textTabDiv">Profil Bilgilerim</div>
-                                        <div onClick={() => setTab(<UserStatisticsCmp data={props.currentUser}/>)} className="textTabDiv">İstatistiklerim</div>
+                                        <div onClick={() => setTab(<UserInfoCmp data={currentUserData}/>)} className="textTabDiv">Profil Bilgilerim</div>
+                                        <div onClick={() => setTab(<UserStatisticsCmp data={currentUserData}/>)} className="textTabDiv">İstatistiklerim</div>
                                         <img src={require("../ui-design/images/global-rank.png")} className="imgTabDiv" alt=""/>
                                         <img src={require("../ui-design/images/setting.png")} className="imgTabDiv" alt=""/>
                                     </div>
                                 </div>
-                                <div>
-                                    {tab}
+                                    <div>
+                                        {tab}
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        </div>
+                        <div style={{flex: "70vh"}}>
+                            <div style={{display: "flex", flexDirection: "row"}}>
+                                <div className="roomsDiv">{<GameRoomsCmp data={[]}/>}</div>
+                                <div className="roomsDiv">{<ChatRoomsCmp data={[]}/>}</div>
+                                <div className="roomsDiv">{<FriendsRoomsCmp data={[]}/>}</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div style={{flex: "70vh"}}>
-                    <div style={{display: "flex", flexDirection: "row"}}>
-                        <div className="roomsDiv">{<GameRoomsCmp data={props.gameRoomList}/>}</div>
-                        <div className="roomsDiv">{<ChatRoomsCmp data={props.chatRoomList}/>}</div>
-                        <div className="roomsDiv">{<FriendsRoomsCmp data={props.currentUser.friends}/>}</div>
-                    </div>
-                </div>
-            </div>
+                </>
+            )
+        }
+        return (
+            <>
+                <div>Veri Çekiliyor</div>
+            </>
+        )
+    }
+
+    return (
+        <>
+            {view()}
         </>
     )
 }

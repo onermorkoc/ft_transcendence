@@ -1,7 +1,7 @@
-import { UserInfo } from "../App"
+import { User } from "../dto/DataObject"
 import "../ui-design/styles/CmpMix.css"
 
-const UserStatisticsCmp = (props: {data: UserInfo}) => {
+const UserStatisticsCmp = (props: {data: User}) => {
     return (
         <>
             <div style={{display: "flex", flexDirection: "column"}}>

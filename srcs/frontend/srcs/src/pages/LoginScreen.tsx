@@ -7,27 +7,21 @@ import LoadingJSON from "../ui-design/animation/loading.json"
 
 const LoginScreen = () => {
 
-    const [loadingAnimation, setLoadingAimation] = useState<boolean>(false)
-
-    const loadingAnimationStatus = (): JSX.Element | null => {
-        if (loadingAnimation)
-            return (<Lottie animationData={LoadingJSON}/>)
-        return (null)
-    }
+    const [visible, setVisible] = useState<boolean>(false)
 
     const sendBackendInraData = async (response: AxiosResponse<any>) => {
+        
         const intraUserInfo: IntraUserInfo = {
-            id: response.data.id,
             displayname: response.data.displayname,
             nickname: response.data.login,
             email: response.data.email,
             photoUrl: response.data.image.link
         }
 
-        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/users/login`, intraUserInfo).then((resultCode) => {
-            if (resultCode){
-                setLoadingAimation(false)
-                window.location.assign("/home")
+        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/users`, intraUserInfo).then((resultCode) => {
+            if (resultCode.data === 0){
+                setVisible(false)
+                window.location.assign(`/home/${intraUserInfo.nickname}`)
             }
         }).catch((error) => {
             console.log(error)
@@ -41,7 +35,7 @@ const LoginScreen = () => {
         
         if (code != null){
 
-            setLoadingAimation(true)
+            setVisible(true)
 
             const requestConfig: AxiosRequestConfig = {
                 url: "/oauth/token",
@@ -83,7 +77,7 @@ const LoginScreen = () => {
             <img src={require("../ui-design/images/logo.png")} alt="" className="logo"/>
             <h1 style={{textAlign: "center", marginTop: "50px", fontSize: "3.5em"}}>Pong Oyuna Hoşgeldin !</h1>
             <button onClick={goIntraLoginPage} className="loginButton">İntra Girişi</button>
-            <div className="loadingAnimation">{loadingAnimationStatus()}</div>
+            {visible ? <Lottie className="loadingAnimation" animationData={LoadingJSON}/> : null}
         </>
     )
 }

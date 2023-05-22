@@ -1,6 +1,6 @@
-import { ChatRooms } from "../App"
+import { ChatRoom } from "../dto/DataObject"
 
-const SearchChatRoomCmp = (props: {data: Array<ChatRooms>}) => {
+const SearchChatRoomCmp = (props: {data: Array<ChatRoom>}) => {
     return (
         <>
             <div className="searchBarBox">
@@ -16,8 +16,8 @@ const SearchChatRoomCmp = (props: {data: Array<ChatRooms>}) => {
                                 <img src={require("../ui-design/images/team.png")} alt="" style={{width: "60px"}}/>
                                 <div className="listViewInfoDiv">
                                     <div>Oda adı: {value.name}</div>
-                                    <div>Durum: {value.roomStatus}</div>
-                                    <div>Üye: {value.users.length} kişi</div>
+                                    <div>Durum: {value.roomstatus}</div>
+                                    <div>Üye: {value.usersID.length} kişi</div>
                                 </div>
                             </div>
                         </div>

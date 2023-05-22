@@ -1,16 +1,16 @@
 import { useParams } from "react-router-dom"
-import { GameRooms, allGameRoomList } from "../App"
 import "../ui-design/styles/GameScreen.css"
+import { GameRoom, allGameRoomList } from "../dto/DataObject"
 
 const GameScreen = () => {
     
     const { matchID } = useParams()
 
-    const matchInfoData: GameRooms = allGameRoomList.find((value: GameRooms): boolean => { return value.id === matchID})!!
+    const matchInfoData: GameRoom = allGameRoomList.find((value: GameRoom): boolean => { return value.id === matchID})!!
 
     return (
         <>
-            <div className="gameScreenRootDiv">
+            {/* <div className="gameScreenRootDiv">
                 <div className="gameScreenUsersInfoDiv">
                     <img className="matchAvatarImg" src={matchInfoData.founder.photoUrl} alt=""/>
                     <div style={{display: "flex", flexDirection: "column", justifyContent: "center"}}>
@@ -29,7 +29,7 @@ const GameScreen = () => {
                     <img className="matchAvatarImg" src={matchInfoData.rival.photoUrl} alt=""/>
                 </div>
             </div>
-            <img className="testGameField" src={require("../ui-design/images/test.png")} alt=""/>
+            <img className="testGameField" src={require("../ui-design/images/test.png")} alt=""/> */}
         </>
     )
 }

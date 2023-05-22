@@ -4,7 +4,7 @@ import { Controller, Get } from '@nestjs/common';
 export class AppController {
 
   @Get()
-  getHello(): string {
-    return ("Hello World!");
+  running(): string {
+    return ("ft_transcendence backend running...");
   }
 }

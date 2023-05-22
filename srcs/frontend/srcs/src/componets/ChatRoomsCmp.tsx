@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { ChatRooms } from "../App"
 import "../ui-design/styles/CmpMix.css"
 import MyChatRoomsCmp from "./MyChatRoomsCmp"
 import CreateChatRoom from "./CreateChatRoom"
 import SearchChatRoomCmp from "./SearchChatRoomCmp"
+import { ChatRoom } from "../dto/DataObject"
 
-const ChatRoomsCmp = (props: {data: Array<ChatRooms>}) => {
+const ChatRoomsCmp = (props: {data: Array<ChatRoom>}) => {
 
     const [chatTab, setChatTab] = useState<JSX.Element>(<MyChatRoomsCmp/>)
 

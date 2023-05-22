@@ -1,10 +1,10 @@
 import { useState } from "react"
-import { UserInfo } from "../App"
 import "../ui-design/styles/CmpMix.css"
 import MyFriendsRoomCmp from "./MyFriendsRoomCmp"
 import SearchUserCmp from "./SearchUserCmp"
+import { User } from "../dto/DataObject"
 
-const FriendsRoomsCmp = (props: {data: Array<UserInfo>}) => {
+const FriendsRoomsCmp = (props: {data: Array<User>}) => {
 
     const [friendsTab, setFriendsTab] = useState<JSX.Element>(<MyFriendsRoomCmp data={props.data}/>)
 

@@ -1,5 +1,5 @@
+import { User } from "../dto/DataObject"
 import "../ui-design/styles/EditProfileScreen.css"
-import { UserInfo } from "../App"
 import { useEffect, useRef, useState } from "react"
 
 const avatarImgArray: Array<string> = [
@@ -14,15 +14,15 @@ const avatarImgArray: Array<string> = [
     "avatar-17.png"
 ]
 
-const EditProfileScreen = (props: {data: UserInfo}) => {
+const EditProfileScreen = () => {
 
-    const [previewImg, setPreviewImg] = useState<string>(props.data.photoUrl)
+    /* const [previewImg, setPreviewImg] = useState<string>(props.data.photourl)
 
     const nameInputRef = useRef<HTMLInputElement>(null)
     const nicknameInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        nameInputRef.current!!.value = props.data.name
+        nameInputRef.current!!.value = props.data.displayname
         nicknameInputRef.current!!.value = props.data.nickname
     }, [props.data])
 
@@ -52,7 +52,10 @@ const EditProfileScreen = (props: {data: UserInfo}) => {
             <input ref={nicknameInputRef} type="text" placeholder="Kullanıcı adınız: " className="inputBox"></input>
             <button onClick={updateProfileInfo} className="updateProfileInfoButton">Kaydet</button>
         </>
-    )
+    ) */
+
+    return (<>
+    </>)
 }
 
 export default EditProfileScreen

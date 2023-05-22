@@ -1,11 +1,10 @@
-import { GameRooms } from "../App"
+import { GameRoom } from "../dto/DataObject"
 import "../ui-design/styles/CmpMix.css"
 
-const SearchGameRoomCmp = (props: {data: Array<GameRooms>}) => {
+const SearchGameRoomCmp = (props: {data: Array<GameRoom>}) => {
 
-    function toEnterGameRoom(id: string) {
-        const win: Window = window
-        win.location = `/matchroom/${id}`
+    function toEnterGameRoom(id: number) {
+        window.location.assign(`/matchroom/${id}`)
     }
 
     return (
@@ -18,12 +17,12 @@ const SearchGameRoomCmp = (props: {data: Array<GameRooms>}) => {
             <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
                 {
                     props.data.map((value, index) => (
-                        <div onClick={() => toEnterGameRoom(value.id)} key={index}>
+                        <div onClick={() => toEnterGameRoom(value.id!!)} key={index}>
                             <div className="listViewDiv" style={{display: "flex", flexDirection: "row"}}>
                                 <img src={require("../ui-design/images/swords.png")} alt="" style={{width: "60px"}}/>
                                 <div className="listViewInfoDiv">
                                     <div>Oda adı: {value.name}</div>
-                                    <div>Kurucu: {value.founder.name}</div>
+                                    <div>Kurucu: {value.founderID}</div>   {/* founderID.displayname */}
                                 </div>
                             </div>
                         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { UserInfo } from "../App"
 import "../ui-design/styles/CmpMix.css"
+import { User } from "../dto/DataObject"
 
 const activeGoogleView: JSX.Element = <>
     <div className="text2">2 faktörlü kimlik doğrulaması: etkin</div>
@@ -13,22 +13,22 @@ const inactiveGoogleView: JSX.Element = <>
     </div>
 </>
 
-const UserInfoCmp = (props: {data: UserInfo}) => {
+const UserInfoCmp = (props: {data: User}) => {
 
     const [googleAuth, setGoogleAuth] = useState<JSX.Element>(inactiveGoogleView)
 
     useEffect(() => {
-        if (props.data.google){
+        if (props.data.googleauth){
             setGoogleAuth(activeGoogleView)
         }
-    }, [props.data.google])
+    }, [props.data.googleauth])
 
     return (
         <>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <div className="infoRowDiv">
                     <img src={require("../ui-design/images/user.png")} className="img2" alt=""/>
-                    <div className="text2">Ad: {props.data.name}</div>
+                    <div className="text2">Ad: {props.data.displayname}</div>
                 </div>
 
                 <div className="infoRowDiv">
