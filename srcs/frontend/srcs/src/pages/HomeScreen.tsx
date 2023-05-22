@@ -12,54 +12,52 @@ import { User } from "../dto/DataObject"
 const HomeScreen = () => {
 
     const { nickname } = useParams()
-    const [currentUserData, setCurrentUserData] = useState<User | null>(null)
-
-    const getCurrentUserInfo = async (): Promise<User>  => {
-        return ((await axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${nickname}`)).data)
-    }
-
-    getCurrentUserInfo().then((response) => {
-        setCurrentUserData(response)
-    })
-
-    function editProfile(){
-        window.location.assign(`/editprofile/${nickname}`)
-    }
+    const [ currentUserInfo, setCurrentUserInfo ] = useState<User | null>(null)
     const [tab, setTab] = useState<JSX.Element | null>(null)
 
-    const view = (): JSX.Element => {
-        if (currentUserData){
+    useEffect(() => {
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${nickname}`).then((response) => {
+            setCurrentUserInfo(response.data)
+        })
+    })
 
-            setTab(<UserInfoCmp data={currentUserData}/>)
+    const editProfile = (): void => {
+        window.location.assign(`/editprofile/${nickname}`)
+    }
 
-            return (
-                <>
-                    <div style={{display: "flex", flexDirection: "column"}}>
+    if (currentUserInfo){
+
+        if (tab == null)
+            setTab(<UserInfoCmp data={currentUserInfo}/>)
+            
+        return (
+            <>
+                <div style={{display: "flex", flexDirection: "column"}}>
                     <div style={{flex: "30vh"}}>
-                    <div style={{display: "flex", flexDirection: "row"}}>
-                        <div style={{width: "280px"}}>
-                            <div style={{margin: "10px"}}>
-                                <img src={currentUserData.photourl} className="homeAvatarImg" alt=""/>
-                                <img onClick={editProfile} src={require("../ui-design/images/edit.png")} className="editProfileButton" alt=""/>
-                            </div>
-                        </div>
-                        <div style={{flex: 1}}>
-                            <div style={{display: "flex", flexDirection: "column"}}>
-                                <div>
-                                    <div style={{display: "flex", flexDirection: "row"}}>
-                                        <div onClick={() => setTab(<UserInfoCmp data={currentUserData}/>)} className="textTabDiv">Profil Bilgilerim</div>
-                                        <div onClick={() => setTab(<UserStatisticsCmp data={currentUserData}/>)} className="textTabDiv">İstatistiklerim</div>
-                                        <img src={require("../ui-design/images/global-rank.png")} className="imgTabDiv" alt=""/>
-                                        <img src={require("../ui-design/images/setting.png")} className="imgTabDiv" alt=""/>
-                                    </div>
+                        <div style={{display: "flex", flexDirection: "row"}}>
+                            <div style={{width: "280px"}}>
+                                <div style={{margin: "10px"}}>
+                                    <img src={currentUserInfo.photourl} className="homeAvatarImg" alt=""/>
+                                    <img onClick={editProfile} src={require("../ui-design/images/edit.png")} className="editProfileButton" alt=""/>
                                 </div>
+                            </div>
+                            <div style={{flex: 1}}>
+                                <div style={{display: "flex", flexDirection: "column"}}>
                                     <div>
-                                        {tab}
+                                        <div style={{display: "flex", flexDirection: "row"}}>
+                                            <div onClick={() => setTab(<UserInfoCmp data={currentUserInfo}/>)} className="textTabDiv">Profil Bilgilerim</div>
+                                            <div onClick={() => setTab(<UserStatisticsCmp data={currentUserInfo}/>)} className="textTabDiv">İstatistiklerim</div>
+                                                <img src={require("../ui-design/images/global-rank.png")} className="imgTabDiv" alt=""/>
+                                            <img src={require("../ui-design/images/setting.png")} className="imgTabDiv" alt=""/>
+                                        </div>
                                     </div>
+                                        <div>
+                                            {tab}
+                                        </div>
                                 </div>
                             </div>
                         </div>
-                        </div>
+                    </div>
                         <div style={{flex: "70vh"}}>
                             <div style={{display: "flex", flexDirection: "row"}}>
                                 <div className="roomsDiv">{<GameRoomsCmp data={[]}/>}</div>
@@ -73,16 +71,9 @@ const HomeScreen = () => {
         }
         return (
             <>
-                <div>Veri Çekiliyor</div>
+                <div> Veri Çekiliyor </div>
             </>
         )
-    }
-
-    return (
-        <>
-            {view()}
-        </>
-    )
 }
 
 export default HomeScreen
