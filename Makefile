@@ -1,8 +1,6 @@
 YML_FILE	= ./srcs/docker-compose.yml
 ENV_FILE	= ./srcs/.env
 CLEAN_FILE	= ./srcs/tools/clean-docker.sh
-
-# bu tamamen ek silinebilir
 DOCKER_INSTALL_FILE = ./srcs/tools/install-docker.sh 
 
 all:

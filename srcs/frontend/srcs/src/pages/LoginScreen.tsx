@@ -12,6 +12,7 @@ const LoginScreen = () => {
     const sendBackendInraData = async (response: AxiosResponse<any>) => {
         
         const intraUserInfo: IntraUserInfo = {
+            intraID: response.data.id,
             displayname: response.data.displayname,
             nickname: response.data.login,
             email: response.data.email,
@@ -21,7 +22,7 @@ const LoginScreen = () => {
         await axios.post(`${process.env.REACT_APP_BACKEND_URI}/users`, intraUserInfo).then((resultCode) => {
             if (resultCode.data === 0){
                 setVisible(false)
-                window.location.assign(`/home/${intraUserInfo.nickname}`)
+                window.location.assign(`/home/${intraUserInfo.intraID}`)
             }
         }).catch((error) => {
             console.log(error)

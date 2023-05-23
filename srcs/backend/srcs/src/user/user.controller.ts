@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.entity";
 import { IntraUserInfo } from "src/dto/dto";
@@ -16,9 +16,10 @@ export class UserController {
     @Post()
     async createUser(@Body() intraUserInfo: IntraUserInfo): Promise<number>{
 
-        if (await this.userService.findOne(intraUserInfo.nickname) == null) {
+        if (await this.userService.findOne(intraUserInfo.intraID) == null) {
             await this.userService.create({
                 id: null,
+                intraID: intraUserInfo.intraID,
                 displayname: intraUserInfo.displayname,
                 nickname: intraUserInfo.nickname,
                 email: intraUserInfo.email,
@@ -36,15 +37,20 @@ export class UserController {
                 chatroomsID: [],
                 friendsID: []
             })
-            console.log(`[DEBUG]: Yeni Kullanıcı oluşturuldu nickname: ${intraUserInfo.nickname}`)
+            console.log(`[DEBUG]: Yeni Kullanıcı oluşturuldu intraID: ${intraUserInfo.intraID}`)
         } else {
-            console.log(`[DEBUG]: Kullanıcı giriş yaptı nickname: ${intraUserInfo.nickname}`)
+            console.log(`[DEBUG]: Kullanıcı giriş yaptı intraID: ${intraUserInfo.intraID}`)
         }
         return (0)
     }
 
-    @Get(":nickname")
-    async findUser(@Param("nickname") nickname: string): Promise<User>{
-        return (await this.userService.findOne(nickname))
+    @Get(":intraID")
+    async findUser(@Param("intraID") intraID: number): Promise<User>{
+        return (await this.userService.findOne(intraID))
+    }
+
+    @Put("/update")
+    async updateUserInfo(@Body() newUserInfo: Partial<User>): Promise<number> { // Partial içindeki objecnin bilgilerinin eksik olmasına izin veren bir type
+        return (await this.userService.update(newUserInfo))
     }
 }

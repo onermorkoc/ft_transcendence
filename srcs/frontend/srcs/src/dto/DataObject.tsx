@@ -1,4 +1,5 @@
 export interface IntraUserInfo {
+    intraID: number,
     displayname: string,
     nickname: string,
     email: string,
@@ -16,6 +17,7 @@ export interface GameStatistics{
 
 export interface User {
     id?: number,
+    intraID: number
     displayname: string,
     nickname: string,
     email: string,

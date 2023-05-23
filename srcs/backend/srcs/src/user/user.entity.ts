@@ -28,6 +28,9 @@ export class User {
     public id?: null
 
     @Column()
+    public intraID: number
+
+    @Column()
     public displayname: string
 
     @Column()

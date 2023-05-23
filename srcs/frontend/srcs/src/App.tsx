@@ -10,8 +10,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<LoginScreen/>}/>
-          <Route path='/home/:nickname' element={<HomeScreen/>}/>
-          <Route path='/editprofile/:nickname' element={<EditProfileScreen/>}/>
+          <Route path='/home/:intraID' element={<HomeScreen/>}/>
+          <Route path='/editprofile/:intraID' element={<EditProfileScreen/>}/>
           <Route path='/matchroom/:matchID' element={<GameScreen/>}/>
         </Routes>
       </BrowserRouter>

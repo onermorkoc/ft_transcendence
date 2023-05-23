@@ -11,18 +11,18 @@ import { User } from "../dto/DataObject"
 
 const HomeScreen = () => {
 
-    const { nickname } = useParams()
+    const { intraID } = useParams()
     const [ currentUserInfo, setCurrentUserInfo ] = useState<User | null>(null)
-    const [tab, setTab] = useState<JSX.Element | null>(null)
+    const [ tab, setTab ] = useState<JSX.Element | null>(null)
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${nickname}`).then((response) => {
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${intraID}`).then((response) => {
             setCurrentUserInfo(response.data)
         })
-    })
+    }, [intraID])
 
     const editProfile = (): void => {
-        window.location.assign(`/editprofile/${nickname}`)
+        window.location.assign(`/editprofile/${intraID}`)
     }
 
     if (currentUserInfo){
@@ -47,33 +47,28 @@ const HomeScreen = () => {
                                         <div style={{display: "flex", flexDirection: "row"}}>
                                             <div onClick={() => setTab(<UserInfoCmp data={currentUserInfo}/>)} className="textTabDiv">Profil Bilgilerim</div>
                                             <div onClick={() => setTab(<UserStatisticsCmp data={currentUserInfo}/>)} className="textTabDiv">İstatistiklerim</div>
-                                                <img src={require("../ui-design/images/global-rank.png")} className="imgTabDiv" alt=""/>
+                                            <img src={require("../ui-design/images/global-rank.png")} className="imgTabDiv" alt=""/>
                                             <img src={require("../ui-design/images/setting.png")} className="imgTabDiv" alt=""/>
                                         </div>
                                     </div>
-                                        <div>
-                                            {tab}
-                                        </div>
+                                    <div>
+                                        {tab}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                        <div style={{flex: "70vh"}}>
-                            <div style={{display: "flex", flexDirection: "row"}}>
-                                <div className="roomsDiv">{<GameRoomsCmp data={[]}/>}</div>
-                                <div className="roomsDiv">{<ChatRoomsCmp data={[]}/>}</div>
-                                <div className="roomsDiv">{<FriendsRoomsCmp data={[]}/>}</div>
-                            </div>
+                    <div style={{flex: "70vh"}}>
+                        <div style={{display: "flex", flexDirection: "row"}}>
+                            <div className="roomsDiv">{<GameRoomsCmp data={[]}/>}</div>
+                            <div className="roomsDiv">{<ChatRoomsCmp data={[]}/>}</div>
+                            <div className="roomsDiv">{<FriendsRoomsCmp data={[]}/>}</div>
                         </div>
                     </div>
-                </>
-            )
-        }
-        return (
-            <>
-                <div> Veri Çekiliyor </div>
+                </div>
             </>
         )
+    }
+    return (<></>)
 }
-
 export default HomeScreen
