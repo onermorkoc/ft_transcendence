@@ -31,6 +31,9 @@ export class User {
     public intraID: number
 
     @Column()
+    public secretkey: string
+
+    @Column()
     public displayname: string
 
     @Column()

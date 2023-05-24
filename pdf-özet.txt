@@ -19,6 +19,7 @@ değişkenler vb. yerel olarak bir .env dosyasına kaydedilmeli.
 Kullanıcı Hesabı:
 
 - Kullanıcı 42 OAuht intranet sistemi kullanarak giriş yapmalı.
+
 - Kullanıcın ekranda görüntülenecek name değiştirebilmeli ve Name herkese özel olmalı.
 - Kullanıcı bir avatar yükleyebilmelidir. Kullanıcı bir avatar yüklemezse, bir varsayılan ayarlanmalıdır.
 - Kullanıcı, iki faktörlü kimlik doğrulamayı etkinleştirebilmelidir. Örneğin, Google Auth veya telefonlarına kısa mesaj gönderme.

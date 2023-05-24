@@ -26,7 +26,7 @@ const EditProfileScreen = () => {
     const nicknameInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${intraID}`).then((response) => {
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${intraID}/${localStorage.getItem("USER_BACKEND_SECRET_KEY")}`).then((response) => {
             setCurrentUserInfo(response.data)
             displaynameInputRef.current!!.value = response.data.displayname
             nicknameInputRef.current!!.value = response.data.nickname

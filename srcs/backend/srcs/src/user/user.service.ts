@@ -19,7 +19,7 @@ export class UserService {
 
         const intraID = newUserInfo.intraID
         const newNickname = newUserInfo.nickname
-        const oldNickname = (await this.findOne(intraID)).nickname
+        const oldNickname = (await this.findOneNoCondition(intraID)).nickname
         const taken = await this.userRepository.findOne({where: {nickname: newNickname}})
      
         if(oldNickname == newNickname ||  taken == null){
@@ -30,12 +30,28 @@ export class UserService {
         return (1)
     }
 
+    async updateNoCondition(newUserInfo: Partial<User>){
+        const intraID = newUserInfo.intraID
+        await this.userRepository.update({intraID}, newUserInfo)
+    }
+
     async all(): Promise<Array<User>> {
         return (await this.userRepository.find())
     }
 
-    async findOne(intraID: number): Promise<User> {
+    async findOneNoCondition(intraID: number): Promise<User> {
         return (await this.userRepository.findOne({where: {intraID }}))
+    }
+
+    async findOne(intraID: number, secretkey: string): Promise<User> {
+        
+        const user = await this.userRepository.findOne({where: {intraID }})
+
+        if(user == null)
+            return (null)
+        if(user.secretkey != secretkey)
+            return (null)
+        return (user)
     }
 
     async delete(){

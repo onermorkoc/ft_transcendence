@@ -16,7 +16,7 @@ const HomeScreen = () => {
     const [ tab, setTab ] = useState<JSX.Element | null>(null)
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${intraID}`).then((response) => {
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${intraID}/${localStorage.getItem("USER_BACKEND_SECRET_KEY")}`).then((response) => {
             setCurrentUserInfo(response.data)
         })
     }, [intraID])
@@ -47,6 +47,7 @@ const HomeScreen = () => {
                                         <div style={{display: "flex", flexDirection: "row"}}>
                                             <div onClick={() => setTab(<UserInfoCmp data={currentUserInfo}/>)} className="textTabDiv">Profil Bilgilerim</div>
                                             <div onClick={() => setTab(<UserStatisticsCmp data={currentUserInfo}/>)} className="textTabDiv">İstatistiklerim</div>
+                                            <img src={require("../ui-design/images/history.png")} className="imgTabDiv" alt=""/>
                                             <img src={require("../ui-design/images/global-rank.png")} className="imgTabDiv" alt=""/>
                                             <img src={require("../ui-design/images/setting.png")} className="imgTabDiv" alt=""/>
                                         </div>
@@ -69,6 +70,10 @@ const HomeScreen = () => {
             </>
         )
     }
-    return (<></>)
+    return (
+        <>
+            <div>Test: Sayfa bulunamadı 404</div>
+        </>
+    )
 }
 export default HomeScreen
