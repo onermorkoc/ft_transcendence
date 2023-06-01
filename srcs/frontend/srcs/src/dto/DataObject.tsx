@@ -1,49 +1,63 @@
-export interface IntraUserInfo {
-    intraID: number,
+export interface User {
+    id: number,
     displayname: string,
-    nickname: string,
     email: string,
-    photoUrl: string,
-}
-
-export interface GameStatistics{
+    nickname: string,
+    photoUrl: string
+    status: Status,
+    twoFactorEnabled: boolean,
     totalGame: number,
     totalWin: number,
     totalLose: number,
     winRate: number,
-    title: "Çaylak" | "Usta" | "Büyük Usta" | "Efsane" | "Şanlı",
-    globalRank: number
-}
-
-export interface User {
-    id?: number,
-    intraID: number
-    displayname: string,
-    nickname: string,
-    email: string,
-    photourl: string,
-    googleauth: boolean,
-    status: "online" | "offline" | "at game",
-    statistics: GameStatistics,
-    chatroomsID: Array<string>,
-    friendsID: Array<string>
-}
-
-export interface ChatRoom {
-    id?: number,
+    title: Title,
+    globalRank: number  
+    chatRoomIds: Array<number>
+    friendIds: Array<number>
+    gameHistory: Array<GameHistory>
+  }
+  
+  export interface ChatRoom {
+    id: number,
     name: string,
-    ownerID: string,
-    roomstatus: "private" | "public" | "protected",
-    usersID: Array<string>,
-    adminsID: Array<string>,
-    banlistID: Array<string>,
-}
-
-export interface GameRoom {
-    id?: number,
-    name: string,
-    founderID: string,
-    rivalID: string,
-}
-
-export const allGameRoomList: Array<GameRoom> = []
+    ownerId: number,
+    roomStatus: RoomStatus,
+    userIds: Array<number>,
+    adminIds: Array<number>,
+    banListIds: Array<number>
+  }
+  
+  export interface Game {
+    id: number,
+    playerOneId: number,
+    playerTwoId: number
+  }
+  
+  interface GameHistory {
+    id: number,
+    userId: number,
+    opponentId:number,
+    win: boolean,
+    userScore: number,
+    opponentScore: number
+  }
+  
+  enum Title {
+    CAYLAK,
+    USTA,
+    BUYUKUSTA,
+    EFSANE,
+    SANLI
+  }
+  
+  enum Status {
+    ONLINE,
+    OFFLINE,
+    ATGAME
+  }
+  
+  enum RoomStatus {
+    PRIVATE,
+    PUBLIC,
+    PROTECTED,
+  }

@@ -3,16 +3,27 @@ import LoginScreen from './pages/LoginScreen';
 import HomeScreen from './pages/HomeScreen';
 import EditProfileScreen from './pages/EditProfileScreen';
 import GameScreen from './pages/GameScreen';
+import GameHistoryCmp from './componets/Game/GameHistoryCmp';
+import axios from 'axios';
 
 function App() {
+
+  axios.interceptors.request.use(config => {
+    config.withCredentials = true
+    return (config)
+  })
+
   return (
     <>
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<LoginScreen/>}/>
-          <Route path='/home/:intraID' element={<HomeScreen/>}/>
-          <Route path='/editprofile/:intraID' element={<EditProfileScreen/>}/>
+          <Route path='/home' element={<HomeScreen/>}/>
+          <Route path='/editprofile' element={<EditProfileScreen/>}/>
           <Route path='/matchroom/:matchID' element={<GameScreen/>}/>
+          
+          <Route path='/history' element={<GameHistoryCmp/>}/> 
+        
         </Routes>
       </BrowserRouter>
     </>

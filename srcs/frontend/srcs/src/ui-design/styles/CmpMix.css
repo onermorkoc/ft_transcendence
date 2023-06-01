@@ -128,4 +128,172 @@
     margin-top: 15px;
 }
 
+.attachAndUnLinkImg {
+    width: 32px;
+    height: 32px;
+    margin-left: 10px
+}
+
+.attachAndUnLinkImg:hover {
+    opacity: 0.5;
+}
+
 /* ################################ */
+
+
+
+/* GameHistoryCmp */
+
+.historyDiv {
+    display: flex;
+    margin: 10px;
+    flex-direction: row;
+    border-radius: 30px;
+    background-color: rgb(153,153,153);
+}
+
+.historyResultImg {
+    width: 100px;
+}
+
+.historySkoreBoardDiv {
+    display: flex;
+    flex-direction: row;
+    font-size: 1.6em;
+}
+.skoreBox {
+    flex: 1;
+    border: solid;
+    border-radius: 4px;
+    border-width: 2px;
+    text-align: center;
+    margin: 1px;
+}
+
+.historyRivalImg {
+    height: 100px;
+    width: 100px;
+    border-radius: 50px;
+    object-fit: cover;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.historyHeaderDiv {
+    background-color: rgb(119,119,119);
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.historyView{
+    margin-top: 15px;
+    margin-left: 250px;
+    margin-right: 250px;
+}
+
+.gameHistoryHeader {
+    background-color: rgb(153,153,153);
+    border-radius: 360px;
+    text-align: center;
+    font-size: 2.0em;
+    margin-top: 30px;
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-bottom: 50px;
+    padding: 15px;
+}
+
+/* ################################ */
+
+
+
+/* RandomMatchGameCmp */
+
+.randomSearchDiv{
+    margin: 50px;
+}
+
+.gameAnimation {
+    margin-top: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 250px;
+}
+
+.gameAnimation:hover {
+    opacity: 0.5;
+}
+
+.rivalSearchingText {
+    text-align: center;
+    font-size: 1.7em;
+    margin-top: 20px;
+}
+
+.randomMatchTime{
+    text-align: center;
+    font-size: 1.7em;
+    margin-top: 10px;
+}
+
+.cancelButton {
+    width: 70px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    margin-top: 50px;
+}
+
+.cancelButton:hover {
+    opacity: 0.5;
+}
+
+/* #################### */
+
+
+
+/* Create Chat Cmp */
+
+.createChatInput {
+    width: 300px;
+    height: 40px;
+    border-radius: 30px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 10px;
+    font-size: 1.2em;
+    border-style: none;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.createChatImg {
+    margin-top: 20px;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+    width: 100px;
+}
+
+.createChatSelectMenu {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    font-size: 1.3em;
+    padding: 2px;
+    width: 150px;
+    text-align: center;
+    
+}
+
+.createChatNextButton {
+    width: 60px;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 20px;
+}
+
+/* ############### */

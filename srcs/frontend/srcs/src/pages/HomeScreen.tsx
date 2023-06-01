@@ -1,28 +1,30 @@
 import { useEffect, useState } from "react"
 import "../ui-design/styles/HomeScreen.css"
-import UserInfoCmp from "../componets/UserInfoCmp"
-import UserStatisticsCmp from "../componets/UserStatisticsCmp"
-import GameRoomsCmp from "../componets/GameRoomsCmp"
-import ChatRoomsCmp from "../componets/ChatRoomsCmp"
-import FriendsRoomsCmp from "../componets/FriendsRoomsCmp"
-import { useParams } from "react-router-dom"
+import UserInfoCmp from "../componets/Header/UserInfoCmp"
 import axios from "axios"
 import { User } from "../dto/DataObject"
+import RandomMatchGameCmp from "../componets/Game/RandomMatchGameCmp"
+import UserStatisticsCmp from "../componets/Header/UserStatisticsCmp"
+import ChatRoomsCmp from "../componets/Chat/ChatRoomsCmp"
+import FriendsRoomsCmp from "../componets/Friends/FriendsRoomsCmp"
 
 const HomeScreen = () => {
 
-    const { intraID } = useParams()
     const [ currentUserInfo, setCurrentUserInfo ] = useState<User | null>(null)
     const [ tab, setTab ] = useState<JSX.Element | null>(null)
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${intraID}/${localStorage.getItem("USER_BACKEND_SECRET_KEY")}`).then((response) => {
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/user/current`).then((response) => {
             setCurrentUserInfo(response.data)
         })
-    }, [intraID])
+    }, [])
 
     const editProfile = (): void => {
-        window.location.assign(`/editprofile/${intraID}`)
+        window.location.assign(`/editprofile`)
+    }
+
+    const goMatchHistoryPage = () => {
+        //window.location.assign("/history")
     }
 
     if (currentUserInfo){
@@ -37,7 +39,7 @@ const HomeScreen = () => {
                         <div style={{display: "flex", flexDirection: "row"}}>
                             <div style={{width: "280px"}}>
                                 <div style={{margin: "10px"}}>
-                                    <img src={currentUserInfo.photourl} className="homeAvatarImg" alt=""/>
+                                    <img src={currentUserInfo.photoUrl} className="homeAvatarImg" alt=""/>
                                     <img onClick={editProfile} src={require("../ui-design/images/edit.png")} className="editProfileButton" alt=""/>
                                 </div>
                             </div>
@@ -47,7 +49,7 @@ const HomeScreen = () => {
                                         <div style={{display: "flex", flexDirection: "row"}}>
                                             <div onClick={() => setTab(<UserInfoCmp data={currentUserInfo}/>)} className="textTabDiv">Profil Bilgilerim</div>
                                             <div onClick={() => setTab(<UserStatisticsCmp data={currentUserInfo}/>)} className="textTabDiv">İstatistiklerim</div>
-                                            <img src={require("../ui-design/images/history.png")} className="imgTabDiv" alt=""/>
+                                            <img onClick={goMatchHistoryPage} src={require("../ui-design/images/history.png")} className="imgTabDiv" alt=""/>
                                             <img src={require("../ui-design/images/global-rank.png")} className="imgTabDiv" alt=""/>
                                             <img src={require("../ui-design/images/setting.png")} className="imgTabDiv" alt=""/>
                                         </div>
@@ -61,8 +63,8 @@ const HomeScreen = () => {
                     </div>
                     <div style={{flex: "70vh"}}>
                         <div style={{display: "flex", flexDirection: "row"}}>
-                            <div className="roomsDiv">{<GameRoomsCmp data={[]}/>}</div>
                             <div className="roomsDiv">{<ChatRoomsCmp data={[]}/>}</div>
+                            <div className="roomsdiv">{<RandomMatchGameCmp/>}</div>
                             <div className="roomsDiv">{<FriendsRoomsCmp data={[]}/>}</div>
                         </div>
                     </div>

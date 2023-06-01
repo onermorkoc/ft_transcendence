@@ -1,4 +1,3 @@
-import { useParams } from "react-router-dom"
 import { User } from "../dto/DataObject"
 import "../ui-design/styles/EditProfileScreen.css"
 import { useEffect, useRef, useState } from "react"
@@ -18,7 +17,6 @@ const avatarImgArray: Array<string> = [
 
 const EditProfileScreen = () => {
 
-    const { intraID } = useParams()
     const [ currentUserInfo, setCurrentUserInfo ] = useState<User | null>(null)
     const [ previewImg, setPreviewImg ] = useState<string | null>(null)
     const [ warningMessage, setWarnnigMessage ] = useState<string>("")
@@ -26,12 +24,12 @@ const EditProfileScreen = () => {
     const nicknameInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${intraID}/${localStorage.getItem("USER_BACKEND_SECRET_KEY")}`).then((response) => {
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/user/current`).then((response) => {
             setCurrentUserInfo(response.data)
             displaynameInputRef.current!!.value = response.data.displayname
             nicknameInputRef.current!!.value = response.data.nickname
         })
-    }, [intraID])
+    }, [])
 
     function updateProfileInfo() {
 
@@ -41,15 +39,15 @@ const EditProfileScreen = () => {
         if (newDisplayname !== "" && newNickname !== ""){
             
             const newUserInfo: Partial<User> = {
-                intraID: parseInt(intraID!!),
+                id: currentUserInfo?.id,
                 displayname: newDisplayname,
                 nickname: newNickname
-                // photourl:    => avatar güncelleme şuanlık yok 
+                // photoUrl:    => avatar güncelleme şuanlık yok 
             }
     
-            axios.put(`${process.env.REACT_APP_BACKEND_URI}/users/update`, newUserInfo).then((resultCode) => {
+            axios.put(`${process.env.REACT_APP_BACKEND_URI}/user/update`, newUserInfo).then((resultCode) => {
                 if(resultCode.data === 0){
-                    window.location.assign(`/home/${intraID}`)
+                    window.location.assign(`/home`)
                 }else{
                     setWarnnigMessage("Bu nickname önceden alınmış !")
                 }
@@ -68,7 +66,7 @@ const EditProfileScreen = () => {
     if(currentUserInfo){
 
         if(previewImg == null)
-            setPreviewImg(currentUserInfo.photourl)
+            setPreviewImg(currentUserInfo.photoUrl)
 
         return (
             <>

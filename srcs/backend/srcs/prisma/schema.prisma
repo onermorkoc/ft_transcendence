@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  displayname String  @unique
+  email       String  @unique
+  nickname    String
+  photoUrl    String
+  status      Status
+
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret String?
+  twoFactorQrCode String?
+
+  totalGame   Int   @default(0)
+  totalWin    Int   @default(0)
+  totalLose   Int   @default(0)
+  winRate     Int   @default(0)
+  title       Title @default(CAYLAK)
+  globalRank  Int   @default(0)
+
+  chatRoomIds Int[]
+  friendIds   Int[]
+
+  gameHistory GameHistory[]
+}
+
+model Chatroom {
+  id         Int        @id @default(autoincrement())
+  name       String
+  ownerId    Int
+  roomStatus RoomStatus
+
+  userIds    Int[]
+  adminIds   Int[]
+  banListIds Int[]
+}
+
+model Game {
+  id          Int @id @default(autoincrement())
+  playerOneId Int
+  playerTwoId Int
+}
+
+model Session {
+  id  String @id
+  sid String @unique
+  data String
+  expiresAt DateTime
+}
+
+model GameHistory {
+  id  Int @id @default(autoincrement())
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+  opponentId Int
+  win Boolean
+  userScore Int
+  opponentScore Int
+}
+
+enum Title {
+  CAYLAK
+  USTA
+  BUYUKUSTA
+  EFSANE
+  SANLI
+}
+
+enum Status {
+  ONLINE
+  OFFLINE
+  ATGAME
+}
+
+enum RoomStatus {
+  PRIVATE
+  PUBLIC
+  PROTECTED
+}

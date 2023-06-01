@@ -1,12 +1,11 @@
 import { useParams } from "react-router-dom"
 import "../ui-design/styles/GameScreen.css"
-import { GameRoom, allGameRoomList } from "../dto/DataObject"
 
 const GameScreen = () => {
     
     const { matchID } = useParams()
 
-    const matchInfoData: GameRoom = allGameRoomList.find((value: GameRoom): boolean => { return value.id === matchID})!!
+    //const matchInfoData: GameRoom = allGameRoomList.find((value: GameRoom): boolean => { return value.id === matchID})!!
 
     return (
         <>
