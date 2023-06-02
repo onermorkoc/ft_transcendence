@@ -1,10 +1,11 @@
 import { Injectable, Session } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UserService {
-    constructor(private prismaService: PrismaService) {}
+    constructor(private prismaService: PrismaService, private configService: ConfigService) {}
 
     getCurrentUser(@Session() session: Record<string, any>) : Promise<User> {
         return session.passport.user;
@@ -91,5 +92,13 @@ export class UserService {
         }));
         session.passport.user = user;
         return user;
+    }
+
+    async uploadAvatar(file: Express.Multer.File, @Session() session: Record<string, any>) {
+        const avatar_url = `${this.configService.get<string>('BACKEND_URL')}/${file.path}`;
+        const user = session.passport.user;
+        user.photoUrl = avatar_url;
+        await this.update(user, session);
+        return { avatar_url: avatar_url };
     }
 }

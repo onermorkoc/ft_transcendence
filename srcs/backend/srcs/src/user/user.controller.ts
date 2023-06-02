@@ -1,6 +1,9 @@
-import { Body, Controller, Get, Param, Post, Put, Session } from '@nestjs/common';
+import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Session, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express'
+import { ConfigService } from '@nestjs/config';
 
 @Controller('user')
 export class UserController {
@@ -29,5 +32,22 @@ export class UserController {
     @Get('2fa/secret/:intraID')
     async userGetTwoFaSecret(@Param("intraID") intraID: string) {
         return this.userService.userGetTwoFaSecret(parseInt(intraID));
+    }
+
+    @Post('upload/avatar')
+    @UseInterceptors(FileInterceptor('avatar', { dest: 'uploads/' }))
+    async uploadAvatar(
+        @UploadedFile(
+        new ParseFilePipe({
+            validators: [
+                new MaxFileSizeValidator({ maxSize: 5242880 }),
+                new FileTypeValidator({ fileType: '(jpeg|jpg|png)' })
+            ]
+        })
+        )
+        file: Express.Multer.File,
+        @Session() session: Record<string, any>
+    ) {
+       return this.userService.uploadAvatar(file, session);
     }
 }
