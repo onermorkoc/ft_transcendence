@@ -12,8 +12,8 @@ export class UserController {
     }
 
     @Put("/update")
-    async updateUserInfo(@Body() newUserInfo: Partial<User>): Promise<number> {
-        return (await this.userService.update(newUserInfo))
+    async updateUserInfo(@Body() newUserInfo: Partial<User>, @Session() session: Record<string, any>): Promise<number> {
+        return (await this.userService.update(newUserInfo, session))
     }
 
     @Get(':intraID')
@@ -21,9 +21,9 @@ export class UserController {
         return this.userService.findUserbyID(parseInt(intraID));
     }
 
-    @Get('name/:displayName')
-    async findUserbyName(@Param("displayName") displayName: string) {
-        return this.userService.findUserbyName(displayName);
+    @Get('nickname/:nickName')
+    async findUserbyName(@Param("nickName") nickName: string) {
+        return this.userService.findUserbyNickname(nickName);
     }
 
     @Get('2fa/secret/:intraID')

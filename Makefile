@@ -13,6 +13,9 @@ dev:
 prisma:
 	cd srcs/backend/srcs; sudo npx prisma db push
 
+studio:
+	cd srcs/backend/srcs; sudo npx prisma studio
+
 down:
 	sudo docker-compose -f $(YML_FILE) down
 

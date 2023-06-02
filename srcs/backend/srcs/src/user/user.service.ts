@@ -10,7 +10,7 @@ export class UserService {
         return session.passport.user;
     }
 
-    async update(newUserInfo: Partial<User>): Promise<number> { // Update ediyor ama session yenilenmediginden frontende eski bilgiler geliyor
+    async update(newUserInfo: Partial<User>, @Session() session: Record<string, any>): Promise<number> { // Update ediyor ama session yenilenmediginden frontende eski bilgiler geliyor
 
         /* Kullanıcı aynı nickname kullanmaya devam edip adını ve pp sini değiştirmek isteyebilir.
         Eğer nickname değiştirmek istiyorsa önceden başkaları tarafından alınmamış olmalı */
@@ -20,13 +20,14 @@ export class UserService {
         const oldNickname = (await this.findUserbyID(intraID)).nickname
         const taken = await this.findUserbyNickname(newNickname)
      
-        if(oldNickname == newNickname ||  taken == null){
-            await this.prismaService.user.update({
+        if(oldNickname == newNickname || taken == null) {
+            const user = await this.prismaService.user.update({
                 where: {
                     id: intraID  
                 },
                 data: newUserInfo
             })
+            session.passport.user = user;
             return (0)
         }
         return (1)
@@ -40,13 +41,13 @@ export class UserService {
         }))
     }
 
-    async findUserbyName(displayname: string): Promise<User> {
+    /*async findUserbyName(displayname: string): Promise<User> { // Displayname unique olmadığı için şuanlık çalışmıyor
         return (await this.prismaService.user.findUnique({
             where: {
                 displayname: displayname
             }
         }))
-    }
+    }*/ 
 
     async findUserbyNickname(nickname: string): Promise<User> {
         return (await this.prismaService.user.findFirst({
@@ -66,8 +67,8 @@ export class UserService {
         return user.twoFactorQrCode;
     }
 
-    async enableTwoFa(intraID: number) {
-        return await (this.prismaService.user.update({
+    async enableTwoFa(intraID: number, @Session() session: Record<string, any>) {
+        const user = await (this.prismaService.user.update({
             where: {
                 id: intraID
             },
@@ -75,10 +76,12 @@ export class UserService {
                 twoFactorEnabled: true
             }
         }));
+        session.passport.user = user;
+        return user
     }
 
-    async disableTwoFa(intraID: number) {
-        return await (this.prismaService.user.update({
+    async disableTwoFa(intraID: number, @Session() session: Record<string, any>) {
+        const user = await (this.prismaService.user.update({
             where: {
                 id: intraID
             },
@@ -86,5 +89,7 @@ export class UserService {
                 twoFactorEnabled: false
             }
         }));
+        session.passport.user = user;
+        return user;
     }
 }

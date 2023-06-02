@@ -47,7 +47,7 @@ export class AuthService {
         });
 
         if (verified === true) {
-            this.userService.enableTwoFa(session.passport.user.id);
+            this.userService.enableTwoFa(session.passport.user.id, session);
         }
 
         return verified;
@@ -79,6 +79,6 @@ export class AuthService {
     }
 
     async disableTwoFa(@Session() session: Record<string, any>) {
-        return await this.userService.disableTwoFa(session.passport.user.id);
+        return await this.userService.disableTwoFa(session.passport.user.id, session);
     }
 }
