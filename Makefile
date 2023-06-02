@@ -11,12 +11,12 @@ dev:
 	sudo docker-compose -f $(DEV_YML_FILE) --env-file $(ENV_FILE) up --build
 
 run_back: prisma
-	npm install --prefix ./srcs/backend/srcs/
-	npm start --prefix ./srcs/backend/srcs/
+	sudo npm install --prefix ./srcs/backend/srcs/
+	sudo npm start --prefix ./srcs/backend/srcs/
 
 run_front:
-	npm install --prefix ./srcs/frontend/srcs/
-	npm start --prefix ./srcs/frontend/srcs/
+	sudo npm install --prefix ./srcs/frontend/srcs/
+	sudo npm start --prefix ./srcs/frontend/srcs/
 
 prisma:
 	cd srcs/backend/srcs; sudo npx prisma db push

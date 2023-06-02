@@ -1,4 +1,4 @@
-import { Injectable, Session } from "@nestjs/common";
+import { Injectable, Session, UnauthorizedException } from "@nestjs/common";
 import { FriendRequest, User } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UserService } from "./user.service";
@@ -7,29 +7,33 @@ import { UserService } from "./user.service";
 export class FriendService {
     constructor(private prismaService: PrismaService, private userService: UserService) {}
 
-    async createFriendRequest(senderId: string, receiverId: string) : Promise<FriendRequest> {
-        const senderIdNumber = parseInt(senderId);
+    async createFriendRequest(receiverId: string, @Session() session: Record<string, any>) : Promise<FriendRequest> {
         const receiverIdNumber = parseInt(receiverId);
         return this.prismaService.friendRequest.create({
             data: {
-                sender: { connect: { id: senderIdNumber } },
+                sender: { connect: { id: session.passport.user.id } },
                 receiver: { connect: { id: receiverIdNumber } }
             }
         });
     }
 
-    async acceptRequest(requestId: number, @Session() session: Record<string, any>): Promise<boolean> {
+    async acceptRequest(requestId: string, @Session() session: Record<string, any>): Promise<boolean> {
+        const requestIdNumber = parseInt(requestId);
         const senderId = (await this.prismaService.friendRequest.findUnique({
             where: {
-                id: requestId
+                id: requestIdNumber
             }
         })).senderId;
 
         const receiverId = (await this.prismaService.friendRequest.findUnique({
             where: {
-                id: requestId
+                id: requestIdNumber
             }
         })).receiverId;
+
+        if (session.passport.user.id != receiverId) {
+            throw new UnauthorizedException('You have no permission to do that.');
+        }
 
         const sender = await this.prismaService.user.findUnique({
             where: {
@@ -51,16 +55,27 @@ export class FriendService {
 
         await this.prismaService.friendRequest.delete({
             where: {
-                id: requestId
+                id: requestIdNumber
             }
         });
         return true;
     }
 
-    async rejectRequest(requestId: number, @Session() session: Record<string, any>): Promise<boolean> {
+    async rejectRequest(requestId: string, @Session() session: Record<string, any>): Promise<boolean> {
+        const requestIdNumber = parseInt(requestId);
+        const receiverId = (await this.prismaService.friendRequest.findUnique({
+            where: {
+                id: requestIdNumber
+            }
+        })).receiverId;
+
+        if (session.passport.user.id != receiverId) {
+            throw new UnauthorizedException('You have no permission to do that.');
+        }
+
         await this.prismaService.friendRequest.delete({
             where: {
-                id: requestId
+                id: requestIdNumber
             }
         });
         return true;
