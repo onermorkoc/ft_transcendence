@@ -35,6 +35,9 @@ model User {
   chatRoomIds Int[]
   friendIds   Int[]
 
+  sentFriendRequests FriendRequest[] @relation("SentRequest")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedRequest")
+
   gameHistory GameHistory[]
 }
 
@@ -70,6 +73,14 @@ model GameHistory {
   win Boolean
   userScore Int
   opponentScore Int
+}
+
+model FriendRequest {
+  id Int @id @default(autoincrement())
+  sender User @relation("SentRequest", fields: [senderId], references: [id])
+  senderId Int
+  receiver User @relation("ReceivedRequest", fields: [receiverId], references: [id])
+  receiverId Int
 }
 
 enum Title {

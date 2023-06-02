@@ -1,9 +1,8 @@
-import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Session, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Res, Session, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express'
-import { ConfigService } from '@nestjs/config';
+import { Express, Response } from 'express'
 
 @Controller('user')
 export class UserController {
@@ -35,13 +34,13 @@ export class UserController {
     }
 
     @Post('upload/avatar')
-    @UseInterceptors(FileInterceptor('avatar', { dest: 'uploads/' }))
+    @UseInterceptors(FileInterceptor('avatar', { dest: 'public/uploads' }))
     async uploadAvatar(
         @UploadedFile(
         new ParseFilePipe({
             validators: [
                 new MaxFileSizeValidator({ maxSize: 5242880 }),
-                new FileTypeValidator({ fileType: '(jpeg|jpg|png)' })
+                new FileTypeValidator({ fileType: '(jpeg|jpg|png)$' })
             ]
         })
         )

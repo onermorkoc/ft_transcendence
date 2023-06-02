@@ -28,7 +28,9 @@ export class UserService {
                 },
                 data: newUserInfo
             })
-            session.passport.user = user;
+            if (session.passport.user.id == user.id) {
+                session.passport.user = user;
+            }
             return (0)
         }
         return (1)
@@ -95,7 +97,7 @@ export class UserService {
     }
 
     async uploadAvatar(file: Express.Multer.File, @Session() session: Record<string, any>) {
-        const avatar_url = `${this.configService.get<string>('BACKEND_URL')}/${file.path}`;
+        const avatar_url = `${this.configService.get<string>('BACKEND_URL')}/${file.path.replace('public/', '')}`;
         const user = session.passport.user;
         user.photoUrl = avatar_url;
         await this.update(user, session);
