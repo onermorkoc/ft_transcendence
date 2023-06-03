@@ -1,11 +1,11 @@
 import { Injectable, Session, UnauthorizedException } from "@nestjs/common";
-import { FriendRequest, User } from "@prisma/client";
+import { FriendRequest } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
-import { UserService } from "./user.service";
+import { UsersService } from "./users.service";
 
 @Injectable()
 export class FriendService {
-    constructor(private prismaService: PrismaService, private userService: UserService) {}
+    constructor(private prismaService: PrismaService, private userService: UsersService) {}
 
     async createFriendRequest(receiverId: string, @Session() session: Record<string, any>) : Promise<FriendRequest> {
         const receiverIdNumber = parseInt(receiverId);

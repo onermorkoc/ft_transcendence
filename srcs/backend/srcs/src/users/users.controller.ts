@@ -1,12 +1,12 @@
 import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Session, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 import { User } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express'
 
 @Controller('users')
-export class UserController {
-    constructor(private userService: UserService) {}
+export class UsersController {
+    constructor(private userService: UsersService) {}
 
     @Get()
     getAllUsers(@Session() session: Record<string, any>){

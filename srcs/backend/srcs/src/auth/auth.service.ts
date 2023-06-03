@@ -1,6 +1,6 @@
 import { Body, Injectable, Req, Res, Session, UnauthorizedException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { UserService } from "src/users/user.service";
+import { UsersService } from "src/users/users.service";
 import { Response } from "express";
 import { Request } from "express-session";
 import * as speakeasy from 'speakeasy';
@@ -10,7 +10,7 @@ import { ConfigService } from "@nestjs/config";
 
 @Injectable({})
 export class AuthService {
-    constructor(private prismaService: PrismaService, private userService: UserService, private configService: ConfigService) {}
+    constructor(private prismaService: PrismaService, private userService: UsersService, private configService: ConfigService) {}
 
     async callback(@Res() res: Response, @Session() session: Record<string, any>) {
         res.cookie('twoFactorOkCookie', '', { expires: new Date(0) });

@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Post, Session, UseGuards } from "@nestjs/common";
+import { Controller, Delete, Get, Param, Post, Session } from "@nestjs/common";
 import { FriendService } from "./friend.service";
 import { FriendRequest } from "@prisma/client";
 

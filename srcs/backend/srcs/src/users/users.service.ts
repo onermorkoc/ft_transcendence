@@ -4,7 +4,7 @@ import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class UserService {
+export class UsersService {
     constructor(private prismaService: PrismaService, private configService: ConfigService) {}
 
     async getAllUsers(@Session() session: Record<string, any>): Promise<Array<User>>{
