@@ -76,11 +76,13 @@ model GameHistory {
 }
 
 model FriendRequest {
-  id Int @id @default(autoincrement())
   sender User @relation("SentRequest", fields: [senderId], references: [id])
   senderId Int
   receiver User @relation("ReceivedRequest", fields: [receiverId], references: [id])
   receiverId Int
+  uniqueIdentifier String @unique
+
+  @@id([senderId, receiverId])
 }
 
 enum Title {

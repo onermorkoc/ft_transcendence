@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Post, Session } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Session, UseGuards } from "@nestjs/common";
 import { FriendService } from "./friend.service";
 import { FriendRequest } from "@prisma/client";
 
@@ -13,6 +13,7 @@ export class FriendController {
 
     @Get(':userId/sent-requests')
     async getSentRequests(@Param('userId') userId: string): Promise<FriendRequest[]> {
+        console.log(this.friendService.getSentRequests(userId));
         return this.friendService.getSentRequests(userId);
     }
 
@@ -26,13 +27,13 @@ export class FriendController {
         return this.friendService.createFriendRequest(receiverId, session);
     }
 
-    @Delete(':requestId/accept')
-    async acceptRequest(@Param('requestId') requestId: string, @Session() session: Record<string, any>): Promise<boolean> {
-        return this.friendService.acceptRequest(requestId, session);
+    @Delete('accept')
+    async acceptRequest(@Body() body: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
+        return this.friendService.acceptRequest(body, session);
     }
 
-    @Delete(':requestId/reject')
-    async rejectRequest(@Param('requestId') requestId: string, @Session() session: Record<string, any>): Promise<boolean> {
-        return this.friendService.rejectRequest(requestId, session);
+    @Delete('reject')
+    async rejectRequest(@Body() body: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
+        return this.friendService.rejectRequest(body, session);
     }
 }
