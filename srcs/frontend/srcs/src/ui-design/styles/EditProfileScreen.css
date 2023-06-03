@@ -15,6 +15,8 @@
 }
 
 .selectImgButton {
+    background-image: url("../../ui-design/images/add-image.png");
+    background-size: cover;
     display: inline-block;
     height: 45px;
     width: 45px;
@@ -26,6 +28,13 @@
 
 .selectImgButton:hover {
     opacity: 0.5;
+}
+
+.hideInputView {
+    position: absolute;
+    height: 45px;
+    width: 45px;
+    opacity: 0;
 }
 
 .avatarScroolDiv {

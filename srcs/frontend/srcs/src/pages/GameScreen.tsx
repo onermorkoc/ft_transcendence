@@ -3,7 +3,7 @@ import "../ui-design/styles/GameScreen.css"
 
 const GameScreen = () => {
     
-    const { matchID } = useParams()
+    //const { matchID } = useParams()
 
     //const matchInfoData: GameRoom = allGameRoomList.find((value: GameRoom): boolean => { return value.id === matchID})!!
 

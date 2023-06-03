@@ -1,4 +1,4 @@
-import "../../ui-design/styles/CmpMix.css"
+import "../ui-design/styles/CmpMix.css"
 
 const historyView = () => {
     return (
@@ -17,7 +17,7 @@ const historyView = () => {
                 </div>
 
                 <div style={{margin: "10px"}}>
-                    <img className="historyResultImg" src={require("../../ui-design/images/historyWin.png")}/>
+                    <img className="historyResultImg" src={require("../ui-design/images/historyWin.png")}/>
                     <div className="historySkoreBoardDiv">
                         <div className="skoreBox">10</div>
                         <div className="skoreBox">7</div>

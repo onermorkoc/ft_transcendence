@@ -1,7 +1,12 @@
 import { User } from "../dto/DataObject"
 import "../ui-design/styles/EditProfileScreen.css"
-import { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import axios from "axios"
+
+const pathToFile = async (path: string, filename: string): Promise<File> => {
+    const data = await (await fetch(path)).blob()
+    return (new File([data], filename, {type: "image/png"}))
+}
 
 const avatarImgArray: Array<string> = [
     "avatar-1.png", "avatar-2.png",
@@ -17,6 +22,7 @@ const avatarImgArray: Array<string> = [
 
 const EditProfileScreen = () => {
 
+    const [ localImgFile, setLocalImgFile ] = useState<File | null>(null)
     const [ currentUserInfo, setCurrentUserInfo ] = useState<User | null>(null)
     const [ previewImg, setPreviewImg ] = useState<string | null>(null)
     const [ warningMessage, setWarnnigMessage ] = useState<string>("")
@@ -31,22 +37,27 @@ const EditProfileScreen = () => {
         })
     }, [])
 
-    function updateProfileInfo() {
+    const updateProfileInfo = async() => {
 
         const newNickname = nicknameInputRef.current!!.value
         const newDisplayname = displaynameInputRef.current!!.value
 
         if (newDisplayname !== "" && newNickname !== ""){
-            
+
             const newUserInfo: Partial<User> = {
                 id: currentUserInfo?.id,
                 displayname: newDisplayname,
                 nickname: newNickname
-                // photoUrl:    => avatar güncelleme şuanlık yok 
             }
     
-            axios.put(`${process.env.REACT_APP_BACKEND_URI}/user/update`, newUserInfo).then((resultCode) => {
+            await axios.put(`${process.env.REACT_APP_BACKEND_URI}/user/update`, newUserInfo).then( async (resultCode) => {
                 if(resultCode.data === 0){
+
+                    if (localImgFile != null){
+                        const form = new FormData()
+                        form.append("avatar", localImgFile)
+                        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/user/upload/avatar`, form)
+                    }
                     window.location.assign(`/home`)
                 }else{
                     setWarnnigMessage("Bu nickname önceden alınmış !")
@@ -59,8 +70,15 @@ const EditProfileScreen = () => {
         }
     }
 
-    function selectLocalImage() {
-        // kullanıcı kendı avatarını yüklüyebilecek.
+    const setImgData = async (event?: React.ChangeEvent<HTMLInputElement> | null, value?: string) => {
+        if (event && event.target.files){
+            setLocalImgFile(event.target.files[0])
+            setPreviewImg(URL.createObjectURL(event.target.files[0]))
+        }
+        if (value){
+            setPreviewImg(require(`../ui-design/images/avatar/${value}`))
+            setLocalImgFile(await pathToFile(require(`../ui-design/images/avatar/${value}`), value))
+        }
     }
 
     if(currentUserInfo){
@@ -72,14 +90,16 @@ const EditProfileScreen = () => {
             <>
                 <div className="previewDiv">
                     <img src={previewImg!!} className="previewProfileImg" alt=""/>
-                    <img onClick={selectLocalImage} src={require("../ui-design/images/add-image.png")} className="selectImgButton" alt=""/>
+                    <div className="selectImgButton" >
+                        <input onChange={event => setImgData(event)} className="hideInputView" type="file" accept="image/png, image/jpg, image/jpeg, image/webp"/>
+                    </div>
                 </div>
                 <div className="warningMessage">{warningMessage}</div>
             
                 <div className="avatarScroolDiv">
                     {
                         avatarImgArray.map((value, index) => (
-                            <img onClick={() => setPreviewImg(require("../ui-design/images/avatar/" + value))} key={index} src={require("../ui-design/images/avatar/" + value)} className="avatarImgs" alt=""/>
+                            <img onClick={() => setImgData(null, value)} key={index} src={require("../ui-design/images/avatar/" + value)} className="avatarImgs" alt=""/>
                         ))
                     }
                 </div>
@@ -90,6 +110,10 @@ const EditProfileScreen = () => {
             </>
         )
     }
-    return(<></>)
+    return(
+        <>
+            {/* <div>Test: Sayfa bulunamadı 404</div> */}
+        </>
+    )
 }
 export default EditProfileScreen

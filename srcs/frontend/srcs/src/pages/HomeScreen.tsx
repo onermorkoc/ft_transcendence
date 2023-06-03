@@ -74,7 +74,7 @@ const HomeScreen = () => {
     }
     return (
         <>
-            <div>Test: Sayfa bulunamadı 404</div>
+            {/* <div>Test: Sayfa bulunamadı 404</div> */}
         </>
     )
 }
