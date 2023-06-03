@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react"
 import { User } from "../../dto/DataObject"
-
-const allUserArray: Array<User> = []
+import axios from "axios"
 
 const SearchUserCmp = () => {
 
-    const [searchText, setSearchText] = useState<string>()
-    const [filterArray, setFilterArray] = useState<Array<User>>([])
+    const [ allUsers, setAllUsers ] = useState<Array<User>>()
+    const [ searchText, setSearchText ] = useState<string>()
+    const [ filterArray, setFilterArray ] = useState<Array<User>>([])
 
     useEffect(() => {
 
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/`).then(response => setAllUsers(response.data))
+
         if (searchText != null && searchText.length > 3){
             const userArray: Array<User> = []
-            allUserArray.map((value) => {
+            allUsers?.map((value) => {
                 if (value.nickname.includes(searchText)){
                     userArray.push(value)
                 }
@@ -26,7 +28,7 @@ const SearchUserCmp = () => {
     return (
         <>
             <div className="searchBarBox">
-                <input onChange={event => setSearchText(event.target.value)} className="searchBar" type="text" placeholder="Oda adı"/>
+                <input onChange={event => setSearchText(event.target.value)} className="searchBar" type="text" placeholder="Kullanıcı adı"/>
                 <img className="searchImg" src={require("../../ui-design/images/search.png")} alt=""/>
             </div>
 

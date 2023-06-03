@@ -5,6 +5,10 @@ const CreateChatRoom = () => {
 
     const [select, setSelect] = useState<string>()
 
+    const createChatRoom = () => {
+        
+    }
+
     return (
         <>
             <img className="createChatImg" src={require("../../ui-design/images/team.png")}/>
@@ -19,7 +23,7 @@ const CreateChatRoom = () => {
                 ? <input className="createChatInput" type="text" placeholder="Parola" />
                 :  <></>
             }
-            <img className="createChatNextButton" src={require("../../ui-design/images/okey.png")}/>
+            <img onClick={createChatRoom} className="createChatNextButton" src={require("../../ui-design/images/okey.png")}/>
         </>
     )
 }

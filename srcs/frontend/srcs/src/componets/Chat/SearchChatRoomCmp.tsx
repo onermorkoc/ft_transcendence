@@ -1,6 +1,11 @@
 import { ChatRoom } from "../../dto/DataObject"
 
 const SearchChatRoomCmp = (props: {data: Array<ChatRoom>}) => {
+
+    const joinChatRoom = () => {
+        
+    }
+
     return (
         <>
             <div className="searchBarBox">
@@ -12,7 +17,7 @@ const SearchChatRoomCmp = (props: {data: Array<ChatRoom>}) => {
                 {
                     props.data.map((value, index) => (
                         <div key={index}>
-                            <div className="listViewDiv" style={{display: "flex", flexDirection: "row"}}>
+                            <div className="listViewDiv" style={{display: "flex", flexDirection: "row"}} onClick={joinChatRoom}>
                                 <img src={require("../../ui-design/images/team.png")} alt="" style={{width: "60px"}}/>
                                 <div className="listViewInfoDiv">
                                     <div>Oda adı: {value.name}</div>
