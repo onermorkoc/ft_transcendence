@@ -7,33 +7,27 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class UserService {
     constructor(private prismaService: PrismaService, private configService: ConfigService) {}
 
-    getCurrentUser(@Session() session: Record<string, any>) : Promise<User> {
-        return session.passport.user;
+    async getAllUsers(@Session() session: Record<string, any>): Promise<Array<User>>{
+        return (await this.prismaService.user.findMany())
     }
 
-    async update(newUserInfo: Partial<User>, @Session() session: Record<string, any>): Promise<number> { // Update ediyor ama session yenilenmediginden frontende eski bilgiler geliyor
+    getCurrentUser(@Session() session: Record<string, any>) : User {
+        return (session.passport.user)
+    }
 
-        /* Kullanıcı aynı nickname kullanmaya devam edip adını ve pp sini değiştirmek isteyebilir.
-        Eğer nickname değiştirmek istiyorsa önceden başkaları tarafından alınmamış olmalı */
-
-        const intraID = newUserInfo.id
-        const newNickname = newUserInfo.nickname
-        const oldNickname = (await this.findUserbyID(intraID)).nickname
-        const taken = await this.findUserbyNickname(newNickname)
-     
-        if(oldNickname == newNickname || taken == null) {
+    async update(newUserInfo: Partial<User>, @Session() session: Record<string, any>): Promise<number> {
+        try{
             const user = await this.prismaService.user.update({
                 where: {
-                    id: intraID  
+                    id: newUserInfo.id
                 },
                 data: newUserInfo
             })
-            if (session.passport.user.id == user.id) {
-                session.passport.user = user;
-            }
-            return (0)
+            session.passport.user = user;
+        }catch(error){
+            return (1)
         }
-        return (1)
+        return (0)
     }
 
     async findUserbyID(intraID: number): Promise<User> {
@@ -44,14 +38,6 @@ export class UserService {
         }))
     }
 
-    /*async findUserbyName(displayname: string): Promise<User> { // Displayname unique olmadığı için şuanlık çalışmıyor
-        return (await this.prismaService.user.findUnique({
-            where: {
-                displayname: displayname
-            }
-        }))
-    }*/ 
-
     async findUserbyNickname(nickname: string): Promise<User> {
         return (await this.prismaService.user.findFirst({
             where: {
@@ -61,13 +47,11 @@ export class UserService {
     }
 
     async userGetTwoFaSecret(intraID: number) : Promise<string> {
-        const user = await this.findUserbyID(intraID);
-        return user.twoFactorSecret;
+        return (await this.findUserbyID(intraID)).twoFactorSecret
     }
 
     async userGetTwoFaQr(intraID: number) : Promise<string> {
-        const user = await this.findUserbyID(intraID);
-        return user.twoFactorQrCode;
+        return (await this.findUserbyID(intraID)).twoFactorQrCode;
     }
 
     async enableTwoFa(intraID: number, @Session() session: Record<string, any>) {
@@ -80,6 +64,7 @@ export class UserService {
             }
         }));
         session.passport.user = user;
+        //await this.update({twoFactorEnabled: true}, session) ==> Burası boyle olabılır ama sessıon degısır mı kararsız kaldım
         return user
     }
 

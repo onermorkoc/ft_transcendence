@@ -14,7 +14,7 @@ const HomeScreen = () => {
     const [ tab, setTab ] = useState<JSX.Element | null>(null)
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/user/current`).then((response) => {
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then((response) => {
             setCurrentUserInfo(response.data)
         })
     }, [])

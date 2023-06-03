@@ -4,7 +4,7 @@ import { AuthService } from "./auth.service";
 import { PassportModule } from "@nestjs/passport";
 import { FtStrategy } from "./strategies/ft.strategy";
 import { SessionSerializer } from "./serializers/session.serializer";
-import { UserModule } from "src/user/user.module";
+import { UserModule } from "src/users/user.module";
 
 @Module({
     imports: [UserModule, PassportModule.register({

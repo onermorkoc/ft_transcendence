@@ -30,7 +30,7 @@ const EditProfileScreen = () => {
     const nicknameInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/user/current`).then((response) => {
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then((response) => {
             setCurrentUserInfo(response.data)
             displaynameInputRef.current!!.value = response.data.displayname
             nicknameInputRef.current!!.value = response.data.nickname
@@ -50,13 +50,13 @@ const EditProfileScreen = () => {
                 nickname: newNickname
             }
     
-            await axios.put(`${process.env.REACT_APP_BACKEND_URI}/user/update`, newUserInfo).then( async (resultCode) => {
+            await axios.put(`${process.env.REACT_APP_BACKEND_URI}/users/update`, newUserInfo).then( async (resultCode) => {
                 if(resultCode.data === 0){
 
                     if (localImgFile != null){
                         const form = new FormData()
                         form.append("avatar", localImgFile)
-                        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/user/upload/avatar`, form)
+                        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/users/upload/avatar`, form)
                     }
                     window.location.assign(`/home`)
                 }else{

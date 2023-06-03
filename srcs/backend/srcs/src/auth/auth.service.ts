@@ -1,6 +1,6 @@
 import { Body, Injectable, Req, Res, Session, UnauthorizedException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { UserService } from "src/user/user.service";
+import { UserService } from "src/users/user.service";
 import { Response } from "express";
 import { Request } from "express-session";
 import * as speakeasy from 'speakeasy';

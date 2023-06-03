@@ -1,12 +1,17 @@
-import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Res, Session, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Session, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express, Response } from 'express'
+import { Express } from 'express'
 
-@Controller('user')
+@Controller('users')
 export class UserController {
     constructor(private userService: UserService) {}
+
+    @Get()
+    getAllUsers(@Session() session: Record<string, any>){
+        return (this.userService.getAllUsers(session))
+    }
 
     @Get('current')
     getCurrentUser(@Session() session: Record<string, any>) {
@@ -21,11 +26,6 @@ export class UserController {
     @Get(':intraID')
     async findUserbyID(@Param("intraID") intraID: string) {
         return this.userService.findUserbyID(parseInt(intraID));
-    }
-
-    @Get('nickname/:nickName')
-    async findUserbyName(@Param("nickName") nickName: string) {
-        return this.userService.findUserbyNickname(nickName);
     }
 
     @Get('2fa/secret/:intraID')
