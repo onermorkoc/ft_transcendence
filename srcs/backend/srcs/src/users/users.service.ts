@@ -69,11 +69,7 @@ export class UsersService {
     }
 
     async updateSession(intraId: number) {
-        const user: User = await this.prismaService.user.findUnique({
-            where: {
-                id: intraId
-            }
-        });
+        const user: User = await this.findUserbyID(intraId);
         const sessionDataString: string = (await this.prismaService.session.findFirstOrThrow({
             where: {
                 data: {
