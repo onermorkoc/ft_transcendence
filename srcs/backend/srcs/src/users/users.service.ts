@@ -23,11 +23,31 @@ export class UsersService {
                 },
                 data: newUserInfo
             })
-            session.passport.user = user;
+            this.updateSession(newUserInfo.id);
         }catch(error){
             return (1)
         }
         return (0)
+    }
+
+    async updateSession(intraId: number) {
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                id: intraId
+            }
+        })
+        const userJSON: JSON = Object.assign(JSON, user);
+        const userString = JSON.stringify(userJSON);
+        return await this.prismaService.session.updateMany({
+            where: {
+                data: {
+                    contains: '"id":' + intraId.toString()
+                }
+            },
+            data: {
+                data: '{"cookie":{"originalMaxAge":null,"expires":null,"httpOnly":true,"path":"/"},"passport":{"user":' + userString + '}}'
+            }
+        })
     }
 
     async findUserbyID(intraID: number): Promise<User> {
