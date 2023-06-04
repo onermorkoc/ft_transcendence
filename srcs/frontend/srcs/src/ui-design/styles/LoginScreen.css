@@ -1,12 +1,10 @@
-/* mavi: #C3E5F8(195, 229, 248) kırmızı: #F8C3C3(258, 195, 195) yeşil: #E5F8C3(229, 248, 195) */
-
-.logo, .loginButton {
+.loginLogo, .loginButton {
     display: block;
     margin-right: auto;
     margin-left: auto;
 }
 
-.logo {
+.loginLogo {
     width: 400px;
     margin-top: 125px;
 }

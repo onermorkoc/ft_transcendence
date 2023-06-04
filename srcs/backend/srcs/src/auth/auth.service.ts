@@ -1,5 +1,4 @@
 import { Body, Injectable, Req, Res, Session, UnauthorizedException } from "@nestjs/common";
-import { PrismaService } from "src/prisma/prisma.service";
 import { UsersService } from "src/users/users.service";
 import { Response } from "express";
 import { Request } from "express-session";
@@ -10,75 +9,73 @@ import { ConfigService } from "@nestjs/config";
 
 @Injectable({})
 export class AuthService {
-    constructor(private prismaService: PrismaService, private userService: UsersService, private configService: ConfigService) {}
+    constructor(private userService: UsersService, private configService: ConfigService) {}
 
-    async callback(@Res() res: Response, @Session() session: Record<string, any>) {
-        res.cookie('twoFactorOkCookie', '', { expires: new Date(0) });
-        res.redirect(this.configService.get<string>("REACT_APP_HOMEPAGE") + "/home");
+    callback(@Res() res: Response) {
+        res.cookie('twoFactorOkCookie', '', { expires: new Date(0) })
+        res.redirect(this.configService.get<string>("REACT_APP_HOMEPAGE") + "/home")
     }
 
-    logoff(@Session() session: Record<string, any>) {
+    logout(@Session() session: Record<string, any>) {
         session.destroy();
     }
 
-    async generateTwoFa(@Session() session: Record<string, any>) {
-        const secret = speakeasy.generateSecret();
-        const user = (await this.prismaService.user.update({
-            where: {
-                id: session.passport.user.id
-            },
-            data: {
-                twoFactorSecret: secret.base32,
-                twoFactorQrCode: secret.otpauth_url
-            }
-        }))
-        return user.twoFactorSecret;
+    async generateTwoFa(userId: number) {
+        
+        const secret = speakeasy.generateSecret()
+        const twoFactorSecret = secret.base32
+
+        await this.userService.update({
+            id: userId,
+            twoFactorSecret: twoFactorSecret,
+            twoFactorQrCode: secret.otpauth_url
+        })
+        return (twoFactorSecret)
     }
 
-    async showQrTwoFa(@Session() session: Record<string, any>) {
-        return qrcode.toDataURL(await this.userService.userGetTwoFaQr(session.passport.user.id));
+    async showQrTwoFa(userId: number) {
+        return (qrcode.toDataURL(await this.userService.userGetTwoFaQr(userId)))
     }
 
-    async verifyTwoFa(@Body() body: {code: string}, @Session() session: Record<string, any>) {
+    async verifyTwoFa(userId: number, code: string) {
+        
         const verified = speakeasy.totp.verify({
-            secret: await this.userService.userGetTwoFaSecret(session.passport.user.id.toString()),
+            secret: await this.userService.userGetTwoFaSecret(userId),
             encoding: 'base32',
-            token: body.code
-        });
+            token: code
+        })
 
-        if (verified === true) {
-            this.userService.enableTwoFa(session.passport.user.id, session);
-        }
+        if (verified === true)
+            this.userService.enableTwoFa(userId)
 
-        return verified;
+        return (verified)
     }
 
-    async validateTwoFa(@Req() req: Request, @Res() res: Response, @Body() body: { code: string }) {
-        const token = req.cookies['twoFactorCookie'];
-        if (!token) {
+    async validateTwoFa(@Req() req: Request, @Res() res: Response, code: string) {
+        
+        const token = req.cookies['twoFactorCookie']
+        if (!token) 
             throw new UnauthorizedException('2FA Cookie is Not Set');
-        }
-        const code = body.code;
 
-        const user = jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+        const user = jwt.verify(token, this.configService.get<string>('JWT_SECRET'))
 
         const validated = speakeasy.totp.verify({
             secret: user.twoFactorSecret,
             encoding: 'base32',
             token: code
-        });
+        })
 
         if (!validated)
             throw new UnauthorizedException('Invalid 2FA Code');
 
-        const jwttoken = jwt.sign(user.id, this.configService.get<string>('JWT_SECRET'));
-        res.cookie('twoFactorOkCookie', jwttoken, { httpOnly: true, secure: false });
-        res.cookie('twoFactorCookie', '', { expires: new Date(0) });
+        const jwttoken = jwt.sign(user.id, this.configService.get<string>('JWT_SECRET'))
+        res.cookie('twoFactorOkCookie', jwttoken, { httpOnly: true, secure: false })
+        res.cookie('twoFactorCookie', '', { expires: new Date(0) })
         res.redirect(this.configService.get<string>('NESTJS_LOGIN_URL'))
-        return true;
+        return (true)
     }
 
-    async disableTwoFa(@Session() session: Record<string, any>) {
-        return await this.userService.disableTwoFa(session.passport.user.id, session);
+    async disableTwoFa(userId: number) {
+        return (await this.userService.disableTwoFa(userId))
     }
 }

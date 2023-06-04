@@ -1,4 +1,4 @@
-import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Session, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Session, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -9,28 +9,38 @@ export class UsersController {
     constructor(private userService: UsersService) {}
 
     @Get()
-    getAllUsers(@Session() session: Record<string, any>){
-        return (this.userService.getAllUsers(session))
+    async getAllUsers(@Session() session: Record<string, any>){
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (await this.userService.allUsers())
     }
 
     @Get('current')
     getCurrentUser(@Session() session: Record<string, any>) {
-        return this.userService.getCurrentUser(session);
+        if(!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.userService.currentUser(session))
+    }
+
+    @Get(':userId')
+    async findUserbyID(@Param("userId") userId: string, @Session() session: Record<string, any>) {
+        if(!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (await this.userService.findUserbyID(parseInt(userId)))
+    }
+
+    @Get('2fa/secret')
+    async userGetTwoFaSecret(@Session() session: Record<string, any>) {
+        if(!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (await this.userService.userGetTwoFaSecret(session.passport.user.id))
     }
 
     @Put("/update")
     async updateUserInfo(@Body() newUserInfo: Partial<User>, @Session() session: Record<string, any>): Promise<number> {
-        return (await this.userService.update(newUserInfo, session))
-    }
-
-    @Get(':intraID')
-    async findUserbyID(@Param("intraID") intraID: string) {
-        return this.userService.findUserbyID(parseInt(intraID));
-    }
-
-    @Get('2fa/secret/:intraID')
-    async userGetTwoFaSecret(@Param("intraID") intraID: string) {
-        return this.userService.userGetTwoFaSecret(parseInt(intraID));
+        if(!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (await this.userService.update(newUserInfo))
     }
 
     @Post('upload/avatar')
@@ -47,6 +57,15 @@ export class UsersController {
         file: Express.Multer.File,
         @Session() session: Record<string, any>
     ) {
-       return this.userService.uploadAvatar(file, session);
+        if(!session.passport)
+            throw new BadRequestException('You have no permission to do that.')    
+        return (await this.userService.uploadAvatar(session.passport.user.id, file))
+    }
+
+    @Post("unfriend")
+    async unFriend(@Body() userId: number, @Session() session: Record<string, any>){
+        if(!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (await this.userService.unFriend(session.passport.user.id, userId))
     }
 }

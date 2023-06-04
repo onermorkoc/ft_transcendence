@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Injectable, Session, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException,  Injectable} from "@nestjs/common";
 import { FriendRequest, Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UsersService } from "./users.service";
@@ -7,147 +7,103 @@ import { UsersService } from "./users.service";
 export class FriendService {
     constructor(private prismaService: PrismaService, private userService: UsersService) {}
 
-    async createFriendRequest(receiverId: string, @Session() session: Record<string, any>) : Promise<FriendRequest> {
-        const receiverIdNumber = parseInt(receiverId);
+    async createFriendRequest(senderId: number, receiverId: number) : Promise<FriendRequest> {
 
-        if ((await this.getFriends(session.passport.user.id)).includes(receiverIdNumber)) {
+        if ((await this.getFriends(senderId)).includes(receiverId))
             throw new BadRequestException('You are already friends with that user.');
-        }
-        else if (session.passport.user.id == receiverIdNumber) {
+        else if (senderId == receiverId)
             throw new BadRequestException("You can't send a friend request to yourself.");
-        }
 
-        let uniqueIdentifier: string;
-        if (session.passport.user.id < receiverIdNumber) {
-            uniqueIdentifier = (session.passport.user.id).toString() + "_" + receiverId;
-        }
-        else {
-            uniqueIdentifier = receiverId + "_" + (session.passport.user.id).toString();
-        }
+        let uniqueIdentifier: string
+
+        if (senderId < receiverId)
+            uniqueIdentifier = `${senderId}_${receiverId}`
+        else 
+            uniqueIdentifier = `${receiverId}_${senderId}`
 
         return this.prismaService.friendRequest.create({
             data: {
-                sender: { connect: { id: session.passport.user.id } },
-                receiver: { connect: { id: receiverIdNumber } },
+                sender: { connect: { id: senderId } },
+                receiver: { connect: { id: receiverId } },
                 uniqueIdentifier: uniqueIdentifier
             }
         }).catch(e => {
             if (e instanceof Prisma.PrismaClientKnownRequestError && Array.isArray(e.meta?.target)) {
-                if (e.meta.target.includes('senderId')) {
+                if (e.meta.target.includes('senderId'))
                     throw new BadRequestException('You already sent a friend request to that user.');
-                }
-                else if (e.meta.target.includes('uniqueIdentifier')) {
+                else if (e.meta.target.includes('uniqueIdentifier'))
                     throw new BadRequestException('You already have a friend request from that user.');
-                }
             }
-            if (e.code == 'P2025') {
+            if (e.code == 'P2025')
                 throw new BadRequestException('There is no user with that id.');
-            }
             throw e;
         })
     }
 
-    async acceptRequest(@Body() body: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
-        if (session.passport.user.id != body.receiverId) {
-            throw new UnauthorizedException('You have no permission to do that.');
-        }
+    async acceptRequest(requestData: { senderId: number, receiverId: number }): Promise<boolean> {
 
         const request = await this.prismaService.friendRequest.findUnique({
             where: {
-                senderId_receiverId: {
-                    senderId: body.senderId,
-                    receiverId: body.receiverId
-                }
+                senderId_receiverId: requestData
             }
         })
 
-        if (request == null) {
+        if (request == null)
             throw new BadRequestException("You can't accept a request that doesn't exist.");
-        }
 
-        const sender = await this.prismaService.user.findUnique({
-            where: {
-                id: body.senderId
-            }
-        })
+        const sender = await this.userService.findUserbyID(requestData.senderId)
+        const receiver = await this.userService.findUserbyID(requestData.receiverId)
 
-        const receiver = await this.prismaService.user.findUnique({
-            where: {
-                id: body.receiverId
-            }
-        })
+        sender.friendIds.push(requestData.receiverId);
+        receiver.friendIds.push(requestData.senderId);
 
-        sender.friendIds.push(body.receiverId);
-        receiver.friendIds.push(body.senderId);
-
-        await this.userService.update(sender, session);
-        await this.userService.update(receiver, session);
+        await this.userService.update(sender);
+        await this.userService.update(receiver);
 
         await this.prismaService.friendRequest.delete({
             where: {
-                senderId_receiverId: {
-                    senderId: body.senderId,
-                    receiverId: body.receiverId
-                }
+                senderId_receiverId: requestData
             }
-        });
-        return true;
+        })
+        return (true)
     }
 
-    async rejectRequest(@Body() body: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
-        if (session.passport.user.id != body.receiverId) {
-            throw new UnauthorizedException('You have no permission to do that.');
-        }
-
+    async rejectRequest(requestData: { senderId: number, receiverId: number }): Promise<boolean> {
+        
         const request = await this.prismaService.friendRequest.findUnique({
             where: {
-                senderId_receiverId: {
-                    senderId: body.senderId,
-                    receiverId: body.receiverId
-                }
+                senderId_receiverId: requestData
             }
         })
 
-        if (request == null) {
-            throw new BadRequestException("You can't reject a request that doesn't exist.");
-        }
+        if (request == null)
+            throw new BadRequestException("You can't reject a request that doesn't exist.")
 
         await this.prismaService.friendRequest.delete({
             where: {
-                senderId_receiverId: {
-                    senderId: body.senderId,
-                    receiverId: body.receiverId
-                }
-            }
-        });
-        return true;
-    }
-
-    async getFriends(userId: string): Promise<number[]> {
-        const userIdNumber = parseInt(userId);
-        const user = await this.prismaService.user.findUnique({
-            where: {
-                id: userIdNumber
+                senderId_receiverId: requestData
             }
         })
-        return user.friendIds;
+        return (true)
     }
 
-    async getSentRequests(userId: string): Promise<FriendRequest[]> {
-        const userIdNumber = parseInt(userId);
-        return this.prismaService.user.findUnique({
-            where: {
-                id: userIdNumber
-            }
-        }).sentFriendRequests();
+    async getFriends(userId: number): Promise<number[]> {
+        return ((await this.userService.findUserbyID(userId)).friendIds)
     }
 
-    async getReceivedRequests(userId: string): Promise<FriendRequest[]> {
-        const userIdNumber = parseInt(userId);
-        return this.prismaService.user.findUnique({
+    async getSentRequests(userId: number): Promise<FriendRequest[]> {
+        return (await this.findUserByID(userId).sentFriendRequests())
+    }
+
+    async getReceivedRequests(userId: number): Promise<FriendRequest[]> {
+        return (await this.findUserByID(userId).receivedFriendRequests())
+    }
+
+    private findUserByID(userId: number) {
+        return (this.prismaService.user.findUnique({
             where: {
-                id: userIdNumber
+                id: userId
             }
-        }).receivedFriendRequests();
+        }))
     }
 }

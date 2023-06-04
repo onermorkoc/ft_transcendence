@@ -10,49 +10,48 @@ const disable2fa = () => {
 
 }
 
-const activeGoogleView: JSX.Element = <>
+const active2faView: JSX.Element = <>
     <div className="text2">2 faktörlü kimlik doğrulaması: etkin</div>
-    <img onClick={disable2fa} className="attachAndUnLinkImg" src={require("../../ui-design/images/unlink.png")}/>
+    <img className="attachAndUnLinkImg" onClick={disable2fa} src={require("../../ui-design/images/unlink.png")} alt=""/>
 </>
 
-const inactiveGoogleView: JSX.Element = <>
-    <div style={{display: "flex", flexDirection: "row"}}>
-        <div className="text2">2 faktörlü kimlik doğrulaması: devredışı</div>
-        <img onClick={enable2fa} className="attachAndUnLinkImg" src={require("../../ui-design/images/attach.png")}/>
-    </div>
+const inactive2faView: JSX.Element = <>
+    <div className="text2">2 faktörlü kimlik doğrulaması: devredışı</div>
+    <img className="attachAndUnLinkImg" onClick={enable2fa} src={require("../../ui-design/images/attach.png")} alt=""/>
 </>
 
-const UserInfoCmp = (props: {data: User}) => {
+const UserInfoCmp = (props: {currentUser: User}) => {
 
-    const [googleAuth, setGoogleAuth] = useState<JSX.Element>(inactiveGoogleView)
+    const [status2fa, setStatus2fa] = useState<JSX.Element | null>(null)
 
     useEffect(() => {
-        if (props.data.twoFactorEnabled){
-            setGoogleAuth(activeGoogleView)
-        }
-    }, [props.data.twoFactorEnabled])
+        if (props.currentUser.twoFactorEnabled)
+            setStatus2fa(active2faView)
+        else
+            setStatus2fa(inactive2faView)
+    }, [])
 
     return (
         <>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <div className="infoRowDiv">
-                    <img src={require("../../ui-design/images/user.png")} className="img2" alt=""/>
-                    <div className="text2">Ad: {props.data.displayname}</div>
+                    <img className="img2" src={require("../../ui-design/images/user.png")} alt=""/>
+                    <div className="text2">Ad: {props.currentUser.displayname}</div>
                 </div>
 
                 <div className="infoRowDiv">
-                    <img src={require("../../ui-design/images/nickname.png")} className="img2" alt=""/>
-                    <div className="text2">Kullanıcı adı: {props.data.nickname}</div>
+                    <img className="img2" src={require("../../ui-design/images/nickname.png")} alt=""/>
+                    <div className="text2">Kullanıcı adı: {props.currentUser.nickname}</div>
                 </div>
             
                 <div className="infoRowDiv">
-                    <img src={require("../../ui-design/images/email.png")} className="img2" alt=""/>
-                    <div className="text2">Email: {props.data.email}</div>
+                    <img className="img2" src={require("../../ui-design/images/email.png")} alt=""/>
+                    <div className="text2">Email: {props.currentUser.email}</div>
                 </div>
 
                 <div className="infoRowDiv">
-                    <img src={require("../../ui-design/images/google.png")} className="img2" alt=""/>
-                    {googleAuth}
+                    <img className="img2" src={require("../../ui-design/images/google.png")} alt=""/>
+                    {status2fa}
                 </div>
             </div>
         </>

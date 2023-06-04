@@ -61,3 +61,8 @@ export interface User {
     PUBLIC,
     PROTECTED,
   }
+
+  export interface RequestData {
+    receiverId: number,
+    senderId: number
+  }

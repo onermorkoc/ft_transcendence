@@ -1,4 +1,3 @@
-import { useParams } from "react-router-dom"
 import "../ui-design/styles/GameScreen.css"
 
 const GameScreen = () => {

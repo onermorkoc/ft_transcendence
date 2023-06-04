@@ -5,18 +5,21 @@ import axios from "axios"
 const SearchUserCmp = () => {
 
     const [ allUsers, setAllUsers ] = useState<Array<User>>()
-    const [ searchText, setSearchText ] = useState<string>()
+    const [ searchText, setSearchText ] = useState<string | null>(null)
     const [ filterArray, setFilterArray ] = useState<Array<User>>([])
+    const [ currentUser, setCurrentUser ] = useState<User | null>()
 
     useEffect(() => {
 
         axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/`).then(response => setAllUsers(response.data))
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then(response => setCurrentUser(response.data))
 
         if (searchText != null && searchText.length > 3){
             const userArray: Array<User> = []
-            allUsers?.map((value) => {
+            allUsers?.forEach((value) => {
                 if (value.nickname.includes(searchText)){
-                    userArray.push(value)
+                    if(!(currentUser?.friendIds.find(userId => userId === value.id)) && value.id !== currentUser?.id)
+                        userArray.push(value)
                 }
             })
             setFilterArray(userArray)
@@ -24,6 +27,10 @@ const SearchUserCmp = () => {
             setFilterArray([])
         }
     }, [searchText])
+
+    const sendFriendRequest = (value: User) => {
+        axios.post(`${process.env.REACT_APP_BACKEND_URI}/friends/send-request/${value.id}`).then(() => setSearchText(null))
+    }
 
     return (
         <>
@@ -36,12 +43,13 @@ const SearchUserCmp = () => {
                 {
                     filterArray?.map((value, index) => (
                         <div key={index}>
-                            <div className="listViewDiv" style={{display: "flex", flexDirection: "row"}}>
-                                <img src={value.photoUrl} alt="" className="friendsAvatarImg"/>
+                            <div className="listViewDiv">
+                                <img className="friendsAvatarImg" src={value.photoUrl} alt=""/>
                                 <div className="listViewInfoDiv">
                                     <div>Ad: {value.displayname}</div>
                                     <div>Nickname: {value.nickname}</div>
                                 </div>
+                                <img className="addFriendImg" onClick={() => sendFriendRequest(value)} src={require("../../ui-design/images/addfriend.png")} alt=""/>
                             </div>
                         </div>
                     ))

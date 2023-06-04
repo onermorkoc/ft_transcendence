@@ -3,20 +3,19 @@ import "../../ui-design/styles/CmpMix.css"
 import MyFriendsRoomCmp from "./MyFriendsRoomCmp"
 import SearchUserCmp from "./SearchUserCmp"
 import FriendsRequestCmp from "./FriendsRequestCmp"
-import { User } from "../../dto/DataObject"
 
-const FriendsRoomsCmp = (props: {data: Array<User>}) => {
+const FriendsRoomsCmp = () => {
 
-    const [friendsTab, setFriendsTab] = useState<JSX.Element>(<MyFriendsRoomCmp data={props.data}/>)
+    const [ friendsTab, setFriendsTab ] = useState<JSX.Element>(<MyFriendsRoomCmp/>)
 
     return (
         <>
             <div className="roomsHeader">Kullanıcılar</div>
             <div className="roomsBodyDiv">
                 <div style={{display: "flex", flexDirection: "row"}}>
-                    <button onClick={() => setFriendsTab(<MyFriendsRoomCmp data={props.data}/>)} className="roomsButton">Arkadaşlarım</button>
-                    <button onClick={() => setFriendsTab(<FriendsRequestCmp/>)} className="roomsButton">Arkadaşlık İstekleri</button>
-                    <button onClick={() => setFriendsTab(<SearchUserCmp/>)} className="roomsButton">Kullanıcı ara</button>
+                    <button className="roomsButton" onClick={() => setFriendsTab(<MyFriendsRoomCmp/>)}>Arkadaşlarım</button>
+                    <button className="roomsButton" onClick={() => setFriendsTab(<FriendsRequestCmp/>)}>Arkadaşlık İstekleri</button>
+                    <button className="roomsButton" onClick={() => setFriendsTab(<SearchUserCmp/>)}>Kullanıcı ara</button>
                 </div>
                 <hr/>
                 {friendsTab}

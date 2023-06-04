@@ -1,11 +1,10 @@
 import { useState } from "react"
 import "../../ui-design/styles/CmpMix.css"
-import CreateChatRoom from "./CreateChatRoom"
+import CreateChatRoom from "./CreateChatRoomCmp"
 import MyChatRoomsCmp from "./MyChatRoomsCmp"
 import SearchChatRoomCmp from "./SearchChatRoomCmp"
-import { ChatRoom } from "../../dto/DataObject"
 
-const ChatRoomsCmp = (props: {data: Array<ChatRoom>}) => {
+const ChatRoomsCmp = () => {
 
     const [chatTab, setChatTab] = useState<JSX.Element>(<MyChatRoomsCmp/>)
 
@@ -15,9 +14,9 @@ const ChatRoomsCmp = (props: {data: Array<ChatRoom>}) => {
             
             <div className="roomsBodyDiv">
                 <div style={{display: "flex", flexDirection: "row"}}>
-                    <button onClick={() => setChatTab(<MyChatRoomsCmp/>)} className="roomsButton">Odalarım</button>
-                    <button onClick={() => setChatTab(<SearchChatRoomCmp data={props.data}/>)} className="roomsButton">Oda ara</button>
-                    <button onClick={() => setChatTab(<CreateChatRoom/>)} className="roomsButton">Oda Kur</button>
+                    <button className="roomsButton" onClick={() => setChatTab(<MyChatRoomsCmp/>)}>Odalarım</button>
+                    <button className="roomsButton" onClick={() => setChatTab(<SearchChatRoomCmp/>)}>Oda ara</button>
+                    <button className="roomsButton" onClick={() => setChatTab(<CreateChatRoom/>)}>Oda Kur</button>
                 </div>
                 <hr/>
                 {chatTab}

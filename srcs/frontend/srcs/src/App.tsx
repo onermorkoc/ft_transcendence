@@ -3,7 +3,7 @@ import LoginScreen from './pages/LoginScreen';
 import HomeScreen from './pages/HomeScreen';
 import EditProfileScreen from './pages/EditProfileScreen';
 import GameScreen from './pages/GameScreen';
-import GameHistoryCmp from './pages/GameHistoryCmp';
+import GameHistoryCmp from './pages/GameHistoryScreen';
 import axios from 'axios';
 
 function App() {

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Session, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Session } from "@nestjs/common";
 import { FriendService } from "./friend.service";
 import { FriendRequest } from "@prisma/client";
 
@@ -6,34 +6,45 @@ import { FriendRequest } from "@prisma/client";
 export class FriendController {
     constructor(private friendService: FriendService) {}
 
-    @Get(':userId')
-    async getFriendIds(@Param('userId') userId: string): Promise<number[]> {
-        return this.friendService.getFriends(userId);
+    @Get(':userId') // Frontende kullanılmadı
+    async getFriendIds(@Param('userId') userId: string, @Session() session: Record<string, any>): Promise<number[]> {
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.friendService.getFriends(parseInt(userId)))
     }
 
-    @Get(':userId/sent-requests')
-    async getSentRequests(@Param('userId') userId: string): Promise<FriendRequest[]> {
-        console.log(this.friendService.getSentRequests(userId));
-        return this.friendService.getSentRequests(userId);
+    @Get(':userId/sent-requests') // Frontende kullanılmadı
+    async getSentRequests(@Param('userId') userId: string, @Session() session: Record<string, any>): Promise<FriendRequest[]> {
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.friendService.getSentRequests(parseInt(userId)))
     }
 
     @Get(':userId/received-requests')
-    async getReceivedRequests(@Param('userId') userId: string): Promise<FriendRequest[]> {
-        return this.friendService.getReceivedRequests(userId);
+    async getReceivedRequests(@Param('userId') userId: string, @Session() session: Record<string, any>): Promise<FriendRequest[]> {
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.friendService.getReceivedRequests(parseInt(userId)))
     }
 
     @Post('send-request/:receiverId')
     async sendRequest(@Param('receiverId') receiverId: string, @Session() session: Record<string, any>): Promise<FriendRequest> {
-        return this.friendService.createFriendRequest(receiverId, session);
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.friendService.createFriendRequest(session.passport.user.id, parseInt(receiverId)))
     }
 
-    @Delete('accept')
-    async acceptRequest(@Body() body: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
-        return this.friendService.acceptRequest(body, session);
+    @Post('accept')
+    async acceptRequest(@Body() requestDaa: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
+        if (!session.passport || session.passport.user.id != requestDaa.receiverId)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.friendService.acceptRequest(requestDaa))
     }
 
-    @Delete('reject')
-    async rejectRequest(@Body() body: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
-        return this.friendService.rejectRequest(body, session);
+    @Post('reject')
+    async rejectRequest(@Body() requestData: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
+        if (!session.passport || session.passport.user.id != requestData.receiverId)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.friendService.rejectRequest(requestData))
     }
 }

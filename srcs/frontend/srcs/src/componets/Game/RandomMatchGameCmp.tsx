@@ -25,12 +25,14 @@ const RandomMatchGameCmp = () => {
             animationRef.current!!.play()
             setSecond(0)
             setSearchStatus(true)
+            // rastgele birinn eşleşmesini bekler
         }
     }
 
     const cancelRandomMatch = () => {
         animationRef.current!!.stop()
-        setSearchStatus(false)          
+        setSearchStatus(false)
+        // rastgele eşleşme istegi iptal         
     }
 
     useEffect(() => {
@@ -44,14 +46,14 @@ const RandomMatchGameCmp = () => {
 
     return (
         <>
-            <div className="randomSearchDiv">
-                <Lottie className="gameAnimation" autoplay={false} lottieRef={animationRef} onClick={randomMatch} animationData={require("../../ui-design/animation/game.json")} />
+            <div style={{margin: "50px"}}>
+                <Lottie className="gameAnimation" autoplay={false} lottieRef={animationRef} onClick={randomMatch} animationData={require("../../ui-design/animation/game.json")}/>
                 {searchStatus
                     ? 
                     <div>
-                        <div className="rivalSearchingText">Rakip aranıyor...</div>
-                        <div className="randomMatchTime">{secondToTime(second)}</div>
-                        <img className="cancelButton" onClick={cancelRandomMatch} src={require("../../ui-design/images/cancel.png")}/>
+                        <div style={{textAlign: "center", fontSize: "1.7em", marginTop: "20px"}}>Rakip aranıyor...</div>
+                        <div style={{textAlign: "center", fontSize: "1.7em", marginTop: "10px"}}>{secondToTime(second)}</div>
+                        <img className="cancelButton" onClick={cancelRandomMatch} src={require("../../ui-design/images/cancel.png")} alt=""/>
                     </div>
                     : 
                     <></>

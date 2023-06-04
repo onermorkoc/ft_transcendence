@@ -37,6 +37,17 @@
     opacity: 0;
 }
 
+.warningMessage {
+    color: red;
+    font-size: 1.6em;
+    text-align: center;
+    width: 350px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 25px;
+}
+
 .avatarScroolDiv {
     width: 700px;
     display: flex;
@@ -52,6 +63,7 @@
     margin-left: 10px;
     margin-right: 10px;
     margin-bottom: 10px;
+    cursor: pointer;
     transition: 0.5;
 }
 
@@ -73,7 +85,7 @@
     margin-top: 50px;
 }
 
-.updateProfileInfoButton {
+.editProfileSaveButton {
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -88,17 +100,6 @@
     transition: 0.5s;
 }
 
-.updateProfileInfoButton:hover {
+.editProfileSaveButton:hover {
     background-color: rgb(229, 248, 195);
-}
-
-.warningMessage {
-    color: red;
-    font-size: 1.6em;
-    text-align: center;
-    width: 350px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 25px;
 }

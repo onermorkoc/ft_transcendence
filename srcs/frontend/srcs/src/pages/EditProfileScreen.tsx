@@ -23,7 +23,7 @@ const avatarImgArray: Array<string> = [
 const EditProfileScreen = () => {
 
     const [ localImgFile, setLocalImgFile ] = useState<File | null>(null)
-    const [ currentUserInfo, setCurrentUserInfo ] = useState<User | null>(null)
+    const [ currentUser, setCurrentUser ] = useState<User | null>(null)
     const [ previewImg, setPreviewImg ] = useState<string | null>(null)
     const [ warningMessage, setWarnnigMessage ] = useState<string>("")
     const displaynameInputRef = useRef<HTMLInputElement>(null)
@@ -31,7 +31,7 @@ const EditProfileScreen = () => {
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then((response) => {
-            setCurrentUserInfo(response.data)
+            setCurrentUser(response.data)
             displaynameInputRef.current!!.value = response.data.displayname
             nicknameInputRef.current!!.value = response.data.nickname
         })
@@ -45,7 +45,7 @@ const EditProfileScreen = () => {
         if (newDisplayname !== "" && newNickname !== ""){
 
             const newUserInfo: Partial<User> = {
-                id: currentUserInfo?.id,
+                id: currentUser?.id,
                 displayname: newDisplayname,
                 nickname: newNickname
             }
@@ -81,17 +81,17 @@ const EditProfileScreen = () => {
         }
     }
 
-    if(currentUserInfo){
+    if(currentUser){
 
         if(previewImg == null)
-            setPreviewImg(currentUserInfo.photoUrl)
+            setPreviewImg(currentUser.photoUrl)
 
         return (
             <>
                 <div className="previewDiv">
-                    <img src={previewImg!!} className="previewProfileImg" alt=""/>
+                    <img className="previewProfileImg" src={previewImg!!} alt=""/>
                     <div className="selectImgButton" >
-                        <input onChange={event => setImgData(event)} className="hideInputView" type="file" accept="image/png, image/jpg, image/jpeg, image/webp"/>
+                        <input className="hideInputView" onChange={event => setImgData(event)} type="file" accept="image/png, image/jpg, image/jpeg, image/webp"/>
                     </div>
                 </div>
                 <div className="warningMessage">{warningMessage}</div>
@@ -99,14 +99,14 @@ const EditProfileScreen = () => {
                 <div className="avatarScroolDiv">
                     {
                         avatarImgArray.map((value, index) => (
-                            <img onClick={() => setImgData(null, value)} key={index} src={require("../ui-design/images/avatar/" + value)} className="avatarImgs" alt=""/>
+                            <img className="avatarImgs" onClick={() => setImgData(null, value)} key={index} src={require("../ui-design/images/avatar/" + value)} alt=""/>
                         ))
                     }
                 </div>
     
-                <input ref={displaynameInputRef} type="text" placeholder="Adınız: " className="inputBox"></input>
-                <input ref={nicknameInputRef} type="text" placeholder="Kullanıcı adınız: " className="inputBox"></input>
-                <button onClick={updateProfileInfo} className="updateProfileInfoButton">Kaydet</button>
+                <input className="inputBox" ref={displaynameInputRef} type="text" placeholder="Adınız:"/>
+                <input className="inputBox" ref={nicknameInputRef} type="text" placeholder="Kullanıcı adınız:"/>
+                <button className="editProfileSaveButton" onClick={updateProfileInfo}>Kaydet</button>
             </>
         )
     }

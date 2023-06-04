@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res, Session, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Post, Req, Res, Session, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { FtAuthGuard } from "./guards/ft.guard";
 import { AuthenticatedGuard } from "./guards/authenticated.guard";
@@ -15,14 +15,15 @@ export class AuthController {
 
     @Get('callback')
     @UseGuards(FtAuthGuard)
-    async callback(@Res() res: Response, @Session() session: Record<string, any>) {
-        this.authService.callback(res, session);
+    callback(@Res() res: Response, @Session() session: Record<string, any>) {
+        this.authService.callback(res)
     }
 
-    @Get('logoff')
+    @Get('logout')
     @UseGuards(AuthenticatedGuard)
     logoff(@Session() session: Record<string, any>) {
-        this.authService.logoff(session);
+        this.authService.logout(session)
+        // burada adam offline olmalı
     }
 
     @Get('session')
@@ -33,36 +34,46 @@ export class AuthController {
 
     @Get('status')
     @UseGuards(AuthenticatedGuard)                              // TEST İÇİN
-    status(@Req() req: Request) {
-        return "sen giris yapilisin";
+    status() {
+        return ("Kullanıcı giriş yapılı.")
     }
 
     @Post('2fa/generate')
     @UseGuards(AuthenticatedGuard)
     async generateTwoFaSecret(@Session() session: Record<string, any>) {
-        return this.authService.generateTwoFa(session);
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.authService.generateTwoFa(session.passport.user.id))
     }
 
     @Get('2fa/showqr')
     @UseGuards(AuthenticatedGuard)
     async showQrTwoFa(@Session() session: Record<string, any>) {
-        return this.authService.showQrTwoFa(session);
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.authService.showQrTwoFa(session.passport.user.id))
     }
 
     @Post('2fa/verify')
     @UseGuards(AuthenticatedGuard)
-    async verifyTwoFa(@Body() body: {code: string}, @Session() session: Record<string, any>) {
-        return this.authService.verifyTwoFa(body, session);
+    async verifyTwoFa(@Body() code: string, @Session() session: Record<string, any>) {
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.authService.verifyTwoFa(session.passport.user.id, code))
     }
 
     @Post('2fa/validate')
-    async validateTwoFa(@Req() req: Request, @Res() res: Response, @Body() body: { code: string }) {
-        return this.authService.validateTwoFa(req, res, body);
+    async validateTwoFa(@Req() req: Request, @Res() res: Response, @Body() code: string, @Session() session: Record<string, any>) {
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return this.authService.validateTwoFa(req, res, code);
     }
 
     @Post('2fa/disable')
     @UseGuards(AuthenticatedGuard)
     async disableTwoFa(@Session() session: Record<string, any>) {
-        return this.authService.disableTwoFa(session);
+        if (!session.passport)
+            throw new BadRequestException('You have no permission to do that.')
+        return (this.authService.disableTwoFa(session.passport.user.id))
     }
 }
