@@ -20,7 +20,7 @@ const MyFriendsRoomCmp = () => {
     }, [currentUser])
 
     const unFriend = (id: number) => {
-        axios.post(`${process.env.REACT_APP_BACKEND_URI}/users/unfriend`, {id: id}).then(() => {
+        axios.post(`${process.env.REACT_APP_BACKEND_URI}/friends/unfriend`, {userId: id}).then(() => {
             // burada arkadaslarım lıste yenılemesı yapılacak
         })
     }

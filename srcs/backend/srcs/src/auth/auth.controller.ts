@@ -15,7 +15,7 @@ export class AuthController {
 
     @Get('callback')
     @UseGuards(FtAuthGuard)
-    callback(@Res() res: Response, @Session() session: Record<string, any>) {
+    callback(@Res() res: Response) {
         this.authService.callback(res)
     }
 
@@ -27,7 +27,7 @@ export class AuthController {
     }
 
     @Get('session')
-    async session(@Session() session: Record<string, any>){     // TEST İÇİN
+    async session(@Session() session: Record<string, any>) {     // TEST İÇİN
         console.log(session);
         console.log(session.id);
     }
@@ -56,17 +56,17 @@ export class AuthController {
 
     @Post('2fa/verify')
     @UseGuards(AuthenticatedGuard)
-    async verifyTwoFa(@Body() code: string, @Session() session: Record<string, any>) {
+    async verifyTwoFa(@Body() body: {code: string}, @Session() session: Record<string, any>) {
         if (!session.passport)
             throw new BadRequestException('You have no permission to do that.')
-        return (this.authService.verifyTwoFa(session.passport.user.id, code))
+        return (this.authService.verifyTwoFa(session.passport.user.id, body.code))
     }
 
     @Post('2fa/validate')
-    async validateTwoFa(@Req() req: Request, @Res() res: Response, @Body() code: string, @Session() session: Record<string, any>) {
+    async validateTwoFa(@Req() req: Request, @Res() res: Response, @Body() body: {code: string}, @Session() session: Record<string, any>) {
         if (!session.passport)
             throw new BadRequestException('You have no permission to do that.')
-        return this.authService.validateTwoFa(req, res, code);
+        return this.authService.validateTwoFa(req, res, body.code);
     }
 
     @Post('2fa/disable')

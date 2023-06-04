@@ -68,29 +68,32 @@ export class UsersService {
         await this.update({id: userId, photoUrl: newPhotoUrl})
     }
 
-    async unFriend(myID: number, otherID: number){
-        const myFriendIds = (await this.findUserbyID(myID)).friendIds
-        const otherFriends = (await this.findUserbyID(otherID)).friendIds
-        myFriendIds.splice(myFriendIds.indexOf(otherID), 1)
-        otherFriends.splice(otherFriends.indexOf(myID), 1)
-        await this.update({id: myID, friendIds: myFriendIds})
-        await this.update({id: otherID, friendIds: otherFriends})
-    }
-
-    async updateSession(userId: number) {
-        const user = await this.findUserbyID(userId)
-        const userJSON: JSON = Object.assign(JSON, user)
-        const userString = JSON.stringify(userJSON)
-        await this.prismaService.session.updateMany({
+    async updateSession(intraId: number) {
+        const user: User = await this.prismaService.user.findUnique({
+            where: {
+                id: intraId
+            }
+        });
+        const sessionDataString: string = (await this.prismaService.session.findFirstOrThrow({
             where: {
                 data: {
-                    contains: '"id":' + userId.toString()
+                    contains: '"id":' + intraId.toString()
+                }
+            }
+        })).data;
+        const sessionDataJSON = JSON.parse(sessionDataString);
+        sessionDataJSON.passport.user = user;
+        const sessionDataStringUpdated = JSON.stringify(sessionDataJSON);
+        return await this.prismaService.session.updateMany({
+            where: {
+                data: {
+                    contains: '"id":' + intraId.toString()
                 }
             },
             data: {
-                data: '{"cookie":{"originalMaxAge":null,"expires":null,"httpOnly":true,"path":"/"},"passport":{"user":' + userString + '}}'
+                data: sessionDataStringUpdated
             }
-        })
+        });
     }
 }
 

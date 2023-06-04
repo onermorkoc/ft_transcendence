@@ -106,4 +106,13 @@ export class FriendService {
             }
         }))
     }
+
+    async unFriend(myID: number, otherID: number){
+        const myFriendIds = (await this.userService.findUserbyID(myID)).friendIds
+        const otherFriends = (await this.userService.findUserbyID(otherID)).friendIds
+        myFriendIds.splice(myFriendIds.indexOf(otherID), 1)
+        otherFriends.splice(otherFriends.indexOf(myID), 1)
+        await this.userService.update({id: myID, friendIds: myFriendIds})
+        await this.userService.update({id: otherID, friendIds: otherFriends})
+    }
 }
