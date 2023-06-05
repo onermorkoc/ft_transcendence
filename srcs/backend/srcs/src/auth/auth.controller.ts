@@ -58,7 +58,7 @@ export class AuthController {
 
     @Post('2fa/validate')
     async validateTwoFa(@Req() req: Request, @Res() res: Response, @Body() body: {code: string}) {
-        return this.authService.validateTwoFa(req, res, body.code);
+        return (this.authService.validateTwoFa(req, res, body.code))
     }
 
     @Post('2fa/disable')

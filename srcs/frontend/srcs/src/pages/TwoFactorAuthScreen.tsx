@@ -10,9 +10,10 @@ const TwoFactorAuthScreen = () => {
 
     const twofaValidate = () => {
         if (otp.length == 6){
+
             axios.post(`${process.env.REACT_APP_BACKEND_URI}/auth/2fa/validate`, {code: otp}).then((response) => {
                 if (response.data == true){
-                    window.location.assign("/home")
+                    window.location.assign(`${process.env.REACT_APP_BACKEND_URI}/auth/login`)
                 }
             })
         }

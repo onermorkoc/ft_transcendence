@@ -71,8 +71,7 @@ export class AuthService {
         const jwttoken = jwt.sign(user.id, this.configService.get<string>('JWT_SECRET'))
         res.cookie('twoFactorOkCookie', jwttoken, { httpOnly: true, secure: false })
         res.cookie('twoFactorCookie', '', { expires: new Date(0) })
-        res.redirect(this.configService.get<string>('NESTJS_LOGIN_URL'))
-        return (true)
+        return (res.send(true))
     }
 
     async disableTwoFa(userId: number) {
