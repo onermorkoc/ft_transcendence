@@ -7,6 +7,7 @@ import RandomMatchGameCmp from "../componets/Game/RandomMatchGameCmp"
 import UserStatisticsCmp from "../componets/Header/UserStatisticsCmp"
 import ChatRoomsCmp from "../componets/Chat/ChatRoomsCmp"
 import FriendsRoomsCmp from "../componets/Friends/FriendsRoomsCmp"
+import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 const HomeScreen = () => {
 
@@ -80,10 +81,7 @@ const HomeScreen = () => {
             </>
         )
     }
-    return (
-        <>
-            {/* <div>Test: Sayfa bulunamadı 404</div> */}
-        </>
-    )
+    else
+        return (<PageNotFoundCmp/>)
 }
 export default HomeScreen

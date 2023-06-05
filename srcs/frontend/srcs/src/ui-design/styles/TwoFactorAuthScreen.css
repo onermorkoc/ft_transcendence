@@ -1,16 +1,22 @@
+.centerDiv {
+    display: flex;
+    height: 90vh;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 .twofaAnimation {
     width: 500px;
-    margin-top: 50px;
     margin-right: auto;
     margin-left: auto;
 }
 
-.two2faOtpDiv {
-    width: 450px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: "-10px"
+.twofaWarninMessage {
+    color: red;
+    font-size: 1.6em;
+    margin-top: -50px;
+    margin-bottom: 50px;
 }
 
 .twofaInput {

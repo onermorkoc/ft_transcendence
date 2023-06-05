@@ -6,6 +6,7 @@ import GameScreen from './pages/GameScreen';
 import GameHistoryCmp from './pages/GameHistoryScreen';
 import axios from 'axios';
 import TwoFactorAuthScreen from './pages/TwoFactorAuthScreen';
+import PageNotFoundCmp from './componets/PageNotFoundCmp';
 
 function App() {
 
@@ -24,6 +25,7 @@ function App() {
           <Route path='/editprofile' element={<EditProfileScreen/>}/>
           <Route path='/matchroom/:matchID' element={<GameScreen/>}/>
           <Route path='/history' element={<GameHistoryCmp/>}/> 
+          <Route path='*'element={<PageNotFoundCmp/>}/>
         </Routes>
       </BrowserRouter>
     </>

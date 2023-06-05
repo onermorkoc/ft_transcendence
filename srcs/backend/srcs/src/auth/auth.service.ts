@@ -21,21 +21,14 @@ export class AuthService {
     }
 
     async isTwoFa(req: Request) {
-        const token = req.cookies['twoFactorCookie']
 
+        const token = req.cookies['twoFactorCookie']
         if (!token) 
             throw new UnauthorizedException('2FA Cookie is Not Set');
 
         const user = jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
-
         const userDb = await this.userService.findUserbyID(user.id);
-
-        if (userDb != null) {
-            return (true);
-        }
-        else {
-            return (false);
-        }
+        return (userDb ? true : false)
     }
 
     async generateTwoFa(userId: number) {
@@ -69,7 +62,7 @@ export class AuthService {
         return (verified)
     }
 
-    async validateTwoFa(@Req() req: Request, @Res() res: Response, code: string) {
+    async validateTwoFa(@Req() req: Request, @Res() res: Response, code: string){
         
         const token = req.cookies['twoFactorCookie']
         if (!token) 
@@ -84,7 +77,7 @@ export class AuthService {
         })
 
         if (!validated)
-            throw new UnauthorizedException('Invalid 2FA Code');
+            return (res.send(false))
 
         const jwttoken = jwt.sign(user.id, this.configService.get<string>('JWT_SECRET'))
         res.cookie('twoFactorOkCookie', jwttoken, { httpOnly: true, secure: false })
