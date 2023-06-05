@@ -38,6 +38,11 @@ export class AuthController {
         return ("Kullanıcı giriş yapılı.")
     }
 
+    @Get('2fa')
+    async isTwoFa(@Req() req: Request) {
+        return (this.authService.isTwoFa(req));
+    }
+
     @Get('2fa/generate')
     @UseGuards(AuthenticatedGuard)
     async generateTwoFaSecret(@Session() session: Record<string, any>) {

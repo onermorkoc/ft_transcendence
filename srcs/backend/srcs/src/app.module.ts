@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   
@@ -15,7 +16,7 @@ import { join } from 'path';
   ServeStaticModule.forRoot({
     rootPath: join(__dirname, '..', 'public'),
   }),
-  PrismaModule, AuthModule, UsersModule],
+  PrismaModule, AuthModule, UsersModule, ChatModule],
 
   controllers: [AppController],
   providers: [],

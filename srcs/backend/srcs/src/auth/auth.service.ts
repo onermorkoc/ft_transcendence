@@ -20,6 +20,24 @@ export class AuthService {
         session.destroy();
     }
 
+    async isTwoFa(req: Request) {
+        const token = req.cookies['twoFactorCookie']
+
+        if (!token) 
+            throw new UnauthorizedException('2FA Cookie is Not Set');
+
+        const user = jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+
+        const userDb = await this.userService.findUserbyID(user.id);
+
+        if (userDb != null) {
+            return (true);
+        }
+        else {
+            return (false);
+        }
+    }
+
     async generateTwoFa(userId: number) {
         
         const secret = speakeasy.generateSecret()
