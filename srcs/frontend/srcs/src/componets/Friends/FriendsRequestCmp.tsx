@@ -17,6 +17,7 @@ const FriendsRequestCmp = () => {
             axios.get(`${process.env.REACT_APP_BACKEND_URI}/friends/${currentUser.id}/received-requests`).then(response => setFriendRequests(response.data))
 
         if (friendRequests){
+            setUsersInfo([]) // bazen listeyi double çekmesine karşılık test
             friendRequests.forEach((value) => {
                 axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${value.senderId}`).then(response => setUsersInfo([...usersInfo, response.data]))
             })

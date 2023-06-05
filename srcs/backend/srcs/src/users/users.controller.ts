@@ -27,7 +27,7 @@ export class UsersController {
         return (await this.userService.findUserbyID(parseInt(userId)))
     }
 
-    @Get('2fa/secret')
+    @Get('2fa/secret')  // auth/2fa/generate yaptıgında zaten secret veriyor şimdilik buna gerek yok
     @UseGuards(AuthenticatedGuard)
     async userGetTwoFaSecret(@Session() session: Record<string, any>) {
         return (await this.userService.userGetTwoFaSecret(session.passport.user.id))

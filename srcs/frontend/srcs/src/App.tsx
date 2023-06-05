@@ -5,6 +5,7 @@ import EditProfileScreen from './pages/EditProfileScreen';
 import GameScreen from './pages/GameScreen';
 import GameHistoryCmp from './pages/GameHistoryScreen';
 import axios from 'axios';
+import TwoFactorAuthScreen from './pages/TwoFactorAuthScreen';
 
 function App() {
 
@@ -18,6 +19,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<LoginScreen/>}/>
+          <Route path='/2fa' element={<TwoFactorAuthScreen/>}/>
           <Route path='/home' element={<HomeScreen/>}/>
           <Route path='/editprofile' element={<EditProfileScreen/>}/>
           <Route path='/matchroom/:matchID' element={<GameScreen/>}/>

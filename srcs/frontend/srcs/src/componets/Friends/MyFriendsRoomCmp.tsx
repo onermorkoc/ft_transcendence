@@ -13,6 +13,7 @@ const MyFriendsRoomCmp = () => {
             axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then(response => setCurrentUser(response.data))
 
         if (currentUser){
+            setUsersInfo([]) // bazen listeyi double çekmesine karşılık test
             currentUser.friendIds.forEach((value) => {
                 axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${value}`).then(response => setUsersInfo([...usersInfo, response.data]))
             })
