@@ -1,4 +1,4 @@
-.centerDiv {
+.twofaCenterDiv {
     display: flex;
     height: 90vh;
     flex-direction: column;
@@ -43,7 +43,7 @@
     background: none;
 }
 
-.verifyButton {
+.twofaButton {
     margin-top: 75px;
     width: 225px;
     height: 70px;
@@ -58,6 +58,6 @@
     display: block;
 }
 
-.verifyButton:hover {
+.twofaButton:hover {
     background-color: rgb(229, 248, 195);
 }

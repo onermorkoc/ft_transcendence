@@ -32,11 +32,11 @@ const TwoFactorAuthScreen = () => {
     if (twofaStatus){
         return (
             <>
-                <div className="centerDiv">
+                <div className="twofaCenterDiv">
                     <Lottie className="twofaAnimation" animationData={require("../ui-design/animation/shield.json")}/>
                     <div className="twofaWarninMessage">{warningMessage}</div>
                     <OTPInput inputStyle="twofaInput" inputType="number" value={otp} onChange={setOtp} numInputs={6} renderInput={(props) => <input {...props}/>}/>
-                    <button onClick={twofaValidate} className="verifyButton">Doğrula</button>
+                    <button className="twofaButton" onClick={twofaValidate}>Doğrula</button>
                 </div>
             </>
         )

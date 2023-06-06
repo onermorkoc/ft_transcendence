@@ -8,7 +8,7 @@ const LoginScreen = () => {
 
     return (
         <>
-            <div className="centerDiv">
+            <div className="loginCenterDiv">
                 <img className="loginLogo" src={require("../ui-design/images/logo.png")} alt=""/>
                 <h1 className="loginHeader">Pong Oyuna Hoşgeldin !</h1>
                 <button className="loginButton" onClick={login}>İntra Girişi</button>

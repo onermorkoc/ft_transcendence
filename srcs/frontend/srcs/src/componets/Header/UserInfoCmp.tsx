@@ -1,15 +1,18 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import "../../ui-design/styles/CmpMix.css"
 import { User } from "../../dto/DataObject"
 import axios from "axios"
+import OTPInput from "react-otp-input"
 
-const UserInfoCmp = (props: {currentUser: User}) => {
+const UserInfoCmp = () => {
 
+    const [ otp, setOtp ] = useState<string>("")
+    const [ currentUser, setCurrentUser ] = useState<User | null>(null)
+    const [ warningMessage, setWarningMesage ] = useState<string>("")
     const [ status2fa, setStatus2fa ] = useState<JSX.Element | null>(null)
     const [ enable2faClick, setEnable2faClick ] = useState<boolean>(false)
     const [ secretKey, setSecretKey ] = useState<string | null>(null)
     const [ qrcode, setQrCode ] = useState<string | null>(null)
-    const verifyInputref = useRef<HTMLInputElement>(null)
     
     const disable2fa = () => {
         axios.post(`${process.env.REACT_APP_BACKEND_URI}/auth/2fa/disable`).then(() => setStatus2fa(inactive2faView))
@@ -26,11 +29,11 @@ const UserInfoCmp = (props: {currentUser: User}) => {
     </>
 
     useEffect(() => {
-        
-        if (props.currentUser.twoFactorEnabled)
-            setStatus2fa(active2faView)
-        else
-            setStatus2fa(inactive2faView)
+
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then(response => {
+            setCurrentUser(response.data)
+            response.data.twoFactorEnabled ? setStatus2fa(active2faView) : setStatus2fa(inactive2faView)
+        })
         
         if (enable2faClick){
             if (!secretKey)
@@ -42,31 +45,49 @@ const UserInfoCmp = (props: {currentUser: User}) => {
     }, [enable2faClick])
 
     const enable2fa = () => {
-        const code = verifyInputref.current?.value
-
-        if (code?.length == 6){
-            axios.post(`${process.env.REACT_APP_BACKEND_URI}/auth/2fa/verify`, {code: code}).then((response) => {
-                if (response.data == true){
+        if (otp.length == 6){
+            axios.post(`${process.env.REACT_APP_BACKEND_URI}/auth/2fa/verify`, {code: otp}).then((response) => {
+                if (response.data == true)
                     setEnable2faClick(false)
-                }
-                else {
-                    // şifre yanlış
-                }
+                else
+                    setWarningMesage("Geçersiz kod")
             })
         }
-        else{
-            // şifre 6 basamaklı olmalı 
-        }
+        else
+            setWarningMesage("Lütfen kodu eksiksiz giriniz")
     }
 
     if (enable2faClick){
         return (
             <>
-                <div>{secretKey}</div>
-                <img src={qrcode!!}></img>
-                <input ref={verifyInputref} type="number" placeholder="lütfen doğrulama kodunu giriniz"></input>
-                <button onClick={() => setEnable2faClick(false)} >Geri Dön</button>
-                <button onClick={enable2fa} >Doğrula</button>
+                <div style={{display: "flex", flexDirection: "row"}} >
+                    <img style={{marginLeft: "30px"}} src={qrcode!!}></img>
+                    <div style={{marginLeft: "10px"}}>
+                        <div style={{marginTop: "10px", display: "flex", flexDirection: "row", alignItems: "center"}}>
+                            <img style={{width: "30px", height: "30px"}} src={require("../../ui-design/images/key.png")}/>
+                            <div style={{fontSize: "1.2em", marginLeft: "10px"}}>{secretKey}</div>
+                        </div>
+                        <div style={{marginTop: "10px", display: "flex", flexDirection: "row", alignItems: "center"}}>
+                            <img style={{width: "30px", height: "30px"}} src={require("../../ui-design/images/information.png")}/>
+                            <div style={{fontSize: "1.3em", marginLeft: "10px"}}>İki faktörlü kimlik doğrulamayı etkinleştirmek için lütfen doğrulama kodunu giriniz.</div>
+                        </div>
+                        {
+                            warningMessage != "" ?
+                            <div style={{marginTop: "10px", display: "flex", flexDirection: "row", alignItems: "center"}}>
+                                <img style={{width: "30px", height: "30px"}} src={require("../../ui-design/images/warning.png")}/>
+                                <div style={{color: "red", fontSize: "1.3em", marginLeft: "10px"}}>{warningMessage}</div>
+                            </div>
+                            :
+                            <></>
+                        }
+                        <div style={{marginTop: "10px", display: "flex", flexDirection: "row", alignItems: "center"}}>
+                            <img style={{width: "30px", height: "30px",marginRight: "6px"}} src={require("../../ui-design/images/secure.png")}/>
+                            <OTPInput inputStyle="verifyTwofaInput" inputType="number" numInputs={6} value={otp} onChange={setOtp} renderInput={(props) => <input {...props}/>}/>
+                            <img className="verifyTwofaNextImg" onClick={enable2fa} src={require("../../ui-design/images/next.png")}/>
+                        </div>
+                    </div>
+                    <img className="verifyCloseImg" onClick={() => setEnable2faClick(false)} src={require("../../ui-design/images/close.png")}/>
+                </div>
             </>
         )
     }
@@ -76,17 +97,17 @@ const UserInfoCmp = (props: {currentUser: User}) => {
                 <div style={{display: "flex", flexDirection: "column"}}>
                     <div className="infoRowDiv">
                         <img className="img2" src={require("../../ui-design/images/user.png")} alt=""/>
-                        <div className="text2">Ad: {props.currentUser.displayname}</div>
+                        <div className="text2">Ad: {currentUser?.displayname}</div>
                     </div>
     
                     <div className="infoRowDiv">
                         <img className="img2" src={require("../../ui-design/images/nickname.png")} alt=""/>
-                        <div className="text2">Kullanıcı adı: {props.currentUser.nickname}</div>
+                        <div className="text2">Kullanıcı adı: {currentUser?.nickname}</div>
                     </div>
                 
                     <div className="infoRowDiv">
                         <img className="img2" src={require("../../ui-design/images/email.png")} alt=""/>
-                        <div className="text2">Email: {props.currentUser.email}</div>
+                        <div className="text2">Email: {currentUser?.email}</div>
                     </div>
     
                     <div className="infoRowDiv">

@@ -39,7 +39,7 @@ const HomeScreen = () => {
     if (currentUser){
 
         if (!tab)
-            setTab(<UserInfoCmp currentUser={currentUser}/>)
+            setTab(<UserInfoCmp/>)
             
         return (
             <>
@@ -56,7 +56,7 @@ const HomeScreen = () => {
                                 <div style={{display: "flex", flexDirection: "column"}}>
                                     <div>
                                         <div style={{display: "flex", flexDirection: "row"}}>
-                                            <div className="textTabDiv" onClick={() => setTab(<UserInfoCmp currentUser={currentUser}/>)}>Profil Bilgilerim</div>
+                                            <div className="textTabDiv" onClick={() => setTab(<UserInfoCmp/>)}>Profil Bilgilerim</div>
                                             <div className="textTabDiv" onClick={() => setTab(<UserStatisticsCmp currentUser={currentUser}/>)}>İstatistiklerim</div>
                                             <img className="imgTabDiv" onClick={goMatchHistoryPage} src={require("../ui-design/images/history.png")} alt=""/>
                                             <img className="imgTabDiv" onClick={goGlobalRankPage} src={require("../ui-design/images/global-rank.png")} alt=""/>
