@@ -23,7 +23,7 @@ function App() {
           <Route path='/2fa' element={<TwoFactorAuthScreen/>}/>
           <Route path='/home' element={<HomeScreen/>}/>
           <Route path='/editprofile' element={<EditProfileScreen/>}/>
-          <Route path='/matchroom/:matchID' element={<GameScreen/>}/>
+          <Route path='/game' element={<GameScreen/>}/>
           <Route path='/history' element={<GameHistoryCmp/>}/> 
           <Route path='*'element={<PageNotFoundCmp/>}/>
         </Routes>

@@ -21,12 +21,13 @@ const RandomMatchGameCmp = () => {
     let intervalID: NodeJS.Timer
 
     const randomMatch = () => {
-        if(!searchStatus){
+        window.location.assign("/game")
+        /* if(!searchStatus){
             animationRef.current!!.play()
             setSecond(0)
             setSearchStatus(true)
             // rastgele birinn eşleşmesini bekler
-        }
+        } */
     }
 
     const cancelRandomMatch = () => {
