@@ -10,8 +10,6 @@ all:
 dev:
 	sudo docker-compose -f $(DEV_YML_FILE) --env-file $(ENV_FILE) up --build
 
-dev_all_run: dev run_back run_front
-
 clean_local:
 	sudo rm -rf ./srcs/backend/srcs/node_modules
 	sudo rm -rf ./srcs/backend/srcs/public/uploads
