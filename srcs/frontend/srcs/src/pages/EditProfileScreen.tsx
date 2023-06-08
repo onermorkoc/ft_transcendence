@@ -2,6 +2,7 @@ import { User } from "../dto/DataObject"
 import "../ui-design/styles/EditProfileScreen.css"
 import React, { useEffect, useRef, useState } from "react"
 import axios from "axios"
+import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 const pathToFile = async (path: string, filename: string): Promise<File> => {
     const data = await (await fetch(path)).blob()
@@ -110,10 +111,7 @@ const EditProfileScreen = () => {
             </>
         )
     }
-    return(
-        <>
-            {/* <div>Test: Sayfa bulunamadı 404</div> */}
-        </>
-    )
+    else
+        return(<PageNotFoundCmp/>)
 }
 export default EditProfileScreen

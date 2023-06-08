@@ -48,3 +48,41 @@
     margin-left: auto;
     margin-right: auto;
 }
+
+
+/* Yaysu   Css */
+
+.gameRoot {
+  margin: 0;
+  font-family: "Press Start 2P", cursive;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: black;
+  color: white;
+  min-height: 100vh;
+}
+
+.game
+{
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  border: 3px solid white;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+}
+
+.scoreBoard
+{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 80%;
+  margin: 5px auto;
+  font-size: 25px;
+}
+
+.vs
+{
+  margin: 5px auto;
+}

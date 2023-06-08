@@ -7,6 +7,7 @@ import RandomMatchGameCmp from "../componets/Game/RandomMatchGameCmp"
 import UserStatisticsCmp from "../componets/Header/UserStatisticsCmp"
 import ChatRoomsCmp from "../componets/Chat/ChatRoomsCmp"
 import FriendsRoomsCmp from "../componets/Friends/FriendsRoomsCmp"
+import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 const HomeScreen = () => {
 
@@ -38,7 +39,7 @@ const HomeScreen = () => {
     if (currentUser){
 
         if (!tab)
-            setTab(<UserInfoCmp currentUser={currentUser}/>)
+            setTab(<UserInfoCmp/>)
             
         return (
             <>
@@ -55,7 +56,7 @@ const HomeScreen = () => {
                                 <div style={{display: "flex", flexDirection: "column"}}>
                                     <div>
                                         <div style={{display: "flex", flexDirection: "row"}}>
-                                            <div className="textTabDiv" onClick={() => setTab(<UserInfoCmp currentUser={currentUser}/>)}>Profil Bilgilerim</div>
+                                            <div className="textTabDiv" onClick={() => setTab(<UserInfoCmp/>)}>Profil Bilgilerim</div>
                                             <div className="textTabDiv" onClick={() => setTab(<UserStatisticsCmp currentUser={currentUser}/>)}>İstatistiklerim</div>
                                             <img className="imgTabDiv" onClick={goMatchHistoryPage} src={require("../ui-design/images/history.png")} alt=""/>
                                             <img className="imgTabDiv" onClick={goGlobalRankPage} src={require("../ui-design/images/global-rank.png")} alt=""/>
@@ -80,10 +81,7 @@ const HomeScreen = () => {
             </>
         )
     }
-    return (
-        <>
-            {/* <div>Test: Sayfa bulunamadı 404</div> */}
-        </>
-    )
+    else
+        return (<PageNotFoundCmp/>)
 }
 export default HomeScreen

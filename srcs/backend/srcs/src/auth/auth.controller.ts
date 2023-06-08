@@ -26,19 +26,7 @@ export class AuthController {
         // burada adam offline olmalı
     }
 
-    @Get('session')
-    async session(@Session() session: Record<string, any>) {     // TEST İÇİN
-        console.log(session);
-        console.log(session.id);
-    }
-
-    @Get('status')
-    @UseGuards(AuthenticatedGuard)                              // TEST İÇİN
-    status() {
-        return ("Kullanıcı giriş yapılı.")
-    }
-
-    @Get('2fa')
+    @Get('2fa/status')
     async isTwoFa(@Req() req: Request) {
         return (this.authService.isTwoFa(req));
     }

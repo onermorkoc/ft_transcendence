@@ -1,3 +1,17 @@
+.loginCenterDiv {
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loginHeader {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 3.5em;
+}
+
 .loginLogo, .loginButton {
     display: block;
     margin-right: auto;
@@ -6,7 +20,6 @@
 
 .loginLogo {
     width: 400px;
-    margin-top: 125px;
 }
 
 .loginButton {
