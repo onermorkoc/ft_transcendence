@@ -16,8 +16,8 @@ export class UsersService {
         return (session.passport.user)
     }
 
-    async update(newUserInfo: Partial<User>): Promise<number> { // newUserIfo içinde kesinlikle id olmalı
-        try{
+    async update(newUserInfo: Partial<User>): Promise<boolean> { // newUserIfo içinde kesinlikle id olmalı
+        try {
             await this.prismaService.user.update({
                 where: {
                     id: newUserInfo.id
@@ -25,10 +25,11 @@ export class UsersService {
                 data: newUserInfo
             })
             await this.updateSession(newUserInfo.id)
-        }catch(error){
-            return (1)
         }
-        return (0)
+        catch (error) {
+            return false
+        }
+        return true
     }
 
     async findUserbyID(userId: number): Promise<User> {

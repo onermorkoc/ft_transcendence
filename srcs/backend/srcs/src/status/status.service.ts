@@ -9,7 +9,7 @@ export class StatusService {
     private usersOnline: Array<number> = [];
     private usersClientIds: Array<Array<string>> = [];
 
-    addUserOnline(user: User, clientId: string): void {
+    async addUserOnline(user: User, clientId: string): Promise<void> {
         if (this.usersOnline.includes(user.id)) {
             const index: number = this.usersOnline.indexOf(user.id);
             this.usersClientIds[index].push(clientId);
@@ -19,7 +19,7 @@ export class StatusService {
             this.usersClientIds.push([clientId]);
 
             user.status = Status.ONLINE;
-            this.userService.update(user);
+            await this.userService.update(user);
         }
     }
 
@@ -37,7 +37,7 @@ export class StatusService {
             this.usersOnline.splice(rowIndex, 1);
 
             user.status = Status.OFFLINE;
-            this.userService.update(user);
+            await this.userService.update(user);
         }
     }
 

@@ -35,7 +35,7 @@ export class UsersController {
 
     @Put("/update")
     @UseGuards(AuthenticatedGuard)
-    async updateUserInfo(@Body() newUserInfo: Partial<User>): Promise<number> {
+    async updateUserInfo(@Body() newUserInfo: Partial<User>): Promise<boolean> {
         return (await this.userService.update(newUserInfo))
     }
 
