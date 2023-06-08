@@ -8,15 +8,24 @@ import UserStatisticsCmp from "../componets/Header/UserStatisticsCmp"
 import ChatRoomsCmp from "../componets/Chat/ChatRoomsCmp"
 import FriendsRoomsCmp from "../componets/Friends/FriendsRoomsCmp"
 import PageNotFoundCmp from "../componets/PageNotFoundCmp"
+import { io } from "socket.io-client"
 
 const HomeScreen = () => {
 
     const [ currentUser, setCurrentUser ] = useState<User | null>(null)
     const [ tab, setTab ] = useState<JSX.Element | null>(null)
 
+    const setupSocket = () => {
+        const socket = io(`${process.env.REACT_APP_BACKEND_URI}/status`)
+        socket.emit("userConnected", currentUser)
+    }
+
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then(response => setCurrentUser(response.data))
-    }, [])
+        if (!currentUser)
+            axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then(response => setCurrentUser(response.data))
+        if (currentUser)
+            setupSocket()
+    }, [currentUser])
 
     const goEditProfilePage = () => {
         window.location.assign(`/editprofile`)

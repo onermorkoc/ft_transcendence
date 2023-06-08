@@ -3,6 +3,7 @@ const MyChatRoomsCmp = () => {
         <>
             <div>
                 my chat rooms
+                <button onClick={() => {window.location.assign("/chat")}} >Chat Ekranına git</button>
             </div>
         </>
     )

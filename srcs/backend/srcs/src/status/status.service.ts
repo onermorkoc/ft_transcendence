@@ -38,8 +38,6 @@ export class StatusService {
 
             user.status = Status.OFFLINE;
             this.userService.update(user);
-
-            console.log(this.usersOnline);
         }
     }
 

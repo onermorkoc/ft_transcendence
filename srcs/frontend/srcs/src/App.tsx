@@ -1,12 +1,13 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LoginScreen from './pages/LoginScreen';
-import HomeScreen from './pages/HomeScreen';
-import EditProfileScreen from './pages/EditProfileScreen';
-import GameScreen from './pages/GameScreen';
-import GameHistoryCmp from './pages/GameHistoryScreen';
-import axios from 'axios';
-import TwoFactorAuthScreen from './pages/TwoFactorAuthScreen';
-import PageNotFoundCmp from './componets/PageNotFoundCmp';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import LoginScreen from './pages/LoginScreen'
+import HomeScreen from './pages/HomeScreen'
+import EditProfileScreen from './pages/EditProfileScreen'
+import GameScreen from './pages/GameScreen'
+import GameHistoryCmp from './pages/GameHistoryScreen'
+import axios from 'axios'
+import TwoFactorAuthScreen from './pages/TwoFactorAuthScreen'
+import PageNotFoundCmp from './componets/PageNotFoundCmp'
+import ChatScreen from './pages/ChatScreen'
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
           <Route path='/editprofile' element={<EditProfileScreen/>}/>
           <Route path='/game' element={<GameScreen/>}/>
           <Route path='/history' element={<GameHistoryCmp/>}/> 
+          <Route path='/chat' element={<ChatScreen/>}/>
           <Route path='*'element={<PageNotFoundCmp/>}/>
         </Routes>
       </BrowserRouter>
@@ -32,4 +34,4 @@ function App() {
   )
 }
 
-export default App;
+export default App

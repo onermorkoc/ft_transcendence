@@ -10,6 +10,14 @@ all:
 dev:
 	sudo docker-compose -f $(DEV_YML_FILE) --env-file $(ENV_FILE) up --build
 
+dev_all_run: dev run_back run_front
+
+clean_local:
+	sudo rm -rf ./srcs/backend/srcs/node_modules
+	sudo rm -rf ./srcs/backend/srcs/public/uploads
+	sudo rm -rf ./srcs/backend/srcs/dist
+	sudo rm -rf ./srcs/frontend/srcs/node_modules
+
 run_back: prisma
 	sudo npm install --prefix ./srcs/backend/srcs/
 	sudo npm start --prefix ./srcs/backend/srcs/
