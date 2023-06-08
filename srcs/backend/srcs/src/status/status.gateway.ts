@@ -1,4 +1,4 @@
-import { MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io'
 import { StatusService } from "./status.service";
 import { User } from "@prisma/client";
@@ -14,8 +14,8 @@ export class StatusGateway implements OnGatewayInit, OnGatewayDisconnect {
         console.log("Status socket initialized.")
     }
 
-    handleDisconnect(client: Socket) {
-        this.statusService.removeUserOnline(client.id);
+    async handleDisconnect(client: Socket) {
+        await this.statusService.removeUserOnline(client.id);
         this.server.emit('usersOnline', this.statusService.getUsersOnline());
     }
 
