@@ -12,4 +12,10 @@ export class ChatController {
     createRoom(@Body() body: { roomName: string, ownerId: number, roomStatus: RoomStatus, password?: string }) {
         return this.chatService.createRoom(body);
     }
+
+    @Post('room/join')
+    @UseGuards(AuthenticatedGuard)
+    joinRoom(@Body() body: { userId: number, roomId: string, password?: string }) {
+        return this.chatService.joinRoom(body);
+    }
 }

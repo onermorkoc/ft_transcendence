@@ -32,7 +32,7 @@ model User {
   title      Title @default(CAYLAK)
   globalRank Int   @default(0)
 
-  chatRoomIds Int[]
+  chatRoomIds String[]
   friendIds   Int[]
 
   sentFriendRequests     FriendRequest[] @relation("SentRequest")
