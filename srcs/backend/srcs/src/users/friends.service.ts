@@ -1,10 +1,10 @@
 import { BadRequestException,  Injectable} from "@nestjs/common";
-import { FriendRequest, Prisma } from "@prisma/client";
+import { FriendRequest, Prisma, User } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UsersService } from "./users.service";
 
 @Injectable()
-export class FriendService {
+export class FriendsService {
     constructor(private prismaService: PrismaService, private userService: UsersService) {}
 
     async createFriendRequest(senderId: number, receiverId: number) : Promise<FriendRequest> {
@@ -95,8 +95,14 @@ export class FriendService {
         return (await this.findUserByID(userId).sentFriendRequests())
     }
 
-    async getReceivedRequests(userId: number): Promise<FriendRequest[]> {
-        return (await this.findUserByID(userId).receivedFriendRequests())
+    async getReceivedRequests(userId: number): Promise<Array<User>> {
+
+        let usersInfo: Array<User> = []
+        const friendRequest = await this.findUserByID(userId).receivedFriendRequests()
+        
+        for (const requestData of friendRequest)
+            usersInfo.push(await this.userService.findUserbyID(requestData.senderId))
+        return (usersInfo)
     }
 
     private findUserByID(userId: number) {
@@ -114,5 +120,12 @@ export class FriendService {
         otherFriends.splice(otherFriends.indexOf(myID), 1)
         await this.userService.update({id: myID, friendIds: myFriendIds})
         await this.userService.update({id: otherID, friendIds: otherFriends})
+    }
+
+    async myFriends(myFriendIds: Array<number>): Promise<Array<User>> {
+        let usersInfo: Array<User> = []
+        for(const id of myFriendIds)
+            usersInfo.push(await this.userService.findUserbyID(id))
+        return (usersInfo)
     }
 }

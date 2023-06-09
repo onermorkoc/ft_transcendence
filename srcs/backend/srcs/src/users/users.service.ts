@@ -25,11 +25,10 @@ export class UsersService {
                 data: newUserInfo
             })
             await this.updateSession(newUserInfo.id)
+        }catch(error){
+            return (false)
         }
-        catch (error) {
-            return false
-        }
-        return true
+        return (true)
     }
 
     async findUserbyID(userId: number): Promise<User> {

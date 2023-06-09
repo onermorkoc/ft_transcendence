@@ -6,6 +6,8 @@ export interface User {
     photoUrl: string
     status: Status,
     twoFactorEnabled: boolean,
+    twoFactorSecret: string,
+    twoFactorQrCode: string,
     totalGame: number,
     totalWin: number,
     totalLose: number,

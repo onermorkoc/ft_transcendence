@@ -1,41 +1,43 @@
 import { useEffect, useState } from "react"
 import { User } from "../../dto/DataObject"
 import axios from "axios"
+import useCurrentUser from "../../services/Auth"
 
 const SearchUserCmp = () => {
 
-    const [ allUsers, setAllUsers ] = useState<Array<User>>()
-    const [ searchText, setSearchText ] = useState<string | null>(null)
+    const currentUser = useCurrentUser()
+    const [ allUsers, setAllUsers ] = useState<Array<User> | null>()
     const [ filterArray, setFilterArray ] = useState<Array<User>>([])
-    const [ currentUser, setCurrentUser ] = useState<User | null>()
 
     useEffect(() => {
+        if (!allUsers)
+            axios.get(`/users/`).then(response => setAllUsers(response.data))
+    }, [allUsers, filterArray])
 
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/`).then(response => setAllUsers(response.data))
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then(response => setCurrentUser(response.data))
-
-        if (searchText != null && searchText.length > 3){
+    const onChangeText = (searchText: string) => {
+        if (allUsers && searchText && searchText.length > 3){
             const userArray: Array<User> = []
-            allUsers?.forEach((value) => {
+            allUsers.forEach((value) => {
                 if (value.nickname.includes(searchText)){
                     if(!(currentUser?.friendIds.find(userId => userId === value.id)) && value.id !== currentUser?.id)
                         userArray.push(value)
                 }
             })
             setFilterArray(userArray)
-        }else{
-            setFilterArray([])
         }
-    }, [searchText])
+        else
+            setFilterArray([])
+    }
 
-    const sendFriendRequest = (value: User) => {
-        axios.post(`${process.env.REACT_APP_BACKEND_URI}/friends/send-request/${value.id}`).then(() => setSearchText(null))
+    const sendFriendRequest = async (value: User) => {
+        setFilterArray(filterArray.filter(predicate => predicate !== value))
+        await axios.post(`/friends/send-request/${value.id}`)
     }
 
     return (
         <>
             <div className="searchBarBox">
-                <input onChange={event => setSearchText(event.target.value)} className="searchBar" type="text" placeholder="Kullanıcı adı"/>
+                <input onChange={event =>  onChangeText(event.target.value)} className="searchBar" type="text" placeholder="Kullanıcı adı"/>
                 <img className="searchImg" src={require("../../ui-design/images/search.png")} alt=""/>
             </div>
 

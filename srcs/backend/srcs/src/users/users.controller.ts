@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Session, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Session, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -25,12 +25,6 @@ export class UsersController {
     @UseGuards(AuthenticatedGuard)
     async findUserbyID(@Param("userId") userId: string) {
         return (await this.userService.findUserbyID(parseInt(userId)))
-    }
-
-    @Get('2fa/secret')  // auth/2fa/generate yaptıgında zaten secret veriyor şimdilik buna gerek yok
-    @UseGuards(AuthenticatedGuard)
-    async userGetTwoFaSecret(@Session() session: Record<string, any>) {
-        return (await this.userService.userGetTwoFaSecret(session.passport.user.id))
     }
 
     @Put("/update")

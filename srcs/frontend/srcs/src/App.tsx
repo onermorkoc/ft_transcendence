@@ -9,19 +9,26 @@ import TwoFactorAuthScreen from './pages/TwoFactorAuthScreen'
 import PageNotFoundCmp from './componets/PageNotFoundCmp'
 import ChatScreen from './pages/ChatScreen'
 
-function App() {
+const axiosSetup = () => {
+
+  axios.defaults.baseURL = `${process.env.REACT_APP_BACKEND_URI}`
 
   axios.interceptors.request.use(config => {
     config.withCredentials = true
     return (config)
   })
+}
 
+function App() {
+
+  axiosSetup()
+  
   return (
     <>
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<LoginScreen/>}/>
-          <Route path='/2fa' element={<TwoFactorAuthScreen/>}/>
+          <Route path='/validate' element={<TwoFactorAuthScreen/>}/>
           <Route path='/home' element={<HomeScreen/>}/>
           <Route path='/editprofile' element={<EditProfileScreen/>}/>
           <Route path='/game' element={<GameScreen/>}/>

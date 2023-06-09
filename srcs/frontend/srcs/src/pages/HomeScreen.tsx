@@ -2,29 +2,28 @@ import { useEffect, useState } from "react"
 import "../ui-design/styles/HomeScreen.css"
 import UserInfoCmp from "../componets/Header/UserInfoCmp"
 import axios from "axios"
-import { User } from "../dto/DataObject"
 import RandomMatchGameCmp from "../componets/Game/RandomMatchGameCmp"
 import UserStatisticsCmp from "../componets/Header/UserStatisticsCmp"
 import ChatRoomsCmp from "../componets/Chat/ChatRoomsCmp"
 import FriendsRoomsCmp from "../componets/Friends/FriendsRoomsCmp"
 import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 import { io } from "socket.io-client"
+import useCurrentUser from "../services/Auth"
 
 const HomeScreen = () => {
 
-    const [ currentUser, setCurrentUser ] = useState<User | null>(null)
-    const [ tab, setTab ] = useState<JSX.Element | null>(null)
+    const currentUser = useCurrentUser()
+    const [ tab, setTab ] = useState<JSX.Element>(<UserInfoCmp/>)
 
-    const setupSocket = () => {
-        const socket = io(`${process.env.REACT_APP_BACKEND_URI}/status`)
-        socket.emit("userConnected", currentUser)
+    const setupUserStatusSocket = () => {
+        const socket = io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id}})
+        //socket.emit("userConnected", currentUser)
     }
 
     useEffect(() => {
-        if (!currentUser)
-            axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then(response => setCurrentUser(response.data))
         if (currentUser)
-            setupSocket()
+            setupUserStatusSocket()
+        // eslint-disable-next-line
     }, [currentUser])
 
     const goEditProfilePage = () => {
@@ -32,7 +31,7 @@ const HomeScreen = () => {
     }
 
     const goMatchHistoryPage = () => {
-        //window.location.assign("/history")
+        window.location.assign("/history")
     }
 
     const goGlobalRankPage = () => {
@@ -40,16 +39,12 @@ const HomeScreen = () => {
     }
 
     const logout = () => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/auth/logout`).then(() => {
+        axios.get(`/auth/logout`).then(() => {
             window.location.assign("/")
         })
     }
 
     if (currentUser){
-
-        if (!tab)
-            setTab(<UserInfoCmp/>)
-            
         return (
             <>
                 <div style={{display: "flex", flexDirection: "column"}}>
@@ -66,7 +61,7 @@ const HomeScreen = () => {
                                     <div>
                                         <div style={{display: "flex", flexDirection: "row"}}>
                                             <div className="textTabDiv" onClick={() => setTab(<UserInfoCmp/>)}>Profil Bilgilerim</div>
-                                            <div className="textTabDiv" onClick={() => setTab(<UserStatisticsCmp currentUser={currentUser}/>)}>İstatistiklerim</div>
+                                            <div className="textTabDiv" onClick={() => setTab(<UserStatisticsCmp/>)}>İstatistiklerim</div>
                                             <img className="imgTabDiv" onClick={goMatchHistoryPage} src={require("../ui-design/images/history.png")} alt=""/>
                                             <img className="imgTabDiv" onClick={goGlobalRankPage} src={require("../ui-design/images/global-rank.png")} alt=""/>
                                             <img className="imgTabDiv" onClick={logout} src={require("../ui-design/images/logout.png")} alt=""/>

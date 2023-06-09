@@ -13,13 +13,13 @@ const TwoFactorAuthScreen = () => {
 
     useEffect(() => {
         if (!twofaStatus)
-            axios.get(`${process.env.REACT_APP_BACKEND_URI}/auth/2fa/status`).then(response => setTwofaStatus(response.data))
+            axios.get(`/auth/2fa/status`).then(response => setTwofaStatus(response.data))
     }, [twofaStatus])
 
     const twofaValidate = () => {
-        if (otp.length == 6){
-            axios.post(`${process.env.REACT_APP_BACKEND_URI}/auth/2fa/validate`, {code: otp}).then((response) => {
-                if (response.data == true)
+        if (otp.length === 6){
+            axios.post(`/auth/2fa/validate`, {code: otp}).then((response) => {
+                if (response.data === true)
                     window.location.assign(`${process.env.REACT_APP_BACKEND_URI}/auth/login`)
                 else
                     setWarningMesage("Geçersiz kod")

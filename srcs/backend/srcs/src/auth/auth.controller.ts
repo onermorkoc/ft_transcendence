@@ -28,25 +28,25 @@ export class AuthController {
 
     @Get('2fa/status')
     async isTwoFa(@Req() req: Request) {
-        return (this.authService.isTwoFa(req));
+        return (await this.authService.isTwoFa(req));
     }
 
     @Get('2fa/generate')
     @UseGuards(AuthenticatedGuard)
     async generateTwoFaSecret(@Session() session: Record<string, any>) {
-        return (this.authService.generateTwoFa(session.passport.user.id))
+        return (await this.authService.generateTwoFa(session.passport.user.id))
     }
 
     @Get('2fa/showqr')
     @UseGuards(AuthenticatedGuard)
     async showQrTwoFa(@Session() session: Record<string, any>) {
-        return (this.authService.showQrTwoFa(session.passport.user.id))
+        return (await this.authService.showQrTwoFa(session.passport.user.id))
     }
 
     @Post('2fa/verify')
     @UseGuards(AuthenticatedGuard)
     async verifyTwoFa(@Body() body: {code: string}, @Session() session: Record<string, any>) {
-        return (this.authService.verifyTwoFa(session.passport.user.id, body.code))
+        return (await this.authService.verifyTwoFa(session.passport.user.id, body.code))
     }
 
     @Post('2fa/validate')
@@ -57,6 +57,6 @@ export class AuthController {
     @Post('2fa/disable')
     @UseGuards(AuthenticatedGuard)
     async disableTwoFa(@Session() session: Record<string, any>) {
-        return (this.authService.disableTwoFa(session.passport.user.id))
+        return (await this.authService.disableTwoFa(session.passport.user.id))
     }
 }

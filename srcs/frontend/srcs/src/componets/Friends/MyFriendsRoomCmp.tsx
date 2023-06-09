@@ -1,49 +1,55 @@
 import { useEffect, useState } from "react"
 import { User } from "../../dto/DataObject"
 import axios from "axios"
+import Lottie from "lottie-react"
+
+export const EmptyPage = (): JSX.Element => {
+    return (
+        <>
+            <Lottie style={{marginLeft: "auto", marginRight: "auto", width: "300px", marginTop: "50px"}} animationData={require("../../ui-design/animation/empty.json")}/>
+        </>
+    )
+}
 
 const MyFriendsRoomCmp = () => {
 
-    const [ currentUser, setCurrentUser ] = useState<User | null>(null)
-    const [ usersInfo, setUsersInfo ] = useState<Array<User>>([])
+    const [ usersInfo, setUsersInfo ] = useState<Array<User> | null>(null)
 
     useEffect(() => {
+        if (!usersInfo)
+            axios.get(`/friends/myfriends`).then( response => setUsersInfo(response.data))
+    }, [usersInfo])
 
-        if (!currentUser)
-            axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then(response => setCurrentUser(response.data))
-
-        if (currentUser){
-            setUsersInfo([]) // bazen listeyi double çekmesine karşılık test
-            currentUser.friendIds.forEach((value) => {
-                axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/${value}`).then(response => setUsersInfo([...usersInfo, response.data]))
-            })
-        }
-    }, [currentUser])
-
-    const unFriend = (id: number) => {
-        axios.post(`${process.env.REACT_APP_BACKEND_URI}/friends/unfriend`, {userId: id}).then(() => {
-            // burada arkadaslarım lıste yenılemesı yapılacak
+    const unFriend = (value: User) => {
+        axios.post(`/friends/unfriend`, {userId: value.id}).then(() => {
+            setUsersInfo(usersInfo!!.filter(predicate => predicate !== value))
         })
     }
 
     return(
         <>
-            <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
-                {
-                    usersInfo.map((value, index) => (
-                        <div key={index}>
-                            <div className="listViewDiv">
-                                <img className="friendsAvatarImg" src={value.photoUrl} alt=""/>
-                                <div className="listViewInfoDiv">
-                                    <div>Ad: {value.displayname}</div>
-                                    <div>Durum: {value.status}</div>
+            {
+                !usersInfo || usersInfo?.length === 0 ? <EmptyPage/>
+                :
+                    <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
+                        {
+                            usersInfo?.map((value, index) => (
+                                <div key={index}>
+                                    <div className="listViewDiv">
+                                        <img className="friendsAvatarImg" src={value.photoUrl} alt=""/>
+                                        <div className="listViewInfoDiv">
+                                            <div>Ad: {value.displayname}</div>
+                                            <div>Durum: {value.status}</div>
+                                        </div>
+                                        <img className="unFriendImg" onClick={() => unFriend(value)} src={require("../../ui-design/images/unfriend.png")} alt=""/>
+                                    </div>
                                 </div>
-                                <img className="unFriendImg" onClick={() => unFriend(value.id)} src={require("../../ui-design/images/unfriend.png")} alt=""/>
-                            </div>
-                        </div>
-                    ))
-                }
-            </div>
+                            ))
+                        }
+                    </div>
+                
+            }
+            
         </>
     )
 }

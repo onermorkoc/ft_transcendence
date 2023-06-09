@@ -33,6 +33,6 @@ export class FtStrategy extends PassportStrategy(Strategy, '42') {
             },
         });
 
-        return user;
+        return (user);
     }
 }

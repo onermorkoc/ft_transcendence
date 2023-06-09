@@ -1,4 +1,4 @@
-import { Body, Injectable, Req, Res, Session, UnauthorizedException } from "@nestjs/common";
+import { Injectable, Req, Res, Session, UnauthorizedException } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
 import { Response } from "express";
 import { Request } from "express-session";
@@ -32,7 +32,7 @@ export class AuthService {
     }
 
     async generateTwoFa(userId: number) {
-        
+
         const secret = speakeasy.generateSecret()
         const twoFactorSecret = secret.base32
 
@@ -62,7 +62,7 @@ export class AuthService {
         return (verified)
     }
 
-    async validateTwoFa(@Req() req: Request, @Res() res: Response, code: string){
+    validateTwoFa(@Req() req: Request, @Res() res: Response, code: string){
         
         const token = req.cookies['twoFactorCookie']
         if (!token) 

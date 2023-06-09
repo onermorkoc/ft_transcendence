@@ -3,6 +3,7 @@ import "../ui-design/styles/EditProfileScreen.css"
 import React, { useEffect, useRef, useState } from "react"
 import axios from "axios"
 import PageNotFoundCmp from "../componets/PageNotFoundCmp"
+import useCurrentUser from "../services/Auth"
 
 const pathToFile = async (path: string, filename: string): Promise<File> => {
     const data = await (await fetch(path)).blob()
@@ -23,20 +24,20 @@ const avatarImgArray: Array<string> = [
 
 const EditProfileScreen = () => {
 
+    const currentUser = useCurrentUser()
     const [ localImgFile, setLocalImgFile ] = useState<File | null>(null)
-    const [ currentUser, setCurrentUser ] = useState<User | null>(null)
     const [ previewImg, setPreviewImg ] = useState<string | null>(null)
     const [ warningMessage, setWarnnigMessage ] = useState<string>("")
     const displaynameInputRef = useRef<HTMLInputElement>(null)
     const nicknameInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/users/current`).then((response) => {
-            setCurrentUser(response.data)
-            displaynameInputRef.current!!.value = response.data.displayname
-            nicknameInputRef.current!!.value = response.data.nickname
-        })
-    }, [])
+        if (currentUser){
+            displaynameInputRef.current!!.value = currentUser.displayname
+            nicknameInputRef.current!!.value = currentUser.nickname
+            setPreviewImg(currentUser.photoUrl)
+        }        
+    }, [currentUser])
 
     const updateProfileInfo = async() => {
 
@@ -51,13 +52,13 @@ const EditProfileScreen = () => {
                 nickname: newNickname
             }
     
-            await axios.put(`${process.env.REACT_APP_BACKEND_URI}/users/update`, newUserInfo).then( async (resultCode) => {
-                if(resultCode.data === 0){
+            await axios.put(`/users/update`, newUserInfo).then( async (resultCode) => {
+                if(resultCode.data === true){
 
                     if (localImgFile != null){
                         const form = new FormData()
                         form.append("avatar", localImgFile)
-                        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/users/upload/avatar`, form)
+                        await axios.post(`/users/upload/avatar`, form)
                     }
                     window.location.assign(`/home`)
                 }else{
@@ -83,10 +84,6 @@ const EditProfileScreen = () => {
     }
 
     if(currentUser){
-
-        if(previewImg == null)
-            setPreviewImg(currentUser.photoUrl)
-
         return (
             <>
                 <div className="previewDiv">

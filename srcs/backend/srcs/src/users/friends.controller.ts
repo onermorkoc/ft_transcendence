@@ -1,34 +1,34 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, Session, UseGuards } from "@nestjs/common";
-import { FriendService } from "./friend.service";
-import { FriendRequest } from "@prisma/client";
+import { FriendRequest, User } from "@prisma/client";
 import { AuthenticatedGuard } from "src/auth/guards/authenticated.guard";
+import { FriendsService } from "./friends.service";
 
 @Controller('friends')
-export class FriendController {
-    constructor(private friendService: FriendService) {}
+export class FriendsController {
+    constructor(private friendsService: FriendsService) {}
 
-    @Get(':userId') // Frontende kullanılmadı
+    @Get('/myfriends')
     @UseGuards(AuthenticatedGuard)
-    async getFriendIds(@Param('userId') userId: string): Promise<number[]> {
-        return (this.friendService.getFriends(parseInt(userId)))
+    async getMyFriends(@Session() session: Record<string, any>){
+        return (await this.friendsService.myFriends(session.passport.user.friendIds))
     }
 
-    @Get(':userId/sent-requests') // Frontende kullanılmadı
+    @Get(':userId/sent-requests') // Kullanıcının attığı istekler - Frontende kullanılmadı
     @UseGuards(AuthenticatedGuard)
     async getSentRequests(@Param('userId') userId: string): Promise<FriendRequest[]> {
-        return (this.friendService.getSentRequests(parseInt(userId)))
+        return (await this.friendsService.getSentRequests(parseInt(userId)))
     }
 
     @Get(':userId/received-requests')
     @UseGuards(AuthenticatedGuard)
-    async getReceivedRequests(@Param('userId') userId: string): Promise<FriendRequest[]> {
-        return (this.friendService.getReceivedRequests(parseInt(userId)))
+    async getReceivedRequests(@Param('userId') userId: string): Promise<Array<User>> {
+        return (await this.friendsService.getReceivedRequests(parseInt(userId)))
     }
 
     @Post('send-request/:receiverId')
     @UseGuards(AuthenticatedGuard)
     async sendRequest(@Param('receiverId') receiverId: string, @Session() session: Record<string, any>): Promise<FriendRequest> {
-        return (this.friendService.createFriendRequest(session.passport.user.id, parseInt(receiverId)))
+        return (await this.friendsService.createFriendRequest(session.passport.user.id, parseInt(receiverId)))
     }
 
     @Post('accept')
@@ -36,7 +36,7 @@ export class FriendController {
     async acceptRequest(@Body() requestData: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
         if (session.passport.user.id != requestData.receiverId)
             throw new BadRequestException('You have no permission to do that.')
-        return (this.friendService.acceptRequest(requestData))
+        return (await this.friendsService.acceptRequest(requestData))
     }
 
     @Post('reject')
@@ -44,12 +44,12 @@ export class FriendController {
     async rejectRequest(@Body() requestData: { senderId: number, receiverId: number }, @Session() session: Record<string, any>): Promise<boolean> {
         if (session.passport.user.id != requestData.receiverId)
             throw new BadRequestException('You have no permission to do that.')
-        return (this.friendService.rejectRequest(requestData))
+        return (await this.friendsService.rejectRequest(requestData))
     }
 
     @Post("unfriend")
     @UseGuards(AuthenticatedGuard)
     async unFriend(@Body() body: {userId: number}, @Session() session: Record<string, any>){
-        return (await this.friendService.unFriend(session.passport.user.id, body.userId))
+        return (await this.friendsService.unFriend(session.passport.user.id, body.userId))
     }
 }
