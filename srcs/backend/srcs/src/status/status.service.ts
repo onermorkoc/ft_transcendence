@@ -7,35 +7,35 @@ export class StatusService {
     constructor(private userService: UsersService) {}
 
     private usersOnline: Array<number> = [];
-    private usersClientIds: Array<Array<string>> = [];
+    private usersClientCounts: Array<number> = [];
 
-    async addUserOnline(user: User, clientId: string): Promise<void> {
-        if (this.usersOnline.includes(user.id)) {
-            const index: number = this.usersOnline.indexOf(user.id);
-            this.usersClientIds[index].push(clientId);
+    async addUserOnline(userId: number): Promise<void> {
+        if (this.usersOnline.includes(userId)) {
+            const index: number = this.usersOnline.indexOf(userId);
+            this.usersClientCounts[index]++;
         }
         else {
-            this.usersOnline.push(user.id);
-            this.usersClientIds.push([clientId]);
+            this.usersOnline.push(userId);
+            this.usersClientCounts.push(1);
 
+            const user = await this.userService.findUserbyID(userId);
             user.status = Status.ONLINE;
             await this.userService.update(user);
         }
     }
 
-    async removeUserOnline(clientId: string): Promise<void> {
-        const rowIndex: number = this.usersClientIds.findIndex((row) => row.includes(clientId));
+    async removeUserOnline(userId: number): Promise<void> {
+        const index: number = this.usersOnline.indexOf(userId);
+        if (index == -1) {return;}
 
-        if (this.usersClientIds[rowIndex].length > 1) {
-            const index = this.usersClientIds[rowIndex].indexOf(clientId);
-            this.usersClientIds[rowIndex].splice(index, 1);
+        if (this.usersClientCounts[index] > 1) {
+            this.usersClientCounts[index]--;
         }
         else {
-            const user: User = await this.userService.findUserbyID(this.usersOnline[rowIndex]);
+            this.usersOnline.splice(index, 1);
+            this.usersClientCounts.splice(index, 1);
 
-            this.usersClientIds.splice(rowIndex, 1);
-            this.usersOnline.splice(rowIndex, 1);
-
+            const user = await this.userService.findUserbyID(userId);
             user.status = Status.OFFLINE;
             await this.userService.update(user);
         }

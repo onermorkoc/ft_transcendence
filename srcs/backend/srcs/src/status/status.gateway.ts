@@ -1,10 +1,9 @@
-import { OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io'
 import { StatusService } from "./status.service";
-import { User } from "@prisma/client";
 
 @WebSocketGateway({ cors: { origin: true, credentials: true }, namespace: 'status'})
-export class StatusGateway implements OnGatewayInit, OnGatewayDisconnect {
+export class StatusGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection {
     constructor(private statusService: StatusService) {}
 
     @WebSocketServer()
@@ -16,14 +15,24 @@ export class StatusGateway implements OnGatewayInit, OnGatewayDisconnect {
         })
     }
 
-    async handleDisconnect(client: Socket) {
-        await this.statusService.removeUserOnline(client.id);
+    async handleConnection(client: Socket) {
+        const userIdStr: string | string[] = client.handshake.query.userId;
+        if (!userIdStr || Array.isArray(userIdStr)) {
+            client.disconnect();
+            return;
+        }
+        const userId: number = parseInt(userIdStr);
+        await this.statusService.addUserOnline(userId);
         this.server.emit('usersOnline', this.statusService.getUsersOnline());
     }
 
-    @SubscribeMessage('userConnected')
-    handleUserConnected(client: Socket, user: User) {
-        this.statusService.addUserOnline(user, client.id);
+    async handleDisconnect(client: Socket) {
+        const userIdStr: string | string[] = client.handshake.query.userId;
+        if (Array.isArray(userIdStr)) {
+            return;
+        }
+        const userId: number = parseInt(userIdStr);
+        await this.statusService.removeUserOnline(userId);
         this.server.emit('usersOnline', this.statusService.getUsersOnline());
     }
 }
