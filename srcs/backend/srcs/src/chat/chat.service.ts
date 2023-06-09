@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Chatroom, RoomStatus, User } from '@prisma/client';
+import { Chatroom, Message, RoomStatus, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt'
 import { UsersService } from 'src/users/users.service';
+import { RemoteSocket, Server } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 @Injectable()
 export class ChatService {
@@ -95,5 +97,47 @@ export class ChatService {
         else {
             return str;
         }
+    }
+
+    async createNewMessage(userId: number, roomId: string, message: string): Promise<Message> {
+        const msg: Message = await this.prismaService.message.create({
+            data: {
+                userId: userId,
+                data: message,
+                chatroom: { connect: { id: roomId } }
+            }
+        });
+        this.databaseDeleteOldMessages(msg.chatroomId);
+        return msg;
+    }
+
+    async databaseDeleteOldMessages(roomId: string) {
+        const messages: Array<Message> = await this.prismaService.message.findMany({
+            where: {
+                chatroomId: roomId
+            }
+        });
+        while (messages.length > 30) {
+            const delMsgId = messages[0].id;
+            await this.prismaService.message.delete({
+                where: {
+                    id: delMsgId
+                }
+            });
+            messages.splice(0, 1);
+        }
+    }
+
+    async getUsersInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
+        const clientsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoom.id).fetchSockets();
+        const userIdsInRoom: Array<number> = clientsInRoom.map((obj) => parseInt(this.strFix(obj.handshake.query.userId)));
+        const uniqueUserIdsInRoom: Array<number> = [...new Set(userIdsInRoom)];
+        return uniqueUserIdsInRoom;
+    }
+
+    async getAdminsInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
+        const usersInRoom = await this.getUsersInRoom(chatRoom, server);
+        const adminsInRoom: Array<number> = chatRoom.adminIds.filter((value) => usersInRoom.includes(value));
+        return adminsInRoom;
     }
 }
