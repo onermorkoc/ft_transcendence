@@ -44,4 +44,13 @@ export class StatusService {
     getUsersOnline(): Array<number> {
         return this.usersOnline;
     }
+
+    strFix(str: string | string[]): string {
+        if (Array.isArray(str)) {
+            return null;
+        }
+        else {
+            return str;
+        }
+    }
 }

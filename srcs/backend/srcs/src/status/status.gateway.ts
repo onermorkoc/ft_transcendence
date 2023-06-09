@@ -16,22 +16,20 @@ export class StatusGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
     }
 
     async handleConnection(client: Socket) {
-        const userIdStr: string | string[] = client.handshake.query.userId;
-        if (!userIdStr || Array.isArray(userIdStr)) {
+        const userId: number = parseInt(this.statusService.strFix(client.handshake.query.userId));
+        if (Number.isNaN(userId)) {
             client.disconnect();
             return;
         }
-        const userId: number = parseInt(userIdStr);
         await this.statusService.addUserOnline(userId);
         this.server.emit('usersOnline', this.statusService.getUsersOnline());
     }
 
     async handleDisconnect(client: Socket) {
-        const userIdStr: string | string[] = client.handshake.query.userId;
-        if (Array.isArray(userIdStr)) {
+        const userId: number = parseInt(this.statusService.strFix(client.handshake.query.userId));
+        if (Number.isNaN(userId)) {
             return;
         }
-        const userId: number = parseInt(userIdStr);
         await this.statusService.removeUserOnline(userId);
         this.server.emit('usersOnline', this.statusService.getUsersOnline());
     }

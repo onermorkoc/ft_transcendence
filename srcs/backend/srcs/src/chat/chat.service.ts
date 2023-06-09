@@ -87,4 +87,13 @@ export class ChatService {
     async comparePassword(password: string, hash: string): Promise<boolean> {
         return bcrypt.compare(password, hash);
     }
+
+    strFix(str: string | string[]): string {
+        if (Array.isArray(str)) {
+            return null;
+        }
+        else {
+            return str;
+        }
+    }
 }
