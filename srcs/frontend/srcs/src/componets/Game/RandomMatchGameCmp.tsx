@@ -38,6 +38,7 @@ const RandomMatchGameCmp = () => {
 
     useEffect(() => {
         if (searchStatus){
+            // eslint-disable-next-line
             intervalID = setInterval(() => {
                 setSecond(second => second + 1)
             }, 1000)

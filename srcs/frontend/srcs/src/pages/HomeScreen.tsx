@@ -16,7 +16,7 @@ const HomeScreen = () => {
     const [ tab, setTab ] = useState<JSX.Element>(<UserInfoCmp/>)
 
     const setupUserStatusSocket = () => {
-        const socket = io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id}})
+        /* const socket =  */io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id}})
         //socket.emit("userConnected", currentUser)
     }
 
