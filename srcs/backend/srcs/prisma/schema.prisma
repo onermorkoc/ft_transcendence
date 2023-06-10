@@ -19,7 +19,7 @@ model User {
   email       String @unique
   nickname    String @unique
   photoUrl    String
-  status      Status
+  status      Status @default(OFFLINE)
 
   twoFactorEnabled Boolean @default(false)
   twoFactorSecret  String?
@@ -34,6 +34,7 @@ model User {
 
   chatRoomIds String[]
   friendIds   Int[]
+  blockedUserIds Int[]
 
   sentFriendRequests     FriendRequest[] @relation("SentRequest")
   receivedFriendRequests FriendRequest[] @relation("ReceivedRequest")
@@ -48,11 +49,31 @@ model Chatroom {
   roomStatus RoomStatus
   password   String?
 
-  userIds    Int[]
   adminIds   Int[]
-  banListIds Int[]
+  muteList   MuteObject[] @relation("MuteList")
+  banList    BanObject[] @relation("BanList")
 
   messages Message[] @relation("Messages")
+}
+
+model MuteObject {
+  id  Int @id @default(autoincrement())
+
+  userId Int
+  expireDate BigInt
+
+  chatroom   Chatroom @relation("MuteList", fields: [chatroomId], references: [id])
+  chatroomId String
+}
+
+model BanObject {
+  id  Int @id @default(autoincrement())
+
+  userId Int
+  expireDate BigInt
+  
+  chatroom   Chatroom @relation("BanList", fields: [chatroomId], references: [id])
+  chatroomId String
 }
 
 model Message {

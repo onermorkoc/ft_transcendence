@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Chatroom, Message, RoomStatus, User } from '@prisma/client';
+import { BanObject, Chatroom, Message, MuteObject, RoomStatus, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt'
 import { UsersService } from 'src/users/users.service';
@@ -33,15 +33,15 @@ export class ChatService {
         return true
     }
 
-    async createRoom(body: { roomName: string, ownerId: number, roomStatus: RoomStatus, password?: string }): Promise<Chatroom> {
+    async createRoom(body: { roomName: string, roomStatus: RoomStatus, password?: string }, session: Record<string, any>): Promise<Chatroom> {
+        const userId = session.passport.user.id;
         const chatRoom = await this.prismaService.chatroom.create({
             data: {
                 name: body.roomName,
-                ownerId: body.ownerId,
+                ownerId: userId,
                 roomStatus: body.roomStatus
             }
         });
-
         if (body.roomStatus == RoomStatus.PROTECTED) {
             if (!body.password) {
                 this.prismaService.chatroom.delete({
@@ -55,12 +55,13 @@ export class ChatService {
             chatRoom.password = hashedPassword;
             await this.update(chatRoom);
         }
-        chatRoom.adminIds.push(body.ownerId);
+        chatRoom.adminIds.push(userId);
         await this.update(chatRoom);
         return chatRoom;
     }
 
-    async joinRoom(body: { userId: number, roomId: string, password?: string }) {
+    async joinRoom(body: { roomId: string, password?: string }, session: Record<string, any>): Promise<boolean> {
+        const userId = session.passport.user.id;
         const chatRoom: Chatroom = await this.findChatRoombyID(body.roomId);
 
         if (chatRoom.roomStatus == RoomStatus.PRIVATE) {
@@ -75,9 +76,16 @@ export class ChatService {
                 throw new BadRequestException('Wrong Password.');
             }
         }
+        if ((await this.getBannedUserIds(chatRoom.id)).includes(userId)) {
+            throw new BadRequestException('You are banned from this Channel.');
+        }
 
-        const user: User = await this.userService.findUserbyID(body.userId);
-        user.chatRoomIds.push(body.roomId);
+        const user: User = await this.userService.findUserbyID(userId);
+        if (!user.chatRoomIds.includes(body.roomId)) {
+            user.chatRoomIds.push(body.roomId);
+            await this.userService.update(user);
+        }
+        return true;
     }
 
     async hashPassword(password: string): Promise<string> {
@@ -111,6 +119,26 @@ export class ChatService {
         return msg;
     }
 
+    async createNewMute(userId: number, expireDate: number, roomId: string,): Promise<MuteObject> {
+        return this.prismaService.muteObject.create({
+            data: {
+                userId: userId,
+                expireDate: expireDate,
+                chatroom: { connect: { id: roomId } }
+            }
+        });
+    }
+
+    async createNewBan(userId: number, expireDate: number, roomId: string): Promise<MuteObject> {
+        return this.prismaService.banObject.create({
+            data: {
+                userId: userId,
+                expireDate: expireDate,
+                chatroom: { connect: { id: roomId } }
+            }
+        });
+    }
+
     async databaseDeleteOldMessages(roomId: string) {
         const messages: Array<Message> = await this.prismaService.message.findMany({
             where: {
@@ -139,5 +167,55 @@ export class ChatService {
         const usersInRoom = await this.getUsersInRoom(chatRoom, server);
         const adminsInRoom: Array<number> = chatRoom.adminIds.filter((value) => usersInRoom.includes(value));
         return adminsInRoom;
+    }
+
+    async getMutedUsersInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
+        const muteObjects: Array<MuteObject> = await this.prismaService.muteObject.findMany({
+            where: {
+                chatroomId: chatRoom.id
+            }
+        });
+        const mutedUsers: Array<number> = muteObjects.map((obj) => {
+            return obj.userId;
+        });
+        const usersInRoom: Array<number> = await this.getUsersInRoom(chatRoom, server);
+        const mutedUsersInRoom: Array<number> = mutedUsers.filter((value) => usersInRoom.includes(value));
+        return mutedUsersInRoom;
+    }
+
+    async userIdtoClients(userId: number, chatRoom: Chatroom, server: Server): Promise<RemoteSocket<DefaultEventsMap, any>[]> {
+        const socketsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoom.id).fetchSockets();
+        const clientsOfUser: RemoteSocket<DefaultEventsMap, any>[] = socketsInRoom.filter((obj) => parseInt(this.strFix(obj.handshake.query.userId)) == userId);
+        return clientsOfUser;
+    }
+
+    async updateBans(roomId: string): Promise<void> {
+        const banObjects: Array<BanObject> = await this.prismaService.banObject.findMany({
+            where: {
+                chatroomId: roomId
+            }
+        });
+        for (const obj of banObjects) {
+            if (obj.expireDate <= Date.now()) {
+                await this.prismaService.banObject.delete({
+                    where: {
+                        id: obj.id
+                    }
+                });
+            }
+        }
+    }
+
+    async getBannedUserIds(roomId: string): Promise<Array<number>> {
+        await this.updateBans(roomId);
+        const banObjects: Array<BanObject> = await this.prismaService.banObject.findMany({
+            where: {
+                chatroomId: roomId
+            }
+        });
+        const bannedUsers: Array<number> = banObjects.map((obj) => {
+            return obj.userId;
+        });
+        return bannedUsers;
     }
 }

@@ -91,6 +91,11 @@ export class UsersService {
             }
         });
     }
+
+    async blockUser(user: User, blockedUserId: number): Promise<void> {
+        user.blockedUserIds.push(blockedUserId);
+        await this.update(user);
+    }
 }
 
 
