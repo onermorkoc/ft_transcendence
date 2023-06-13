@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import "./Game.css"
+import "../ui-design/styles/GameScreen.css"
 import soundWin from '../assets/gamewin2.mp3';
 import soundLose from '../assets/8bit_gamelose.mp3';
 import soundCrashWall from '../assets/8bit_crash.mp3';
@@ -8,9 +8,9 @@ import soundCrashPaddle from '../assets/8bit_jump.mp3';
 function ScoreBoard({ scoreLeft, scoreRight }: { scoreLeft: number, scoreRight: number }){
   return(
     <div className='scoreBoard'>
-      <div className="playerRScore">peachadam:{scoreLeft/2}</div>
+      <div className="playerRScore">peachadam:{scoreLeft}</div>
       <div className='vs'>VS</div>
-      <div className="playerLScore">peachadam:{scoreRight/2}</div>
+      <div className="playerLScore">peachadam:{scoreRight}</div>
     </div>
   )
 }
@@ -42,12 +42,16 @@ function playSound(str : string){
   }
 }
 
-const Game: React.FC = () => {
+const GameScreen: React.FC = () => {
 
   var [scoreRight, setScoreRight] = useState(0);
   var [scoreLeft, setScoreLeft] = useState(0);
 
   useEffect(() => {
+    const targetFPS = 120;
+    const targetFrameTime = 1000 / targetFPS;
+    let lastFrameTime = 0;
+
     const canvas = document.getElementById('game') as HTMLCanvasElement;
     const context = canvas.getContext('2d');
     const grid = 15;
@@ -93,10 +97,9 @@ const Game: React.FC = () => {
       );
     }
 
-    function loop() {
-      requestAnimationFrame(loop);
-      
-      if (context)
+    function loop(currentTime: any) {
+      const elapsed = currentTime - lastFrameTime;
+      if (context && elapsed >= targetFrameTime)
       {
         context.clearRect(0, 0, canvas.width, canvas.height);
         
@@ -179,8 +182,9 @@ const Game: React.FC = () => {
         for (let i = grid; i < canvas.height - grid; i += grid * 2) {
           context.fillRect(canvas.width / 2 - grid / 2, i, grid, grid);
         }
+        lastFrameTime = currentTime;
       }
-
+      requestAnimationFrame(loop);
     }
 
     //input dinleyen yerler
@@ -221,9 +225,9 @@ const Game: React.FC = () => {
   );
 };
 
-export default Game;
+export default GameScreen;
 
-const GameScreen = () => {
+/*const GameScreen = () => {
     
     //const { matchID } = useParams()
 
@@ -231,7 +235,7 @@ const GameScreen = () => {
 
     return (
         <>
-            {/* Eski Skore Board */}
+            {/* Eski Skore Board }
 
             {/* <div className="gameScreenRootDiv">
                 <div className="gameScreenUsersInfoDiv">
@@ -251,9 +255,9 @@ const GameScreen = () => {
                     </div>
                     <img className="matchAvatarImg" src="https://cdn.intra.42.fr/users/3519bd7260eb9395ef762149957b6f43/alyasar.jpg" alt=""/>
                 </div>
-            </div> */}
+            </div> }
 
-            {/* Yaysu */}
+            {/* Yaysu }
             
             <Game/>
 
@@ -261,4 +265,4 @@ const GameScreen = () => {
     )
 }
 
-export default GameScreen
+export default GameScreen*/
