@@ -1,14 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { BanObject, Chatroom, Message, MuteObject, RoomStatus, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt'
 import { UsersService } from 'src/users/users.service';
 import { RemoteSocket, Server } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { ChatGateway } from './chat.gateway';
 
 @Injectable()
 export class ChatService {
-    constructor (private prismaService: PrismaService, private userService: UsersService) {}
+    constructor (private prismaService: PrismaService, private userService: UsersService, @Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway) {}
 
     async getAllRooms(): Promise<Array<Chatroom>>{
         return (await this.prismaService.chatroom.findMany())
@@ -93,6 +94,7 @@ export class ChatService {
             await this.userService.update(user);
             await this.update(chatRoom);
         }
+        this.chatGateway.server.to(chatRoom.id).emit('allUsers', await this.getAllUsers(chatRoom));
         return true;
     }
 
@@ -172,6 +174,16 @@ export class ChatService {
         const userIdsInRoom: Array<number> = clientsInRoom.map((obj) => parseInt(this.strFix(obj.handshake.query.userId)));
         const uniqueUserIdsInRoom: Array<number> = [...new Set(userIdsInRoom)];
         return uniqueUserIdsInRoom;
+    }
+
+    async getAllUsers(chatRoom: Chatroom): Promise<Array<User>> {
+        return await this.prismaService.user.findMany({
+            where: {
+                chatRoomIds: {
+                    has: chatRoom.id
+                }
+            }
+        });
     }
 
     async getAdminsInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {

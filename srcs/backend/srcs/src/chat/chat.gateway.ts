@@ -30,6 +30,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         this.server.to(chatRoom.id).emit('adminsInRoom', await this.chatService.getAdminsInRoom(chatRoom, this.server));
         this.server.to(chatRoom.id).emit('mutedUsersInRoom', await this.chatService.getMutedUsersInRoom(chatRoom, this.server));
         this.server.to(chatRoom.id).emit('ownersInRoom', await this.chatService.getOwnersInRoom(chatRoom, this.server));
+        this.server.to(client.id).emit('allUsers', await this.chatService.getAllUsers(chatRoom));
     }
 
     async handleDisconnect(client: Socket) {
@@ -210,6 +211,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             this.server.to(chatRoom.id).emit('usersInfoInRoom', await this.chatService.getUsersInfoInRoom(updatedChatRoom, this.server));
             this.server.to(chatRoom.id).emit('adminsInRoom', await this.chatService.getAdminsInRoom(updatedChatRoom, this.server));
             this.server.to(chatRoom.id).emit('ownersInRoom', await this.chatService.getOwnersInRoom(updatedChatRoom, this.server));
+            this.server.to(chatRoom.id).emit('allUsers', await this.chatService.getAllUsers(updatedChatRoom));
         }
     }
 }
