@@ -38,11 +38,11 @@ export class ChatService {
     }
 
     async createRoom(body: { roomName: string, roomStatus: RoomStatus, password?: string }, session: Record<string, any>): Promise<Chatroom> {
-        const userId = session.passport.user.id;
+        const user: User = await this.userService.findUserbyID(session.passport.user.id);
         const chatRoom = await this.prismaService.chatroom.create({
             data: {
                 name: body.roomName,
-                ownerId: userId,
+                ownerId: user.id,
                 roomStatus: body.roomStatus
             }
         });
@@ -59,8 +59,10 @@ export class ChatService {
             chatRoom.password = hashedPassword;
             await this.update(chatRoom);
         }
-        chatRoom.adminIds.push(userId);
+        chatRoom.adminIds.push(user.id);
+        user.chatRoomIds.push(chatRoom.id);
         await this.update(chatRoom);
+        await this.userService.update(user);
         return chatRoom;
     }
 
