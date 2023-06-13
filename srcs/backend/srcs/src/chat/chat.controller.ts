@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Session, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
-import { RoomStatus } from '@prisma/client';
+import { Chatroom, RoomStatus } from '@prisma/client';
 
 @Controller('chat')
 export class ChatController {
@@ -19,8 +19,13 @@ export class ChatController {
         return this.chatService.joinRoom(body, session);
     }
 
-    @Get('room/:id') // url güvenliği eksik 
+    @Get('room/find/:id') // frontend url güvenliği eksik 
     async getRoom(@Param('id') roomId: string){
         return (await this.chatService.findChatRoombyID(roomId))
+    }
+
+    @Get('room/all') // backend url güvenliği eksik
+    async getAllRooms(): Promise<Array<Chatroom>> {
+        return (await this.chatService.getAllRooms())
     }
 }

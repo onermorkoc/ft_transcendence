@@ -10,6 +10,10 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 export class ChatService {
     constructor (private prismaService: PrismaService, private userService: UsersService) {}
 
+    async getAllRooms(): Promise<Array<Chatroom>>{
+        return (await this.prismaService.chatroom.findMany())
+    }
+
     async findChatRoombyID(roomId: string): Promise<Chatroom> {
         return this.prismaService.chatroom.findUnique({
             where: {

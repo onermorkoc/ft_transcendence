@@ -230,7 +230,7 @@ const ChatScreen = () => {
         window.addEventListener("click", eventListener)
 
         if (!roomInfo)
-            axios.get(`/chat/room/${roomId}`).then(response => setRoomInfo(response.data))
+            axios.get(`/chat/room/find/${roomId}`).then(response => setRoomInfo(response.data))
 
         if (currentUser && roomInfo) {
             if (!socket)
