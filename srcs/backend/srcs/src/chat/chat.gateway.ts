@@ -19,7 +19,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         console.log("Client connected: " + client.id);
         const user: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
         const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
-        if (!user || !chatRoom) {
+        if (!user || !chatRoom || !user.chatRoomIds.includes(chatRoom.id)) {
             console.log("Client disconnected: " + client.id);
             client.disconnect();
             return;
@@ -190,6 +190,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
 
         chatRoom.ownerId = newOwnerId;
+        chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(userId), 1);
+        if (!chatRoom.adminIds.includes(newOwnerId)) {
+            chatRoom.adminIds.push(newOwnerId);
+        }
         await this.chatService.update(chatRoom);
         this.server.to(chatRoom.id).emit('ownersInRoom', await this.chatService.getOwnersInRoom(chatRoom, this.server));
     }

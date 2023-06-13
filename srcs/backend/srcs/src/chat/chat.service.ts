@@ -138,6 +138,9 @@ export class ChatService {
     }
 
     async createNewBan(userId: number, expireDate: number, roomId: string): Promise<MuteObject> {
+        const user = await this.userService.findUserbyID(userId);
+        user.chatRoomIds.splice(user.chatRoomIds.indexOf(roomId), 1);
+        await this.userService.update(user);
         return this.prismaService.banObject.create({
             data: {
                 userId: userId,
