@@ -4,6 +4,8 @@ import soundWin from '../assets/gamewin2.mp3';
 import soundLose from '../assets/8bit_gamelose.mp3';
 import soundCrashWall from '../assets/8bit_crash.mp3';
 import soundCrashPaddle from '../assets/8bit_jump.mp3';
+import { io } from 'socket.io-client';
+import axios from 'axios';
 
 function ScoreBoard({ scoreLeft, scoreRight }: { scoreLeft: number, scoreRight: number }){
   return(
@@ -18,25 +20,21 @@ function ScoreBoard({ scoreLeft, scoreRight }: { scoreLeft: number, scoreRight: 
 function playSound(str : string){
   if (str === "win")
   {
-    console.log("ehe");
     const sound = new Audio(soundWin);
     sound.play();
   }
   else if (str === "lose")
   {
-    console.log("ehe");
     const sound = new Audio(soundLose);
     sound.play();
   }
   else if (str === "wall")
   {
-    console.log("ehe");
     const sound = new Audio(soundCrashWall);
     sound.play();
   }
   else if (str === "paddle")
   {
-    console.log("ehe");
     const sound = new Audio(soundCrashPaddle);
     sound.play();
   }
@@ -48,6 +46,10 @@ const GameScreen: React.FC = () => {
   var [scoreLeft, setScoreLeft] = useState(0);
 
   useEffect(() => {
+    //const user = axios.get('/users/current').then(response => response.data);
+    //console.log(user);
+    const socket = io(`${process.env.REACT_APP_BACKEND_URI}/game`);
+
     const targetFPS = 120;
     const targetFrameTime = 1000 / targetFPS;
     let lastFrameTime = 0;
@@ -218,14 +220,17 @@ const GameScreen: React.FC = () => {
   }, []);
 
   return (
-    <div className='game'>
-      <ScoreBoard scoreLeft={scoreLeft} scoreRight={scoreRight} />
-      <canvas width="1000" height="585" id="game" style={{ background: 'black' }}></canvas>
+    <div className='gameRoot'>
+        <div className='game'>
+        <ScoreBoard scoreLeft={scoreLeft} scoreRight={scoreRight} />
+        <canvas width="1000" height="585" id="game" style={{ background: 'black' }}></canvas>
+        </div>
     </div>
   );
 };
 
 export default GameScreen;
+
 
 /*const GameScreen = () => {
     
