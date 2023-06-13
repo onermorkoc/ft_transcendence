@@ -20,7 +20,7 @@ const SearchChatRoomCmp = () => {
                                 <div className="listViewInfoDiv">
                                     <div>Oda adı: {value.name}</div>
                                     <div>Durum: {value.roomStatus}</div>
-                                    <div>Üye: {value.userIds.length} kişi</div>
+                                    {/* <div>Üye: {value.userIds.length} kişi</div> */}
                                 </div>
                             </div>
                         </div>

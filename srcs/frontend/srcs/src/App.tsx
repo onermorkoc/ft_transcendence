@@ -33,7 +33,7 @@ function App() {
           <Route path='/editprofile' element={<EditProfileScreen/>}/>
           <Route path='/game' element={<GameScreen/>}/>
           <Route path='/history' element={<GameHistoryCmp/>}/> 
-          <Route path='/chat' element={<ChatScreen/>}/>
+          <Route path='/chat/:roomId' element={<ChatScreen/>}/>
           <Route path='*'element={<PageNotFoundCmp/>}/>
         </Routes>
       </BrowserRouter>

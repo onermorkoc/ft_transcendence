@@ -218,4 +218,12 @@ export class ChatService {
         });
         return bannedUsers;
     }
+    
+    async getUsersInfoInRoom(chatRoom: Chatroom, server: Server): Promise<Array<User>> {
+        const userIdsInRoom = await this.getUsersInRoom(chatRoom, server) 
+        let usersInfo: Array<User> = []
+        for (const userId of userIdsInRoom)
+            usersInfo.push(await this.userService.findUserbyID(userId))
+        return (usersInfo)
+    }
 }

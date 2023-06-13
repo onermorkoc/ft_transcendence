@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react"
-import { ChatRoom, User } from "../dto/DataObject"
+import { ChatRoom, Point, RoomAuthority, RoomMember, User } from "../dto/DataObject"
 import "../ui-design/styles/ChatScreen.css"
-
-interface Point {
-    x: number, 
-    y: number
-}
+import { useParams } from "react-router-dom"
+import { Socket, io } from "socket.io-client"
+import useCurrentUser from "../services/Auth"
+import axios from "axios"
 
 const viewForNormal = (point: Point): JSX.Element => {
     return (
@@ -45,7 +44,7 @@ const viewForAdmin = (point: Point): JSX.Element => {
     )
 }
 
-const viewForLeader = (userAuthority: string, point: Point): JSX.Element => {
+const viewForLeader = (member: RoomMember, point: Point): JSX.Element => {
     return (
         <>
             <div className="chatMenuDiv" style={{top: `${point.y}px`, left: `${point.x}px`}}>
@@ -67,7 +66,7 @@ const viewForLeader = (userAuthority: string, point: Point): JSX.Element => {
                 </div>
                 <div className="chatMenuListDiv">
                     {
-                        userAuthority === "admin" ?
+                        member.authority === "ADMIN" ?
                             <>
                                 <img style={{width: "25px"}} src={require("../ui-design/images/admin2.png")} alt=""/>
                                 <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Adminlikten çıkart</div>
@@ -88,18 +87,18 @@ const viewForLeader = (userAuthority: string, point: Point): JSX.Element => {
     )
 }
 
-const chatMenu = (currentUserAuthority: string, userAuthority: string, point: Point): JSX.Element => {
+const chatMenu = (currentUserAuthority: RoomAuthority, member: RoomMember, point: Point): JSX.Element => {
     
     //console.log(`x: ${point.x}, y: ${point.y}`)
 
-    if (currentUserAuthority === "leader"){
-        if (userAuthority === "leader")
+    if (currentUserAuthority === "LEADER"){
+        if (member.authority === "LEADER")
             return (<></>)
         else
-            return (viewForLeader(userAuthority, point))
+            return (viewForLeader(member, point))
     }
-    else if (currentUserAuthority === "admin"){
-        if (userAuthority === "leader" || userAuthority === "admin")
+    else if (currentUserAuthority === "ADMIN"){
+        if (member.authority === "LEADER" || member.authority === "ADMIN")
             return (viewForNormal(point))
         else
             return (viewForAdmin(point))
@@ -108,46 +107,28 @@ const chatMenu = (currentUserAuthority: string, userAuthority: string, point: Po
         return (viewForNormal(point))
 }
 
-const useChatMemberList = (currentUserAuthority: string, /*userInfo: User, */ userAuthority: string) => {
-
-    const [show, setShow] = useState<boolean>(false)
-    const [point, setPoint] = useState<Point | null>(null)
-
-    useEffect(() => {
-        const eventListener = () => setShow(false)
-        window.addEventListener("click", eventListener)
-        return () => window.removeEventListener("click", eventListener)
-        // eslint-disable-next-line
-    }, [])
+const chatMemberList = (member: RoomMember) => {
 
     return (
         <>
-            <div className="memberListDiv" onContextMenu={(context) => {
-                context.preventDefault()
-                setPoint({x: context.clientX, y: context.clientY})
-                setShow(true)
-                }}>
-
-                <img style={{width: "50px", height: "50px", borderRadius: "25px", objectFit: "cover"}} src="https://cdn.intra.42.fr/users/be2eeaebbc2be8a4f6289b5996d64362/omorkoc.jpg" alt=""/>
-                <div style={{display: "flex", flexDirection: "column", marginLeft: "10px", marginTop: "4px"}}>
-                    <div style={{fontSize: "1.1em"}}>Öner Morkoç</div>
-                    <div style={{fontSize: "1.1em"}}>çevrimiçi</div>
-                </div>
-                {
-                    userAuthority !== "normal" ? 
-                    <>
-                        {
-                            userAuthority === "leader" ?
-                                <img style={{width: "37.5px", height: "37.5px", marginRight: "10px", marginLeft: "auto"}} src={require("../ui-design/images/owner.png")} alt=""/>
-                            :
-                                <img style={{width: "37.5px", height: "37.5px", marginRight: "10px", marginLeft: "auto"}} src={require("../ui-design/images/admins.png")} alt=""/>
-                        }
-                    </>
-                    :
-                    null
-                }
-                {show && chatMenu(currentUserAuthority, userAuthority, point!!)}
+            <img style={{width: "50px", height: "50px", borderRadius: "25px", objectFit: "cover"}} src="https://cdn.intra.42.fr/users/be2eeaebbc2be8a4f6289b5996d64362/omorkoc.jpg" alt=""/>
+            <div style={{display: "flex", flexDirection: "column", marginLeft: "10px", marginTop: "4px"}}>
+                <div style={{fontSize: "1.1em"}}>{member.user.displayname}</div>
+                <div style={{fontSize: "1.1em"}}>{member.user.status}</div>
             </div>
+            {
+                member.authority !== "NORMAL" ? 
+                <>
+                    {
+                        member.authority === "LEADER" ?
+                            <img style={{width: "37.5px", height: "37.5px", marginRight: "10px", marginLeft: "auto"}} src={require("../ui-design/images/owner.png")} alt=""/>
+                        :
+                            <img style={{width: "37.5px", height: "37.5px", marginRight: "10px", marginLeft: "auto"}} src={require("../ui-design/images/admins.png")} alt=""/>
+                    }
+                </>
+                :
+                    null
+            }
         </>
     )
 }
@@ -167,7 +148,7 @@ const ChatSetting = () => {
                 </select>
                 <input className="chatSettingsInput" type="text" placeholder="Oda Adı" />
                 {
-                    select === "Private" ?
+                    select === "Protected" ?
                         <input className="chatSettingsInput" type="text" placeholder="Parola" />
                     :
                         null
@@ -206,23 +187,74 @@ const MessageUi = (direction: "right" | "left") => {
     }
 }
 
-
 const ChatScreen = () => {
 
+    const currentUser = useCurrentUser()
+    const [show, setShow] = useState<boolean>(false)
+    const [point, setPoint] = useState<Point | null>(null)
     const [settings, setSettings] = useState<boolean>(false)
+    const { roomId } = useParams()
+    const [usersInfo, setUsersInfo] = useState<Array<User>>()
+    const [adminIds, setAdminIds] = useState<Array<number>>()
+    const [roomInfo, setRoomInfo] = useState<ChatRoom | null>(null)
+    const [mutedIds, setMutedIds] = useState<Array<number>>()
+    const [members, setMembers] = useState<Array<RoomMember>>()
+    const [currentUserAuthority, setCurrentUserAuthority] = useState<RoomAuthority>()
+    const [socket, setSocket] = useState<Socket | null>(null)
 
+    const setupAuthority = () => {
+        const membersArray: Array<RoomMember> = []
+        usersInfo?.forEach((user) => {
+            if (roomInfo!!.ownerId === user.id)
+                membersArray.push({user: user, authority: "LEADER"})
+            else if (adminIds!!.includes(user.id))
+                membersArray.push({user: user, authority: "ADMIN"})
+            else
+                membersArray.push({user: user, authority: "NORMAL"})
+        })
+        setMembers(membersArray)
+    }
+
+    const setupCurrentUserAuthority = () => {
+        if (roomInfo!!.ownerId === currentUser!!.id)
+            setCurrentUserAuthority("LEADER")
+        else if (adminIds!!.includes(currentUser!!.id))
+            setCurrentUserAuthority("ADMIN")
+        else
+            setCurrentUserAuthority("NORMAL")
+    }
+
+    useEffect(() => {
+
+        const eventListener = () => setShow(false)
+        window.addEventListener("click", eventListener)
+
+        if (!roomInfo)
+            axios.get(`/chat/room/${roomId}`).then(response => setRoomInfo(response.data))
+
+        if (currentUser && roomInfo) {
+            if (!socket)
+                setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/chat`, {query: {userId: currentUser.id, roomId: roomId}}))
+        
+            if (socket){
+                socket.on("usersInfoInRoom", (data) => setUsersInfo(data))
+                socket.on("adminsInRoom", (data) => setAdminIds(data))
+                socket.on("mutedUsersInRoom", (data) => setMutedIds(data))
+            }
+            
+            if(usersInfo && adminIds){
+                setupAuthority()
+                setupCurrentUserAuthority()
+            }
+        }
+
+        return () => window.removeEventListener("click", eventListener)
+        // eslint-disable-next-line
+    }, [currentUser, roomInfo, socket, adminIds, usersInfo, mutedIds, members])
 
     const backButton = () => {
         window.location.assign("/home")
     }
-
-    let roomInfo: ChatRoom
-    const admins: Array<number> = [0,1, 2]
-    const members: Array<number> = [0,1, 2]
-    const messages: Array<number> = [0,1]
-    let ownerInfo: User
-    let userAuthority: "leader" | "admin" | "normal" = "normal"
-    let currentUserAuthority: "leader" | "admin" | "normal" = "normal"
     
     return (
         <>
@@ -230,8 +262,8 @@ const ChatScreen = () => {
                 <div style={{display: "flex", flexDirection: "row", flex: "10vh", alignItems: "center"}} >
                     <img className="chatScreenBackImg" onClick={backButton} src={require("../ui-design/images/back.png")} alt=""/>
                     <div style={{display: "flex", flexDirection: "column"}}>
-                        <div style={{color: "black", fontSize: "1.6em"}} >Kurtlar Sofrası</div>
-                        <div style={{color: "black", fontSize: "1.1em"}} >18 üye, 5 çevrimiçi</div>
+                        <div style={{color: "black", fontSize: "1.6em"}} >{roomInfo?.name}</div>
+                        <div style={{color: "black", fontSize: "1.1em"}} >{members?.length} üye</div>
                     </div>
                     <div style={{marginRight: "50px", marginLeft: "auto", display: "flex", flexDirection: "row", alignItems: "center"}}>
                         <img className="chatScreenExitImg" src={require("../ui-design/images/exit.png")} alt=""/>
@@ -247,9 +279,18 @@ const ChatScreen = () => {
                                 <div style={{color: "black", marginLeft: "10px"}}>Grup Üyeleri</div>
                             </div>
                             <div style={{height: "60vh", overflowX: "auto"}}>
-                                {useChatMemberList("leader", "leader")}
-                                {useChatMemberList("leader", "admin")}
-                                {useChatMemberList("leader", "normal")}
+                                {
+                                     members?.map((value, index) => (
+                                        <div className="memberListDiv" key={index} onContextMenu={(context) => {
+                                            context.preventDefault()
+                                            setPoint({x: context.clientX, y: context.clientY})
+                                            setShow(true)
+                                            }}>
+                                            {chatMemberList(value)}
+                                            {show && chatMenu(currentUserAuthority!!, value, point!!)}
+                                        </div>
+                                     ))
+                                }
                             </div>
                         </div>
                     </div>
@@ -264,9 +305,9 @@ const ChatScreen = () => {
                                     <div style={{flex: "9"}}>
                                         <div style={{overflowX: "auto", height: "80vh"}}>
                                             {
-                                                messages.map((value, index) => (
+                                                /* messages.map((value, index) => (
                                                     MessageUi("right")
-                                                ))
+                                                )) */
                                             }
                                         </div>
                                     </div>

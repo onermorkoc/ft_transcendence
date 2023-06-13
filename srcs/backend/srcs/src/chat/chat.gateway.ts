@@ -26,7 +26,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
         client.join(chatRoom.id);
 
-        this.server.to(chatRoom.id).emit('usersInRoom', await this.chatService.getUsersInRoom(chatRoom, this.server));
+        this.server.to(chatRoom.id).emit('usersInfoInRoom', await this.chatService.getUsersInfoInRoom(chatRoom, this.server));
         this.server.to(chatRoom.id).emit('adminsInRoom', await this.chatService.getAdminsInRoom(chatRoom, this.server));
         this.server.to(chatRoom.id).emit('mutedUsersInRoom', await this.chatService.getMutedUsersInRoom(chatRoom, this.server));
     }

@@ -1,70 +1,68 @@
 export interface User {
-    id: number,
-    displayname: string,
-    email: string,
-    nickname: string,
-    photoUrl: string
-    status: Status,
-    twoFactorEnabled: boolean,
-    twoFactorSecret: string,
-    twoFactorQrCode: string,
-    totalGame: number,
-    totalWin: number,
-    totalLose: number,
-    winRate: number,
-    title: Title,
-    globalRank: number  
-    chatRoomIds: Array<number>
-    friendIds: Array<number>
-    gameHistory: Array<GameHistory>
-  }
+  id: number,
+  displayname: string,
+  email: string,
+  nickname: string,
+  photoUrl: string
+  status: Status,
+  twoFactorEnabled: boolean,
+  twoFactorSecret: string,
+  twoFactorQrCode: string,
+  totalGame: number,
+  totalWin: number,
+  totalLose: number,
+  winRate: number,
+  title: Title,
+  globalRank: number  
+  chatRoomIds: Array<number>
+  friendIds: Array<number>
+  gameHistory: Array<GameHistory>
+}
   
-  export interface ChatRoom {
-    id: number,
-    name: string,
-    ownerId: number,
-    roomStatus: RoomStatus,
-    userIds: Array<number>,
-    adminIds: Array<number>,
-    banListIds: Array<number>
-  }
+export interface ChatRoom {
+  id: number,
+  name: string,
+  ownerId: number,
+  roomStatus: RoomStatus,
+  //userIds: Array<number>,
+  adminIds: Array<number>,
+  //banListIds: Array<number>
+}
   
-  export interface Game {
-    id: number,
-    playerOneId: number,
-    playerTwoId: number
-  }
+export interface Game {
+  id: number,
+  playerOneId: number,
+  playerTwoId: number
+}
   
-  interface GameHistory {
-    id: number,
-    userId: number,
-    opponentId:number,
-    win: boolean,
-    userScore: number,
-    opponentScore: number
-  }
+interface GameHistory {
+  id: number,
+  userId: number,
+  opponentId:number,
+  win: boolean,
+  userScore: number,
+  opponentScore: number
+}
   
-  enum Title {
-    CAYLAK,
-    USTA,
-    BUYUKUSTA,
-    EFSANE,
-    SANLI
-  }
+export type Title = "CAYLAK" | "USTA" | "BUYUKUSTA" | "EFSANE" | "SANLI"
   
-  enum Status {
-    ONLINE,
-    OFFLINE,
-    ATGAME
-  }
-  
-  enum RoomStatus {
-    PRIVATE,
-    PUBLIC,
-    PROTECTED,
-  }
+export type Status = "ONLINE" | "OFFLINE" | "ATGAME"
 
-  export interface RequestData {
-    receiverId: number,
-    senderId: number
-  }
+export type RoomStatus = "PRIVATE" | "PUBLIC" | "PROTECTED"
+
+export type RoomAuthority = "LEADER" | "ADMIN" | "NORMAL"
+
+export interface RoomMember {
+  user: User,
+  authority: RoomAuthority
+}
+
+export interface RequestData {
+  receiverId: number,
+  senderId: number
+}
+
+export interface Point {
+  x: number, 
+  y: number
+}
