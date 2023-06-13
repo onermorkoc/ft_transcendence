@@ -49,6 +49,7 @@ model Chatroom {
   roomStatus RoomStatus
   password   String?
 
+  userCount  Int @default(1)
   adminIds   Int[]
   muteList   MuteObject[] @relation("MuteList")
   banList    BanObject[] @relation("BanList")

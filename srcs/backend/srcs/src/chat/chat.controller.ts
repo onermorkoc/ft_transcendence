@@ -9,14 +9,14 @@ export class ChatController {
 
     @Post('room/create')
     @UseGuards(AuthenticatedGuard)
-    createRoom(@Body() body: { roomName: string, roomStatus: RoomStatus, password?: string }, @Session() session: Record<string, any>) {
-        return this.chatService.createRoom(body, session);
+    async createRoom(@Body() body: { roomName: string, roomStatus: RoomStatus, password?: string }, @Session() session: Record<string, any>) {
+        return (await this.chatService.createRoom(body, session));
     }
 
     @Post('room/join')
     @UseGuards(AuthenticatedGuard)
-    joinRoom(@Body() body: { roomId: string, password?: string }, @Session() session: Record<string, any>) {
-        return this.chatService.joinRoom(body, session);
+    async joinRoom(@Body() body: { roomId: string, password?: string }, @Session() session: Record<string, any>) {
+        return (await this.chatService.joinRoom(body, session));
     }
 
     @Get('room/:id') // url güvenliği eksik 

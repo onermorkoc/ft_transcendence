@@ -193,4 +193,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         await this.chatService.update(chatRoom);
         this.server.to(chatRoom.id).emit('ownersInRoom', await this.chatService.getOwnersInRoom(chatRoom, this.server));
     }
+
+    @SubscribeMessage('leaveRoom')
+    async handleLeaveRoom(client: Socket) {
+        const user: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
+        const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
+
+        const clientsOfUser = await this.chatService.userIdtoClients(user.id, chatRoom, this.server);
+        clientsOfUser.forEach((client) => client.disconnect()); // Burada ekstradan 'kickListen' gibi bir şeye emit de atılabilir o clientlar için
+        if (await this.chatService.leaveRoom(user, chatRoom, this.server)) {
+            const updatedChatRoom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
+            this.server.to(chatRoom.id).emit('usersInfoInRoom', await this.chatService.getUsersInfoInRoom(updatedChatRoom, this.server));
+            this.server.to(chatRoom.id).emit('adminsInRoom', await this.chatService.getAdminsInRoom(updatedChatRoom, this.server));
+            this.server.to(chatRoom.id).emit('ownersInRoom', await this.chatService.getOwnersInRoom(updatedChatRoom, this.server));
+        }
+    }
 }

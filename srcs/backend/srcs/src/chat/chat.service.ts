@@ -83,7 +83,9 @@ export class ChatService {
         const user: User = await this.userService.findUserbyID(userId);
         if (!user.chatRoomIds.includes(body.roomId)) {
             user.chatRoomIds.push(body.roomId);
+            chatRoom.userCount++;
             await this.userService.update(user);
+            await this.update(chatRoom);
         }
         return true;
     }
@@ -231,5 +233,67 @@ export class ChatService {
         for (const userId of userIdsInRoom)
             usersInfo.push(await this.userService.findUserbyID(userId))
         return (usersInfo)
+    }
+
+    async leaveRoom(user: User, chatRoom: Chatroom, server: Server): Promise<boolean> {
+        if (chatRoom.ownerId == user.id) {
+            let newOwner: number;
+            chatRoom.adminIds.forEach((obj) => {
+                if (obj != user.id) {
+                    newOwner = obj;
+                    return;
+                }
+            });
+            if (newOwner == undefined) {
+                const userIds: Array<number> = await this.getUsersInRoom(chatRoom, server);
+                userIds.forEach((obj) => {
+                    if (obj != user.id) {
+                        newOwner = obj;
+                        return;
+                    }
+                });
+            }
+            if (newOwner == undefined) {
+                user.chatRoomIds.splice(user.chatRoomIds.indexOf(chatRoom.id), 1);
+                await this.userService.update(user);
+                await this.deleteChatRoom(chatRoom);
+                return false;
+            }
+            else {
+                chatRoom.ownerId = newOwner;
+                chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(user.id), 1);
+            }
+        }
+        else if (chatRoom.adminIds.includes(user.id)) {
+            chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(user.id), 1);
+        }
+        user.chatRoomIds.splice(user.chatRoomIds.indexOf(chatRoom.id), 1);
+        chatRoom.userCount--;
+        await this.update(chatRoom);
+        await this.userService.update(user);
+        return true;
+    }
+
+    async deleteChatRoom(chatRoom: Chatroom) {
+        await this.prismaService.message.deleteMany({
+            where: {
+                chatroomId: chatRoom.id
+            }
+        });
+        await this.prismaService.banObject.deleteMany({
+            where: {
+                chatroomId: chatRoom.id
+            }
+        });
+        await this.prismaService.muteObject.deleteMany({
+            where: {
+                chatroomId: chatRoom.id
+            }
+        });
+        await this.prismaService.chatroom.delete({
+            where: {
+                id: chatRoom.id
+            }
+        })
     }
 }
