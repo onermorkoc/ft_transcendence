@@ -258,6 +258,7 @@ export class ChatService {
                         return;
                     }
                 });
+                chatRoom.adminIds.push(newOwner);
             }
             if (newOwner == undefined) {
                 user.chatRoomIds.splice(user.chatRoomIds.indexOf(chatRoom.id), 1);
