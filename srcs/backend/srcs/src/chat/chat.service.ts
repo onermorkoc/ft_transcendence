@@ -183,6 +183,12 @@ export class ChatService {
         return mutedUsersInRoom;
     }
 
+    async getOwnersInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
+        const usersInRoom = await this.getUsersInRoom(chatRoom, server);
+        const ownersInRoom: Array<number> = usersInRoom.filter((value) => value == chatRoom.ownerId);
+        return ownersInRoom;
+    }
+
     async userIdtoClients(userId: number, chatRoom: Chatroom, server: Server): Promise<RemoteSocket<DefaultEventsMap, any>[]> {
         const socketsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoom.id).fetchSockets();
         const clientsOfUser: RemoteSocket<DefaultEventsMap, any>[] = socketsInRoom.filter((obj) => parseInt(this.strFix(obj.handshake.query.userId)) == userId);
