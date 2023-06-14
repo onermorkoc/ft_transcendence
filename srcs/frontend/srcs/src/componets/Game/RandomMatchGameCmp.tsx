@@ -50,15 +50,15 @@ const RandomMatchGameCmp = () => {
         <>
             <div style={{margin: "50px"}}>
                 <Lottie className="gameAnimation" autoplay={false} lottieRef={animationRef} onClick={randomMatch} animationData={require("../../ui-design/animation/game.json")}/>
-                {searchStatus
-                    ? 
-                    <div>
-                        <div style={{textAlign: "center", fontSize: "1.7em", marginTop: "20px"}}>Rakip aranıyor...</div>
-                        <div style={{textAlign: "center", fontSize: "1.7em", marginTop: "10px"}}>{secondToTime(second)}</div>
-                        <img className="cancelButton" onClick={cancelRandomMatch} src={require("../../ui-design/images/cancel.png")} alt=""/>
-                    </div>
+                {
+                    searchStatus ? 
+                        <div>
+                            <div style={{textAlign: "center", fontSize: "1.7em", marginTop: "20px"}}>Rakip aranıyor...</div>
+                            <div style={{textAlign: "center", fontSize: "1.7em", marginTop: "10px"}}>{secondToTime(second)}</div>
+                            <img className="cancelButton" onClick={cancelRandomMatch} src={require("../../ui-design/images/cancel.png")} alt=""/>
+                        </div>
                     : 
-                    <></>
+                        null
                 }
             </div>
         </>

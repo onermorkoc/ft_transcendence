@@ -10,13 +10,13 @@ export class ChatController {
     @Post('room/create')
     @UseGuards(AuthenticatedGuard)
     async createRoom(@Body() body: { roomName: string, roomStatus: RoomStatus, password?: string }, @Session() session: Record<string, any>) {
-        return (await this.chatService.createRoom(body, session));
+        return (await this.chatService.createRoom(session.passport.user.id, body.roomName, body.roomStatus, body.password));
     }
 
     @Post('room/join')
     @UseGuards(AuthenticatedGuard)
     async joinRoom(@Body() body: { roomId: string, password?: string }, @Session() session: Record<string, any>) {
-        return (await this.chatService.joinRoom(body, session));
+        return (await this.chatService.joinRoom(session.passport.user.id, body.roomId, body.password));
     }
 
     @Get('room/find/:id') // frontend url güvenliği eksik 
@@ -27,5 +27,11 @@ export class ChatController {
     @Get('room/all') // backend url güvenliği eksik
     async getAllRooms(): Promise<Array<Chatroom>> {
         return (await this.chatService.getAllRooms())
+    }
+
+    @Get('room/mychatrooms')
+    @UseGuards(AuthenticatedGuard)
+    async getMyChatRooms(@Session() session: Record<string, any>){
+        return (await this.chatService.getMyChatRooms(session.passport.user.chatRoomIds))
     }
 }

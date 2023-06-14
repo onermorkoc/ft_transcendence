@@ -3,7 +3,6 @@ import "../ui-design/styles/GameHistoryScreen.css"
 /* const historyView = () => {
     return (
         <>
-
             <div className="historyDiv" >
                 <div style={{flex: "1"}}>
                     <div className="historyHeaderDiv">Ev Sahibi</div>
@@ -41,19 +40,7 @@ import "../ui-design/styles/GameHistoryScreen.css"
 } */
 
 const GameHistoryCmp = () => {
-    
-    //let array: Array<number> = [0,1,2,3,4,5,6,7,8,9]
-
-    return (
-        <>
-            {/* <div className="gameHistoryHeader"> Öner Morkoç Maç Geçmişi</div>
-            {
-                array.map(() => (
-                    <div className="historyView">{historyView()}</div>
-                ))
-            } */}
-        </>
-    )
+    return (<></>)
 }
 
 export default GameHistoryCmp

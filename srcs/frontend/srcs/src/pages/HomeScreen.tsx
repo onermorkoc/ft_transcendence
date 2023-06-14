@@ -13,16 +13,11 @@ import useCurrentUser from "../services/Auth"
 const HomeScreen = () => {
 
     const currentUser = useCurrentUser()
-    const [ tab, setTab ] = useState<JSX.Element>(<UserInfoCmp/>)
-
-    const setupUserStatusSocket = () => {
-        /* const socket =  */io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id}})
-        //socket.emit("userConnected", currentUser)
-    }
+    const [tab, setTab] = useState<JSX.Element>(<UserInfoCmp/>)
 
     useEffect(() => {
         if (currentUser)
-            setupUserStatusSocket()
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id}})
         // eslint-disable-next-line
     }, [currentUser])
 

@@ -25,11 +25,11 @@ const avatarImgArray: Array<string> = [
 const EditProfileScreen = () => {
 
     const currentUser = useCurrentUser()
-    const [ localImgFile, setLocalImgFile ] = useState<File | null>(null)
-    const [ previewImg, setPreviewImg ] = useState<string | null>(null)
-    const [ warningMessage, setWarnnigMessage ] = useState<string>("")
     const displaynameInputRef = useRef<HTMLInputElement>(null)
     const nicknameInputRef = useRef<HTMLInputElement>(null)
+    const [localImgFile, setLocalImgFile] = useState<File | null>(null)
+    const [previewImg, setPreviewImg] = useState<string | null>(null)
+    const [warningMessage, setWarnnigMessage] = useState<string>("")
 
     useEffect(() => {
         if (currentUser){

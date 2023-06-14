@@ -11,8 +11,15 @@ import { ChatGateway } from './chat.gateway';
 export class ChatService {
     constructor (private prismaService: PrismaService, private userService: UsersService, @Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway) {}
 
-    async getAllRooms(): Promise<Array<Chatroom>>{
+    async getAllRooms(): Promise<Array<Chatroom>> {
         return (await this.prismaService.chatroom.findMany())
+    }
+
+    async getMyChatRooms(chatRoomIds: Array<string>): Promise<Array<Chatroom>> {
+        let chatRooms: Array<Chatroom> = []
+        for (const roomId of chatRoomIds)
+            chatRooms.push(await this.findChatRoombyID(roomId))
+        return (chatRooms)
     }
 
     async findChatRoombyID(roomId: string): Promise<Chatroom> {
@@ -38,83 +45,84 @@ export class ChatService {
         return true
     }
 
-    async createRoom(body: { roomName: string, roomStatus: RoomStatus, password?: string }, session: Record<string, any>): Promise<Chatroom> {
-        const user: User = await this.userService.findUserbyID(session.passport.user.id);
+    async createRoom(userId: number, roomName: string, roomStatus: RoomStatus, password?: string): Promise<Chatroom> {
+        
+        if (roomStatus === RoomStatus.PROTECTED && password === null)   // Bu Kontrol frontende yapıldı
+            throw new BadRequestException('Password needed.');
+        
         const chatRoom = await this.prismaService.chatroom.create({
             data: {
-                name: body.roomName,
-                ownerId: user.id,
-                roomStatus: body.roomStatus
+                name: roomName,
+                ownerId: userId,
+                roomStatus: roomStatus
             }
         });
-        if (body.roomStatus == RoomStatus.PROTECTED) {
-            if (!body.password) {
-                this.prismaService.chatroom.delete({
-                    where: {
-                        id: chatRoom.id
-                    }
-                });
-                throw new BadRequestException('Password needed.');
-            }
-            const hashedPassword = await this.hashPassword(body.password);
+
+        if (roomStatus == RoomStatus.PROTECTED) {
+            const hashedPassword = await this.hashPassword(password);
             chatRoom.password = hashedPassword;
             await this.update(chatRoom);
         }
-        chatRoom.adminIds.push(user.id);
-        user.chatRoomIds.push(chatRoom.id);
-        await this.update(chatRoom);
-        await this.userService.update(user);
-        return chatRoom;
-    }
-
-    async joinRoom(body: { roomId: string, password?: string }, session: Record<string, any>): Promise<boolean> {
-        const userId = session.passport.user.id;
-        const chatRoom: Chatroom = await this.findChatRoombyID(body.roomId);
-
-        if (chatRoom.roomStatus == RoomStatus.PRIVATE) {
-            throw new BadRequestException('You cannot join a private chatroom.');
-        }
-        else if (chatRoom.roomStatus == RoomStatus.PROTECTED) {
-            if (!body.password) {
-                throw new BadRequestException('Password needed.');
-            }
-            const isPassCorrect: boolean = await this.comparePassword(body.password, chatRoom.password);
-            if (!isPassCorrect) {
-                throw new BadRequestException('Wrong Password.');
-            }
-        }
-        if ((await this.getBannedUserIds(chatRoom.id)).includes(userId)) {
-            throw new BadRequestException('You are banned from this Channel.');
-        }
 
         const user: User = await this.userService.findUserbyID(userId);
-        if (!user.chatRoomIds.includes(body.roomId)) {
-            user.chatRoomIds.push(body.roomId);
+        user.chatRoomIds.push(chatRoom.id);
+        await this.userService.update(user);
+
+        return (chatRoom);
+    }
+
+    async joinRoom(userId: number, roomId: string, password?: string): Promise<Chatroom> {
+
+        const chatRoom: Chatroom = await this.findChatRoombyID(roomId);
+
+        if (chatRoom.roomStatus === RoomStatus.PRIVATE){    // Bu Kontrol frontende yapıldı
+            throw new BadRequestException('You cannot join a private chatroom.');
+        }
+        else if (chatRoom.roomStatus === RoomStatus.PROTECTED) {
+            
+            if (password === null)  // Bu Kontrol frontende yapıldı
+                throw new BadRequestException('Password needed.');
+            
+            const isPassCorrect: boolean = await this.comparePassword(password, chatRoom.password);
+            if (!isPassCorrect)
+                throw new BadRequestException('Yanlış parola !');
+        }
+
+        if ((await this.getBannedUserInRoom(chatRoom.id)).includes(userId))
+            throw new BadRequestException('Sen bu kanaldan banlandın !');
+
+        const user: User = await this.userService.findUserbyID(userId);
+        if (!user.chatRoomIds.includes(roomId)) {   // Bu Kontrol frontende yapıldı
+            user.chatRoomIds.push(roomId);
             chatRoom.userCount++;
             await this.userService.update(user);
             await this.update(chatRoom);
         }
-        this.chatGateway.server.to(chatRoom.id).emit('allUsers', await this.getAllUsers(chatRoom));
-        return true;
+
+        this.chatGateway.server.to(chatRoom.id).emit('allUsersInRoom', await this.getAllUsersInRoom(chatRoom));        
+        return (chatRoom);
     }
 
     async hashPassword(password: string): Promise<string> {
         const salt: string = await bcrypt.genSalt();
         const hash: string = await bcrypt.hash(password, salt);
-        return hash;
+        return (hash);
     }
 
     async comparePassword(password: string, hash: string): Promise<boolean> {
-        return bcrypt.compare(password, hash);
+        return (bcrypt.compare(password, hash));
     }
 
     strFix(str: string | string[]): string {
-        if (Array.isArray(str)) {
-            return null;
-        }
-        else {
-            return str;
-        }
+        return (Array.isArray(str) ? null : str)
+    }
+
+    async getMessages(chatRoom: Chatroom): Promise<Array<Message>>{
+        return await this.prismaService.message.findMany({
+            where: {
+                chatroomId: chatRoom.id
+            }
+        });
     }
 
     async createNewMessage(userId: number, roomId: string, message: string): Promise<Message> {
@@ -126,7 +134,7 @@ export class ChatService {
             }
         });
         this.databaseDeleteOldMessages(msg.chatroomId);
-        return msg;
+        return (msg);
     }
 
     async createNewMute(userId: number, expireDate: number, roomId: string,): Promise<MuteObject> {
@@ -140,9 +148,16 @@ export class ChatService {
     }
 
     async createNewBan(userId: number, expireDate: number, roomId: string): Promise<MuteObject> {
+        
         const user = await this.userService.findUserbyID(userId);
+        const chatRoom = await this.findChatRoombyID(roomId)
+
         user.chatRoomIds.splice(user.chatRoomIds.indexOf(roomId), 1);
+        chatRoom.userCount--
+        
+        await this.update(chatRoom)
         await this.userService.update(user);
+        
         return this.prismaService.banObject.create({
             data: {
                 userId: userId,
@@ -169,14 +184,22 @@ export class ChatService {
         }
     }
 
-    async getUsersInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
+    async getOnlineUsersInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
         const clientsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoom.id).fetchSockets();
         const userIdsInRoom: Array<number> = clientsInRoom.map((obj) => parseInt(this.strFix(obj.handshake.query.userId)));
         const uniqueUserIdsInRoom: Array<number> = [...new Set(userIdsInRoom)];
-        return uniqueUserIdsInRoom;
+        return (uniqueUserIdsInRoom);
     }
 
-    async getAllUsers(chatRoom: Chatroom): Promise<Array<User>> {
+    async getAllUsersIdsInRoom(chatRoom: Chatroom): Promise<Array<number>>{ // Bu daha optimize şekilde yazılabilir
+        const usersInfo = await this.getAllUsersInRoom(chatRoom)
+        let userIds: Array<number> = []
+        for (const user of usersInfo)
+            userIds.push(user.id)
+        return (userIds)
+    }
+
+    async getAllUsersInRoom(chatRoom: Chatroom): Promise<Array<User>> {
         return await this.prismaService.user.findMany({
             where: {
                 chatRoomIds: {
@@ -186,13 +209,7 @@ export class ChatService {
         });
     }
 
-    async getAdminsInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
-        const usersInRoom = await this.getUsersInRoom(chatRoom, server);
-        const adminsInRoom: Array<number> = chatRoom.adminIds.filter((value) => usersInRoom.includes(value));
-        return adminsInRoom;
-    }
-
-    async getMutedUsersInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
+    async getMutedUsersInRoom(chatRoom: Chatroom): Promise<Array<number>> {
         const muteObjects: Array<MuteObject> = await this.prismaService.muteObject.findMany({
             where: {
                 chatroomId: chatRoom.id
@@ -201,21 +218,13 @@ export class ChatService {
         const mutedUsers: Array<number> = muteObjects.map((obj) => {
             return obj.userId;
         });
-        const usersInRoom: Array<number> = await this.getUsersInRoom(chatRoom, server);
-        const mutedUsersInRoom: Array<number> = mutedUsers.filter((value) => usersInRoom.includes(value));
-        return mutedUsersInRoom;
-    }
-
-    async getOwnersInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
-        const usersInRoom = await this.getUsersInRoom(chatRoom, server);
-        const ownersInRoom: Array<number> = usersInRoom.filter((value) => value == chatRoom.ownerId);
-        return ownersInRoom;
+        return (mutedUsers);
     }
 
     async userIdtoClients(userId: number, chatRoom: Chatroom, server: Server): Promise<RemoteSocket<DefaultEventsMap, any>[]> {
         const socketsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoom.id).fetchSockets();
         const clientsOfUser: RemoteSocket<DefaultEventsMap, any>[] = socketsInRoom.filter((obj) => parseInt(this.strFix(obj.handshake.query.userId)) == userId);
-        return clientsOfUser;
+        return (clientsOfUser);
     }
 
     async updateBans(roomId: string): Promise<void> {
@@ -235,7 +244,7 @@ export class ChatService {
         }
     }
 
-    async getBannedUserIds(roomId: string): Promise<Array<number>> {
+    async getBannedUserInRoom(roomId: string): Promise<Array<number>> {
         await this.updateBans(roomId);
         const banObjects: Array<BanObject> = await this.prismaService.banObject.findMany({
             where: {
@@ -245,55 +254,42 @@ export class ChatService {
         const bannedUsers: Array<number> = banObjects.map((obj) => {
             return obj.userId;
         });
-        return bannedUsers;
-    }
-    
-    async getUsersInfoInRoom(chatRoom: Chatroom, server: Server): Promise<Array<User>> {
-        const userIdsInRoom = await this.getUsersInRoom(chatRoom, server) 
-        let usersInfo: Array<User> = []
-        for (const userId of userIdsInRoom)
-            usersInfo.push(await this.userService.findUserbyID(userId))
-        return (usersInfo)
+        return (bannedUsers);
     }
 
     async leaveRoom(user: User, chatRoom: Chatroom, server: Server): Promise<boolean> {
-        if (chatRoom.ownerId == user.id) {
-            let newOwner: number;
-            chatRoom.adminIds.forEach((obj) => {
-                if (obj != user.id) {
-                    newOwner = obj;
-                    return;
-                }
-            });
-            if (newOwner == undefined) {
-                const userIds: Array<number> = await this.getUsersInRoom(chatRoom, server);
-                userIds.forEach((obj) => {
+        
+        if (chatRoom.ownerId === user.id) {
+            
+            let newOwner = chatRoom.adminIds[0] // ilk admin olan kişi yeni owner
+
+            if (newOwner === undefined) {
+                const usersIds: Array<number> = await this.getAllUsersIdsInRoom(chatRoom)
+                usersIds.forEach((obj) => {
                     if (obj != user.id) {
-                        newOwner = obj;
+                        newOwner = obj; // Grubta admin yoksa yeni owner rastgele biri oluyor
                         return;
                     }
                 });
-                chatRoom.adminIds.push(newOwner);
             }
-            if (newOwner == undefined) {
+
+            if (newOwner == undefined) { // Yine owner yoksa grubu sil
                 user.chatRoomIds.splice(user.chatRoomIds.indexOf(chatRoom.id), 1);
                 await this.userService.update(user);
                 await this.deleteChatRoom(chatRoom);
-                return false;
+                return (false);
             }
-            else {
-                chatRoom.ownerId = newOwner;
-                chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(user.id), 1);
-            }
+            else
+                chatRoom.ownerId = newOwner;     
         }
-        else if (chatRoom.adminIds.includes(user.id)) {
+        else if (chatRoom.adminIds.includes(user.id))
             chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(user.id), 1);
-        }
+
         user.chatRoomIds.splice(user.chatRoomIds.indexOf(chatRoom.id), 1);
         chatRoom.userCount--;
         await this.update(chatRoom);
         await this.userService.update(user);
-        return true;
+        return (true);
     }
 
     async deleteChatRoom(chatRoom: Chatroom) {

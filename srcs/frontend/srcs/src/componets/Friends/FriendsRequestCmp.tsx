@@ -7,7 +7,7 @@ import { EmptyPage } from "./MyFriendsRoomCmp"
 const FriendsRequestCmp = () => {
 
     const currentUser = useCurrentUser()
-    const [ usersInfo, setUsersInfo ] = useState<Array<User> | null>()
+    const [usersInfo, setUsersInfo] = useState<Array<User> | null>()
 
     useEffect(() => {
         if (currentUser && !usersInfo)

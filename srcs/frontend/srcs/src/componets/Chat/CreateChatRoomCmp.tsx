@@ -34,19 +34,22 @@ const CreateChatRoomCmp = () => {
 
     return (
         <>
-            <img className="createChatImg" src={require("../../ui-design/images/team.png")} alt=""/>
-            <select className="createChatSelectMenu" onChange={event => selectListener(event.target.value)}>
-                <option>Public</option>
-                <option>Private</option>
-                <option>Protected</option>
-            </select>
-            <input className="createChatInput" ref={roomNameRef} type="text" placeholder="Oda Adı" />
-            {
-                roomStatus === "PROTECTED"
-                ? <input className="createChatInput" ref={roomPassRef} type="text" placeholder="Parola" />
-                :  <></>
-            }
-            <img className="createChatNextButton" onClick={createChatRoom} src={require("../../ui-design/images/okey.png")} alt=""/>
+            <div className="createRoomCenterDiv">
+                <img style={{width: "100px"}} src={require("../../ui-design/images/team.png")} alt=""/>
+                <select className="createRoomSelectMenu" onChange={event => selectListener(event.target.value)}>
+                    <option>Public</option>
+                    <option>Private</option>
+                    <option>Protected</option>
+                </select>
+                <input className="createRoomInput" ref={roomNameRef} type="text" placeholder="Oda Adı" />
+                {
+                    roomStatus === "PROTECTED" ?
+                        <input className="createRoomInput" ref={roomPassRef} type="text" placeholder="Parola" />
+                    :
+                        null
+                }
+                <img className="createRoomOkeyImg" onClick={createChatRoom} src={require("../../ui-design/images/okey.png")} alt=""/>
+            </div>
         </>
     )
 }

@@ -7,9 +7,9 @@ import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 const TwoFactorAuthScreen = () => {
 
-    const [ otp, setOtp ] = useState<string>("")
-    const [ twofaStatus, setTwofaStatus ] = useState<boolean | null>(null)
-    const [ warningMessage, setWarningMesage ] = useState<string>("")
+    const [otp, setOtp] = useState<string>("")
+    const [twofaStatus, setTwofaStatus] = useState<boolean | null>(null)
+    const [warningMessage, setWarningMesage] = useState<string>("")
 
     useEffect(() => {
         if (!twofaStatus)

@@ -6,8 +6,8 @@ import useCurrentUser from "../../services/Auth"
 const SearchUserCmp = () => {
 
     const currentUser = useCurrentUser()
-    const [ allUsers, setAllUsers ] = useState<Array<User> | null>()
-    const [ filterArray, setFilterArray ] = useState<Array<User>>([])
+    const [allUsers, setAllUsers] = useState<Array<User> | null>()
+    const [filterArray, setFilterArray] = useState<Array<User>>([])
 
     useEffect(() => {
         if (!allUsers)

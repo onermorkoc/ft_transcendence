@@ -6,11 +6,12 @@ import FriendsRequestCmp from "./FriendsRequestCmp"
 
 const FriendsRoomsCmp = () => {
 
-    const [ friendsTab, setFriendsTab ] = useState<JSX.Element>(<MyFriendsRoomCmp/>)
+    const [friendsTab, setFriendsTab] = useState<JSX.Element>(<MyFriendsRoomCmp/>)
 
     return (
         <>
             <div className="roomsHeader">Kullanıcılar</div>
+
             <div className="roomsBodyDiv">
                 <div style={{display: "flex", flexDirection: "row"}}>
                     <button className="roomsButton" onClick={() => setFriendsTab(<MyFriendsRoomCmp/>)}>Arkadaşlarım</button>

@@ -36,7 +36,7 @@ down:
 devdown:
 	sudo docker-compose -f $(DEV_YML_FILE) down
 
-clean: clean_local
+clean:
 	sudo ./$(CLEAN_FILE)
 
 docker-install:

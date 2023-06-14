@@ -5,15 +5,13 @@ import Lottie from "lottie-react"
 
 export const EmptyPage = (): JSX.Element => {
     return (
-        <>
-            <Lottie style={{marginLeft: "auto", marginRight: "auto", width: "300px", marginTop: "50px"}} animationData={require("../../ui-design/animation/empty.json")}/>
-        </>
+        <Lottie style={{marginLeft: "auto", marginRight: "auto", width: "300px", marginTop: "50px"}} animationData={require("../../ui-design/animation/empty.json")}/>
     )
 }
 
 const MyFriendsRoomCmp = () => {
 
-    const [ usersInfo, setUsersInfo ] = useState<Array<User> | null>(null)
+    const [usersInfo, setUsersInfo] = useState<Array<User> | null>(null)
 
     useEffect(() => {
         if (!usersInfo)
@@ -47,9 +45,7 @@ const MyFriendsRoomCmp = () => {
                             ))
                         }
                     </div>
-                
             }
-            
         </>
     )
 }

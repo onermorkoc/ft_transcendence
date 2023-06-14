@@ -24,9 +24,7 @@ export interface ChatRoom {
   name: string,
   ownerId: number,
   roomStatus: RoomStatus,
-  //userIds: Array<number>,
-  adminIds: Array<number>,
-  //banListIds: Array<number>
+  userCount: number
 }
   
 export interface Game {
@@ -65,4 +63,11 @@ export interface RequestData {
 export interface Point {
   x: number, 
   y: number
+}
+
+export interface Message {
+  chatroomId: string,
+  createdAt: Date,
+  data: string
+  userId: number
 }

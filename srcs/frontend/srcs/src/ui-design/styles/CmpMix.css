@@ -204,50 +204,42 @@
 
 /* CreateChatRoom */
 
-.createChatImg {
-    margin-top: 20px;
-    display: block;
-    margin-right: auto;
-    margin-left: auto;
-    width: 100px;
+.createRoomCenterDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
 }
 
-.createChatSelectMenu {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 10px;
+.createRoomSelectMenu {
     font-size: 1.3em;
     padding: 2px;
     width: 150px;
     text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-.createChatInput {
+.createRoomInput {
     width: 300px;
     height: 40px;
     border-radius: 30px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
     padding: 10px;
     font-size: 1.2em;
     border-style: none;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
-.createChatNextButton {
+.createRoomOkeyImg {
     width: 60px;
-    display: block;
-    margin-right: auto;
-    margin-left: auto;
-    margin-top: 20px;
     cursor: pointer;
     transition: 0.5s;
+    margin-top: 20px;
 }
 
-.createChatNextButton:hover{
+.createRoomOkeyImg:hover{
     opacity: 0.5;
 }
 
@@ -285,6 +277,7 @@
 
 /* #################### */
 
+
 /* PageNotFoundCmp */
 
 .centerDiv {
@@ -295,3 +288,39 @@
 }
 
 /* ############### */
+
+
+/* JoinRoomUi */
+
+.joinRoomCenterDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+}
+
+.joinRoomInput {
+    width: 300px;
+    height: 40px;
+    border-radius: 30px;
+    padding: 10px;
+    font-size: 1.2em;
+    border-style: none;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.joinRoomOkeyAndBackImg {
+    width: 60px;
+    cursor: pointer;
+    transition: 0.5s;
+    margin-top: 20px;
+    margin: 25px;
+}
+
+.joinRoomOkeyAndBackImg:hover{
+    opacity: 0.5;
+}
+
+/* ############################ */
