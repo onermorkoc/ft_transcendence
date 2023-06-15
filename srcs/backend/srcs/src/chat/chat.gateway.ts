@@ -30,11 +30,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         client.join(chatRoom.id);
 
         this.server.to(chatRoom.id).emit('onlineUsersInRoom', await this.chatService.getOnlineUsersInRoom(chatRoom, this.server));
-        this.server.to(chatRoom.id).emit('adminsInRoom', chatRoom.adminIds);
-        this.server.to(chatRoom.id).emit('mutedUsersInRoom', await this.chatService.getMutedUsersInRoom(chatRoom));
-        this.server.to(chatRoom.id).emit('ownersInRoom', chatRoom.ownerId);
+        this.server.to(client.id).emit('adminsInRoom', chatRoom.adminIds);
+        this.server.to(client.id).emit('mutedUsersInRoom', await this.chatService.getMutedUsersInRoom(chatRoom));
+        this.server.to(client.id).emit('ownersInRoom', chatRoom.ownerId);
         this.server.to(client.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(chatRoom));
-        this.server.to(chatRoom.id).emit('messages', await this.chatService.getMessages(chatRoom));
+        this.server.to(client.id).emit('messages', await this.chatService.getMessages(chatRoom));
     }
 
     async handleDisconnect(client: Socket) {
@@ -50,11 +50,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
         const userId: number = parseInt(this.chatService.strFix(client.handshake.query.userId));
         const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
-        const msg: Message = await this.chatService.createNewMessage(userId, chatRoom.id, message);
 
         if ((await this.chatService.getMutedUsersInRoom(chatRoom)).includes(userId))
             throw new Error("You can't send messages right now. You are muted.");
 
+        await this.chatService.createNewMessage(userId, chatRoom.id, message);
         this.server.to(chatRoom.id).emit('messages', await this.chatService.getMessages(chatRoom));
     }
 
@@ -138,7 +138,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             throw new Error('The user needs to be in channel to be muted.');
         }
 
-        await this.chatService.createNewMute(userId, Date.now() + 60000, chatRoom.id); // 1 dk hardcoded
+        await this.chatService.createNewMute(mutedUserId, Date.now() + 60000, chatRoom.id); // 1 dk hardcoded
         this.server.to(chatRoom.id).emit('mutedUsersInRoom', await this.chatService.getMutedUsersInRoom(chatRoom));
     }
 

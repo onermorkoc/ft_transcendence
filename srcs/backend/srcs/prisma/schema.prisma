@@ -89,7 +89,7 @@ model Message {
 }
 
 model Game {
-  id          Int @id @default(autoincrement())
+  id          String @id @default(cuid())
   playerOneId Int
   playerTwoId Int
 }

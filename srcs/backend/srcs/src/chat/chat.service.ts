@@ -133,7 +133,7 @@ export class ChatService {
                 chatroom: { connect: { id: roomId } }
             }
         });
-        this.databaseDeleteOldMessages(msg.chatroomId);
+        await this.databaseDeleteOldMessages(msg.chatroomId);
         return (msg);
     }
 
@@ -210,6 +210,7 @@ export class ChatService {
     }
 
     async getMutedUsersInRoom(chatRoom: Chatroom): Promise<Array<number>> {
+        await this.updateMutes(chatRoom.id);
         const muteObjects: Array<MuteObject> = await this.prismaService.muteObject.findMany({
             where: {
                 chatroomId: chatRoom.id
@@ -225,6 +226,23 @@ export class ChatService {
         const socketsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoom.id).fetchSockets();
         const clientsOfUser: RemoteSocket<DefaultEventsMap, any>[] = socketsInRoom.filter((obj) => parseInt(this.strFix(obj.handshake.query.userId)) == userId);
         return (clientsOfUser);
+    }
+
+    async updateMutes(roomId: string): Promise<void> {
+        const muteObjects: Array<BanObject> = await this.prismaService.muteObject.findMany({
+            where: {
+                chatroomId: roomId
+            }
+        });
+        for (const obj of muteObjects) {
+            if (obj.expireDate <= Date.now()) {
+                await this.prismaService.muteObject.delete({
+                    where: {
+                        id: obj.id
+                    }
+                });
+            }
+        }
     }
 
     async updateBans(roomId: string): Promise<void> {

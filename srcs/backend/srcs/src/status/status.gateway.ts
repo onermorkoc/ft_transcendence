@@ -11,7 +11,7 @@ export class StatusGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
 
     afterInit() {
         this.server.on("connection", (client) => {
-            console.log(`[DEBUG]: Servere biri bağlandı. (${client.id})`)
+            //console.log(`[DEBUG]: Servere biri bağlandı. (${client.id})`)
         })
     }
 

@@ -1,5 +1,8 @@
 import Lottie, { LottieRefCurrentProps }  from "lottie-react"
 import { useEffect, useRef, useState} from "react"
+import { Socket, io } from "socket.io-client"
+import { User } from "../../dto/DataObject"
+import axios from "axios"
 
 function secondToTime(second: number): string {
     let minute = Math.floor(second / 60)
@@ -20,17 +23,26 @@ const RandomMatchGameCmp = () => {
     const [searchStatus, setSearchStatus] = useState<boolean>(false)
     let intervalID: NodeJS.Timer
 
+    const [socket, setSocket] = useState<Socket | null>(null)
+    const [currentUser, setCurrentUser] = useState<User | null>(null)
+    axios.get(`/users/current`).then((response) => {setCurrentUser(response.data)})
+    const [matchLink, setMatchLink] = useState<string>('')
+
     const randomMatch = () => {
-        window.location.assign("/game")
-        /* if(!searchStatus){
+        //window.location.assign("/game")
+        if(!searchStatus){
             animationRef.current!!.play()
             setSecond(0)
             setSearchStatus(true)
             // rastgele birinn eşleşmesini bekler
-        } */
+        }
     }
 
     const cancelRandomMatch = () => {
+        if (socket) {
+            socket.disconnect();
+            setSocket(null);
+        }
         animationRef.current!!.stop()
         setSearchStatus(false)
         // rastgele eşleşme istegi iptal         
@@ -45,6 +57,23 @@ const RandomMatchGameCmp = () => {
         }
         return () => clearInterval(intervalID)
     }, [searchStatus])
+
+    useEffect(() => {
+        if (matchLink !== '') {
+            window.location.assign(matchLink)
+        }
+    }, [matchLink])
+
+    useEffect(() => {
+        if (searchStatus) {
+            if (currentUser && !socket) {
+                setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/queue`, {query: {userId: currentUser.id}}))
+            }
+            if (socket) {
+                socket.on("matchFound", (data: string) => setMatchLink(data))
+            }
+        }
+    }, [currentUser, searchStatus, socket])
 
     return (
         <>
