@@ -8,7 +8,13 @@ export class GameController{
 
     @Get('join/:gameID')
     @UseGuards(AuthenticatedGuard)
-    async canIPlay(@Param('gameID') gameId: string, @Session() session: Record<string, any>) {
+    async joinGame(@Param('gameID') gameId: string, @Session() session: Record<string, any>) {
         return (await this.gameService.joinGame(session.passport.user.id, gameId));
+    }
+
+    @Get('whichPlayer/:gameID')
+    @UseGuards(AuthenticatedGuard)
+    async whichPlayer(@Param('gameID') gameId: string, @Session() session: Record<string, any>) {
+        return (await this.gameService.whichPlayer(session.passport.user.id, gameId));
     }
 }

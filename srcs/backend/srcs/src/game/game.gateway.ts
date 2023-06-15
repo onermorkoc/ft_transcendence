@@ -1,4 +1,4 @@
-import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { GameService } from "./game.service";
 import { Server, Socket } from "socket.io";
 
@@ -14,12 +14,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     handleConnection(client: Socket) {
-        console.log(client.id + " connected.");
+        console.log(client.id + " connected to game.");
+        const userId: number = parseInt(this.gameService.strFix(client.handshake.query.userId));
+        const gameId: string = this.gameService.strFix(client.handshake.query.gameId);
+        client.join(gameId);
+        this.gameService.createPlayer(userId, gameId);
     }
 
     handleDisconnect(client: Socket) {
-        console.log(client.id + " disconnected.");
+        console.log(client.id + " disconnected from game.");
     }
     
-    
+    @SubscribeMessage('ready')
+    handleReady(client: Socket) {
+        const userId: number = parseInt(this.gameService.strFix(client.handshake.query.userId));
+        const gameId: string = this.gameService.strFix(client.handshake.query.gameId);
+    }
 }

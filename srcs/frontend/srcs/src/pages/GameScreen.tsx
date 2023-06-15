@@ -2,20 +2,124 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import PageNotFoundCmp from "../componets/PageNotFoundCmp";
+import { Socket, io } from "socket.io-client";
+import { User } from "../dto/DataObject";
 
 const GameScreen = () => {
 
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [socket, setSocket] = useState<Socket | null>(null)
   const [connectControl, setConnectControl] = useState<boolean>(false)
   const { gameId } = useParams()
 
-  useEffect(() => {
-    axios.get(`/game/join/${gameId}`).then((response) => {setConnectControl(response.data)})
-  }, [])
+  const canvas = document.getElementById('game') as HTMLCanvasElement
+  //const context = canvas.getContext('2d')
 
+  const DIRECTION = {
+    IDLE: 0,
+    UP: 1,
+    DOWN: 2,
+    LEFT: 3,
+    RIGHT: 4
+  }
+
+  interface Ball {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+    moveX: number;
+    moveY: number;
+    speed: number;
+  }
+
+  interface Paddle {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+    score: number;
+    move: number;
+    speed: number;
+  }
+
+  const Ball = {
+    createBall(incrementedSpeed?: number): Ball {
+      return {
+        width: 18,
+        height: 18,
+        x: (canvas.width / 2) - 9,
+        y: (canvas.height / 2) - 9,
+        moveX: DIRECTION.IDLE,
+        moveY: DIRECTION.IDLE,
+        speed: incrementedSpeed || 7
+      }
+    }
+  }
+
+  const Paddle = {
+    createPaddle(side: string): Paddle {
+      return {
+        width: 18,
+        height: 180,
+        x: side === 'left' ? 150 : canvas.width - 150,
+        y: (canvas.height / 2) - 35,
+        score: 0,
+        move: DIRECTION.IDLE,
+        speed: 8
+      }
+    }
+  }
+
+  const Game = () => {
+    let playerOne: Paddle;
+    let playerTwo: Paddle;
+    let ball: Ball;
+
+    let gameStarted: boolean;
+    let turn: boolean; // 0FALSE = LEFT / 1TRUE = RIGHT
+
+    let playerControls: string;
+
+    const initialize = () => {
+      playerOne = Paddle.createPaddle('left');
+      playerTwo = Paddle.createPaddle('right');
+      ball = Ball.createBall();
+      gameStarted = false;
+      turn = false;
+      axios.get(`/game/whichPlayer/${gameId}`).then((response) => {playerControls = response.data});
+
+      menu();
+    }
+
+    const menu = () => {
+
+    }
+  }
+
+  useEffect(() => {
+    if (!connectControl) {
+      axios.get(`/game/join/${gameId}`).then((response) => {setConnectControl(response.data)})
+    }
+    if (connectControl && !currentUser) {
+      axios.get(`/users/current`).then((response) => {setCurrentUser(response.data)});
+    }
+    if (currentUser && !socket) {
+      setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/game`, {query: {userId: currentUser.id, gameId: gameId}}))
+    }
+  }, [connectControl, currentUser, socket])
+
+  const clickFunction = () => {
+    if (socket) {
+      socket.emit('ready');
+    }
+  }
 
   if (connectControl) {
     return (
       <div className='gameRoot'>
+        <button className="button" onClick={clickFunction}>READY!</button>
+        <canvas width="1000" height="585" id="game" style={{ background: 'black' }}></canvas>
       </div>
     );
   }
