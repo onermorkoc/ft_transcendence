@@ -74,29 +74,32 @@ const GameScreen = () => {
     }
   }
 
-  const Game = () => {
-    let playerOne: Paddle;
-    let playerTwo: Paddle;
-    let ball: Ball;
+  const [playerOne, setPlayerOne] = useState<Paddle>();
+  const [playerTwo, setPlayerTwo] = useState<Paddle>();
+  const [ball, setBall] = useState<Ball>();
+  const [gameStarted, setGameStarted] = useState<boolean>();
+  const [playerPaddle, setPlayerPaddle] = useState<Paddle>()
 
-    let gameStarted: boolean;
-    let turn: boolean; // 0FALSE = LEFT / 1TRUE = RIGHT
+  const Game = {
+    initialize(): void {
+      setPlayerOne(Paddle.createPaddle('left'));
+      setPlayerTwo(Paddle.createPaddle('right'));
+      setBall(Ball.createBall());
+      setGameStarted(false);
+      axios.get(`/game/whichPlayer/${gameId}`).then((response) => {
+        if (response.data === "playerOne") {
+          setPlayerPaddle(playerOne);
+        }
+        else {
+          setPlayerPaddle(playerTwo);
+        }
+      });
 
-    let playerControls: string;
+      Game.menu();
+    },
 
-    const initialize = () => {
-      playerOne = Paddle.createPaddle('left');
-      playerTwo = Paddle.createPaddle('right');
-      ball = Ball.createBall();
-      gameStarted = false;
-      turn = false;
-      axios.get(`/game/whichPlayer/${gameId}`).then((response) => {playerControls = response.data});
-
-      menu();
-    }
-
-    const menu = () => {
-
+    menu(): void {
+      console.log("MENU MENU")
     }
   }
 
@@ -113,6 +116,8 @@ const GameScreen = () => {
     if (socket) {
       socket.on("abortNotConnected", () => { setAbortNotConnected(true) });
       socket.on("abortNotReady", () => { setAbortNotReady(true) });
+      var Pong = Object.assign({}, Game);
+      Pong.initialize();
     }
   }, [connectControl, currentUser, socket])
 

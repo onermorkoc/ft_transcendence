@@ -17,9 +17,10 @@ export class QueueService {
         if (this.queueList.size >= 2) {
             const [playerOne, playerTwo] = this.queueList;
             const game: Game = await this.gameService.createGame(playerOne, playerTwo);
-            setTimeout(() => {
+            
+            /*setTimeout(() => { // OYUN İPTAL SAYAÇ BAŞLANGICI
                 this.gameService.countDownCheck(game.id);
-            }, 10 * 1000) // 20sn
+            }, 20 * 1000) // 20sn*/
 
             const playerOneClients = await this.userIdtoClients(playerOne, server);
             const playerTwoClients = await this.userIdtoClients(playerTwo, server);
