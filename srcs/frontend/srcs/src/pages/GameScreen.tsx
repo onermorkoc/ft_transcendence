@@ -15,8 +15,8 @@ const GameScreen = () => {
   const [abortNotConnected, setAbortNotConnected] = useState<boolean>(false)
   const [abortNotReady, setAbortNotReady] = useState<boolean>(false)
 
-  const canvas = document.getElementById('game') as HTMLCanvasElement
-  //const context = canvas.getContext('2d')
+  const [canvas, setCanvas] = useState<HTMLCanvasElement>()//document.getElementById('game') as HTMLCanvasElement
+  const [context, setContext] = useState<CanvasRenderingContext2D | null>(null) //canvas.getContext('2d')
 
   const DIRECTION = {
     IDLE: 0,
@@ -48,11 +48,17 @@ const GameScreen = () => {
 
   const Ball = {
     createBall(incrementedSpeed?: number): Ball {
+      let w: number = 0;
+      let h: number = 0;
+      if (canvas) {
+        w = canvas.width;
+        h = canvas.height;
+      }
       return {
         width: 18,
         height: 18,
-        x: (canvas.width / 2) - 9,
-        y: (canvas.height / 2) - 9,
+        x: (w / 2) - 9,
+        y: (h / 2) - 9,
         moveX: DIRECTION.IDLE,
         moveY: DIRECTION.IDLE,
         speed: incrementedSpeed || 7
@@ -62,11 +68,17 @@ const GameScreen = () => {
 
   const Paddle = {
     createPaddle(side: string): Paddle {
+      let w: number = 0;
+      let h: number = 0;
+      if (canvas) {
+        w = canvas.width;
+        h = canvas.height;
+      }
       return {
         width: 18,
         height: 180,
-        x: side === 'left' ? 150 : canvas.width - 150,
-        y: (canvas.height / 2) - 35,
+        x: side === 'left' ? 150 : w - 150,
+        y: (h / 2) - 90,
         score: 0,
         move: DIRECTION.IDLE,
         speed: 8
@@ -74,32 +86,92 @@ const GameScreen = () => {
     }
   }
 
-  const [playerOne, setPlayerOne] = useState<Paddle>();
-  const [playerTwo, setPlayerTwo] = useState<Paddle>();
-  const [ball, setBall] = useState<Ball>();
-  const [gameStarted, setGameStarted] = useState<boolean>();
-  const [playerPaddle, setPlayerPaddle] = useState<Paddle>()
+  const playerOne: Paddle = Paddle.createPaddle('left');
+  const playerTwo: Paddle = Paddle.createPaddle('right');
+  const ball: Ball = Ball.createBall();
+  const gameStarted: boolean = false;
+  let playerPaddle: Paddle;
+  axios.get(`/game/whichPlayer/${gameId}`).then((response) => {
+    if (response.data === "playerOne") {
+      playerPaddle = playerOne;
+    }
+    else {
+      playerPaddle = playerTwo;
+    }
+  });
 
   const Game = {
     initialize(): void {
-      setPlayerOne(Paddle.createPaddle('left'));
-      setPlayerTwo(Paddle.createPaddle('right'));
-      setBall(Ball.createBall());
-      setGameStarted(false);
-      axios.get(`/game/whichPlayer/${gameId}`).then((response) => {
-        if (response.data === "playerOne") {
-          setPlayerPaddle(playerOne);
-        }
-        else {
-          setPlayerPaddle(playerTwo);
-        }
-      });
-
       Game.menu();
     },
 
     menu(): void {
-      console.log("MENU MENU")
+      Game.draw();
+
+
+    },
+
+    draw(): void {
+      if (!canvas || !context) {return;}
+
+      const colorBlack = '#111111';
+      const colorWhite = '#d4d2d2'
+
+      context.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      )
+
+      context.fillStyle = colorBlack;
+      context.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      )
+
+      context.fillStyle = colorWhite;
+      context.fillRect(
+        playerOne.x,
+        playerOne.y,
+        playerOne.width,
+        playerOne.height
+      )
+      context.fillRect(
+        playerTwo.x,
+        playerTwo.y,
+        playerTwo.width,
+        playerTwo.height
+      )
+      context.fillRect(
+        ball.x,
+        ball.y,
+        ball.width,
+        ball.height
+      )
+
+      context.beginPath();
+      context.setLineDash([7, 15]);
+      context.moveTo((canvas.width / 2), canvas.height - 140);
+      context.lineTo((canvas.width / 2), 140);
+      context.lineWidth = 10;
+      context.strokeStyle = colorWhite;
+      context.stroke();
+
+      context.font = '100px Courier New';
+      context.textAlign = 'center';
+      context.fillText(
+        playerOne.score.toString(),
+        (canvas.width / 2) - 400,
+        100
+      )
+      context.fillText(
+        playerTwo.score.toString(),
+        (canvas.width / 2) + 400,
+        100
+      )
     }
   }
 
@@ -110,16 +182,22 @@ const GameScreen = () => {
     if (connectControl && !currentUser) {
       axios.get(`/users/current`).then((response) => {setCurrentUser(response.data)});
     }
-    if (currentUser && !socket) {
+    if (currentUser && !socket && !canvas) {
       setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/game`, {query: {userId: currentUser.id, gameId: gameId}}))
+      setCanvas(document.getElementById('game') as HTMLCanvasElement);
+    }
+    if (canvas) {
+      setContext(canvas.getContext('2d'));
     }
     if (socket) {
       socket.on("abortNotConnected", () => { setAbortNotConnected(true) });
       socket.on("abortNotReady", () => { setAbortNotReady(true) });
-      var Pong = Object.assign({}, Game);
-      Pong.initialize();
     }
-  }, [connectControl, currentUser, socket])
+    if (context) {
+      console.log("Game initialize ran.")
+      Game.initialize();
+    }
+  }, [connectControl, currentUser, socket, canvas, context])
 
   useEffect(() => {
     if (abortNotConnected) {
