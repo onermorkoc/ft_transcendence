@@ -1,7 +1,7 @@
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io'
 import { ChatService } from "./chat.service";
-import { Chatroom, Message, User } from "@prisma/client";
+import { Chatroom, User } from "@prisma/client";
 import { UsersService } from "src/users/users.service";
 
 @WebSocketGateway({ cors: { origin: true, credentials: true }, namespace: 'chat'})
@@ -23,7 +23,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
         
         if (!user || !chatRoom || !user.chatRoomIds.includes(chatRoom.id)) {
-            console.log("Client disconnected: " + client.id);
             client.disconnect();
             return;
         }

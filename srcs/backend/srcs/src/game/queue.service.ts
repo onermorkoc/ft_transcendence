@@ -17,6 +17,9 @@ export class QueueService {
         if (this.queueList.size >= 2) {
             const [playerOne, playerTwo] = this.queueList;
             const game: Game = await this.gameService.createGame(playerOne, playerTwo);
+            setTimeout(() => {
+                this.gameService.countDownCheck(game.id);
+            }, 10 * 1000) // 20sn
 
             const playerOneClients = await this.userIdtoClients(playerOne, server);
             const playerTwoClients = await this.userIdtoClients(playerTwo, server);
@@ -30,6 +33,7 @@ export class QueueService {
             playerTwoClients.forEach((socket) => {
                 socket.emit('matchFound', `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`); // frontendde o linke redirect olmaları lazım
             });
+
         }
     }
 

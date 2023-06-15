@@ -90,6 +90,7 @@ model Message {
 
 model Game {
   id          String @id @default(cuid())
+  createdAt   DateTime @default(now())
   playerOneId Int
   playerTwoId Int
 }

@@ -12,6 +12,9 @@ const GameScreen = () => {
   const [connectControl, setConnectControl] = useState<boolean>(false)
   const { gameId } = useParams()
 
+  const [abortNotConnected, setAbortNotConnected] = useState<boolean>(false)
+  const [abortNotReady, setAbortNotReady] = useState<boolean>(false)
+
   const canvas = document.getElementById('game') as HTMLCanvasElement
   //const context = canvas.getContext('2d')
 
@@ -107,7 +110,22 @@ const GameScreen = () => {
     if (currentUser && !socket) {
       setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/game`, {query: {userId: currentUser.id, gameId: gameId}}))
     }
+    if (socket) {
+      socket.on("abortNotConnected", () => { setAbortNotConnected(true) });
+      socket.on("abortNotReady", () => { setAbortNotReady(true) });
+    }
   }, [connectControl, currentUser, socket])
+
+  useEffect(() => {
+    if (abortNotConnected) {
+      console.log("ADAM BAGLANMADI OYUN IPTAL");
+      window.location.reload();
+    }
+    else if (abortNotReady) {
+      console.log("ADAM READY VERMEDI OYUN IPTAL");
+      window.location.reload();
+    }
+  }, [abortNotConnected, abortNotReady])
 
   const clickFunction = () => {
     if (socket) {
