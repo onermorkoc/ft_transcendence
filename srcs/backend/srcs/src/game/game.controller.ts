@@ -12,9 +12,15 @@ export class GameController{
         return (await this.gameService.joinGame(session.passport.user.id, gameId));
     }
 
-    @Get('whichPlayer/:gameID')
+    @Get('players/:gameID')
     @UseGuards(AuthenticatedGuard)
-    async whichPlayer(@Param('gameID') gameId: string, @Session() session: Record<string, any>) {
-        return (await this.gameService.whichPlayer(session.passport.user.id, gameId));
+    async whichPlayer(@Param('gameID') gameId: string) {
+        return (await this.gameService.getPlayers(gameId));
+    }
+
+    @Get('createTime/:gameID')
+    @UseGuards(AuthenticatedGuard)
+    async createTime(@Param('gameID') gameId: string) {
+        return (await this.gameService.createTime(gameId));
     }
 }

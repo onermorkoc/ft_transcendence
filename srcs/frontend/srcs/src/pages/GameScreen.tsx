@@ -37,6 +37,8 @@ const GameScreen = () => {
   }
 
   interface Paddle {
+    id: number,
+    name: string,
     width: number;
     height: number;
     x: number;
@@ -67,7 +69,7 @@ const GameScreen = () => {
   }
 
   const Paddle = {
-    createPaddle(side: string): Paddle {
+    createPaddle(side: string, name: string, userId: number): Paddle {
       let w: number = 0;
       let h: number = 0;
       if (canvas) {
@@ -75,6 +77,8 @@ const GameScreen = () => {
         h = canvas.height;
       }
       return {
+        id: userId,
+        name: name,
         width: 18,
         height: 180,
         x: side === 'left' ? 150 : w - 150,
@@ -86,36 +90,98 @@ const GameScreen = () => {
     }
   }
 
-  const playerOne: Paddle = Paddle.createPaddle('left');
-  const playerTwo: Paddle = Paddle.createPaddle('right');
-  const ball: Ball = Ball.createBall();
-  const gameStarted: boolean = false;
+  /*const [playerOne, setPlayerOne] = useState<Paddle>(Paddle.createPaddle('left'));
+  const [playerTwo, setPlayerTwo] = useState<Paddle>(Paddle.createPaddle('right'));
+  const [ball, setBall] = useState<Ball>(Ball.createBall());
+  const [gameStarted, setGameStarted] = useState<boolean>(false);
+  const [playerPaddle, setPlayerPaddle] = useState<Paddle>();*/
+
+  let playerOne: Paddle;
+  let playerTwo: Paddle;
+  let ball: Ball;
+  let gameStarted: boolean;
   let playerPaddle: Paddle;
-  axios.get(`/game/whichPlayer/${gameId}`).then((response) => {
-    if (response.data === "playerOne") {
-      playerPaddle = playerOne;
-    }
-    else {
-      playerPaddle = playerTwo;
-    }
-  });
+  
 
   const Game = {
-    initialize(): void {
-      Game.menu();
+    async initialize(): Promise<void> {
+      if (!currentUser) {return;}
+      console.log("Game initialize ran.")
+      ball = Ball.createBall();
+      gameStarted = false;
+      const players = (await axios.get(`/game/players/${gameId}`)).data;
+      playerOne = Paddle.createPaddle('left', players.playerOne.displayname, players.playerOne.id);
+      playerTwo = Paddle.createPaddle('right', players.playerTwo.displayname, players.playerTwo.id);
+      if (playerOne.id === currentUser.id) {
+        playerPaddle = playerOne;
+      }
+      else {
+        playerPaddle = playerTwo;
+      }
+
+      window.requestAnimationFrame(Game.menuLoop);
     },
 
-    menu(): void {
-      Game.draw();
+    async menuLoop(): Promise<void> {
+      const countdownEndTime = Date.parse((await axios.get(`/game/createTime/${gameId}`)).data) + (20 * 1000);
 
+      Game.menuDraw(countdownEndTime);
+      if (!gameStarted) {requestAnimationFrame(Game.menuLoop);}
+      else {requestAnimationFrame(Game.loop);}
+    },
 
+    menuDraw(countdownEndTime: number): void {
+      if (!canvas || !context) {return;}
+
+      const secondsLeft = (countdownEndTime - Date.now()) / 1000;
+
+      const colorBlack = '#111111';
+      const colorWhite = '#d4d2d2';
+
+      context.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      )
+
+      context.fillStyle = colorWhite;
+      context.textAlign = 'center';
+      if (secondsLeft >= 0) {
+        context.font = '20px Courier New';
+        context.fillText(
+          playerOne.name,
+          (canvas.width / 2) - 200,
+          300
+        )
+        context.fillText(
+          playerTwo.name,
+          (canvas.width / 2) + 200,
+          300
+        )
+
+        context.font = '60px Courier New';
+        context.fillText(
+          secondsLeft.toFixed(),
+          canvas.width / 2,
+          100
+        )
+      }
+      else {
+        context.font = '60px Courier New';
+        context.fillText(
+          "Oyun iptal",
+          canvas.width / 2,
+          100
+        )
+      }
     },
 
     draw(): void {
       if (!canvas || !context) {return;}
 
       const colorBlack = '#111111';
-      const colorWhite = '#d4d2d2'
+      const colorWhite = '#d4d2d2';
 
       context.clearRect(
         0,
@@ -172,6 +238,10 @@ const GameScreen = () => {
         (canvas.width / 2) + 400,
         100
       )
+    },
+
+    loop(): void {
+
     }
   }
 
@@ -194,7 +264,6 @@ const GameScreen = () => {
       socket.on("abortNotReady", () => { setAbortNotReady(true) });
     }
     if (context) {
-      console.log("Game initialize ran.")
       Game.initialize();
     }
   }, [connectControl, currentUser, socket, canvas, context])

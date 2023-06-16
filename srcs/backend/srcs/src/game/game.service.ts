@@ -1,12 +1,13 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
-import { Game } from '@prisma/client';
+import { Game, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Ball, Player } from './game.objects'
 import { GameGateway } from './game.gateway';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class GameService {
-    constructor(private prismaService: PrismaService, private gameGateway: GameGateway) {}
+    constructor(private prismaService: PrismaService, private gameGateway: GameGateway, private userService: UsersService) {}
 
     private playerOneMap: Map<string, Player> = new Map();
     private playerTwoMap: Map<string, Player> = new Map();
@@ -39,18 +40,17 @@ export class GameService {
         return true;
     }
 
-    async whichPlayer(userId: number, gameId: string): Promise<string> {
+    async getPlayers(gameId: string): Promise<{ playerOne: User, playerTwo: User }> {
         const game: Game = await this.findGameByID(gameId);
+        const playerOne: User = await this.userService.findUserbyID(game.playerOneId);
+        const playerTwo: User = await this.userService.findUserbyID(game.playerTwoId);
 
-        if (userId == game.playerOneId) {
-            return ('playerOne');
-        }
-        else if (userId == game.playerTwoId) {
-            return ('playerTwo');
-        }
-        else {
-            throw new BadRequestException('Bu oyuna girme yetkin bulunmuyor.');
-        }
+        return { playerOne: playerOne, playerTwo: playerTwo };
+    }
+
+    async createTime(gameId: string) {
+        const game: Game = await this.findGameByID(gameId);
+        return game.createdAt;
     }
 
     strFix(str: string | string[]): string {
