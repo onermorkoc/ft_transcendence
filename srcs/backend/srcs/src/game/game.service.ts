@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Game, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Ball, Player } from './game.objects'
+import { Ball, Direction, Paddle } from './game.objects'
 import { GameGateway } from './game.gateway';
 import { UsersService } from 'src/users/users.service';
 import { randomInt } from 'crypto';
@@ -10,8 +10,10 @@ import { randomInt } from 'crypto';
 export class GameService {
     constructor(private prismaService: PrismaService, private gameGateway: GameGateway, private userService: UsersService) {}
 
-    private playerOneMap: Map<string, Player> = new Map();
-    private playerTwoMap: Map<string, Player> = new Map();
+    private gameFPS: number = 60;
+
+    private playerOneMap: Map<string, Paddle> = new Map();
+    private playerTwoMap: Map<string, Paddle> = new Map();
     private ballMap: Map<string, Ball> = new Map();
 
     async findGameByID(gameId: string): Promise<Game> {
@@ -64,19 +66,20 @@ export class GameService {
     }
 
     async createPlayer(userId: number, gameId: string) {
+        const user: User = await this.userService.findUserbyID(userId);
         const game: Game = await this.findGameByID(gameId);
         if (userId == game.playerOneId) {
-           this.playerOneMap.set(gameId, new Player(userId));
+           this.playerOneMap.set(gameId, new Paddle(user.id, user.displayname, 'left'));
         }
         else if (userId == game.playerTwoId) {
-            this.playerTwoMap.set(gameId, new Player(userId));
+            this.playerTwoMap.set(gameId, new Paddle(user.id, user.displayname, 'right'));
         }
     }
 
     async playerReady(userId: number, gameId: string) {
         const game: Game = await this.findGameByID(gameId);
-        let player: Player;
-        let otherPlayer: Player;
+        let player: Paddle;
+        let otherPlayer: Paddle;
         if (userId == game.playerOneId) {
            player = this.playerOneMap.get(gameId);
            otherPlayer = this.playerTwoMap.get(gameId);
@@ -107,8 +110,8 @@ export class GameService {
 
     async countDownCheck(gameId: string) {
         console.log(gameId);
-        const playerOne: Player = this.playerOneMap.get(gameId);
-        const playerTwo: Player = this.playerTwoMap.get(gameId);
+        const playerOne: Paddle = this.playerOneMap.get(gameId);
+        const playerTwo: Paddle = this.playerTwoMap.get(gameId);
         if (!playerOne || !playerTwo) {
             this.gameGateway.server.to(gameId).emit('abortNotConnected');
             await this.deleteGame(gameId);
@@ -131,5 +134,32 @@ export class GameService {
         setTimeout(() => {
             this.sendRandomData(gameId);
         }, 1000)
+    }
+
+    calculateBall(gameId: string) {
+        const server = this.gameGateway.server;
+
+        const playerOne: Paddle = this.playerOneMap.get(gameId);
+        const playerTwo: Paddle = this.playerTwoMap.get(gameId);
+        const ball: Ball = this.ballMap.get(gameId);
+
+        ball.updateBallPosition(playerOne, playerTwo);
+        server.to(gameId).emit('ballPosition', { x: ball.x, y: ball.y });
+
+        setTimeout(() => {
+            this.sendRandomData(gameId);
+        }, 1000 / this.gameFPS)
+    }
+
+    playerOneMove(gameId: string, direction: Direction): { name: string, x: number, y: number } {
+        const playerOne: Paddle = this.playerOneMap.get(gameId);
+        playerOne.move(direction);
+        return { name: playerOne.name, x: playerOne.x, y: playerOne.y }
+    }
+
+    playerTwoMove(gameId: string, direction: Direction): { name: string, x: number, y: number } {
+        const playerTwo: Paddle = this.playerTwoMap.get(gameId);
+        playerTwo.move(direction);
+        return { name: playerTwo.name, x: playerTwo.x, y: playerTwo.y }
     }
 }
