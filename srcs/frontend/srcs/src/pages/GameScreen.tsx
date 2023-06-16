@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import PageNotFoundCmp from "../componets/PageNotFoundCmp";
 import { Socket, io } from "socket.io-client";
@@ -19,6 +19,11 @@ const GameScreen = () => {
   const [canvas, setCanvas] = useState<HTMLCanvasElement>()//document.getElementById('game') as HTMLCanvasElement
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null) //canvas.getContext('2d')
 
+  const [drawReady, setDrawReady] = useState<boolean>(false);
+  const [playerOne, setPlayerOne] = useState<Position>();
+  const [playerTwo, setPlayerTwo] = useState<Position>();
+  const [ball, setBall] = useState<Position>();
+
   const DIRECTION = {
     IDLE: 0,
     UP: 1,
@@ -27,7 +32,12 @@ const GameScreen = () => {
     RIGHT: 4
   }
 
-  interface Ball {
+  interface Position {
+    x: number;
+    y: number
+  }
+
+  /*interface Ball {
     width: number;
     height: number;
     x: number;
@@ -89,7 +99,7 @@ const GameScreen = () => {
         speed: 8
       }
     }
-  }
+  }*/
 
   /*const [playerOne, setPlayerOne] = useState<Paddle>(Paddle.createPaddle('left'));
   const [playerTwo, setPlayerTwo] = useState<Paddle>(Paddle.createPaddle('right'));
@@ -97,14 +107,13 @@ const GameScreen = () => {
   const [gameStarted, setGameStarted] = useState<boolean>(false);
   const [playerPaddle, setPlayerPaddle] = useState<Paddle>();*/
 
-  let playerOne: Paddle;
+  /*let playerOne: Paddle;
   let playerTwo: Paddle;
   let ball: Ball;
   let gameStarted: boolean;
-  let playerPaddle: Paddle;
-  
+  let playerPaddle: Paddle;*/
 
-  const Game = {
+  /*const Game = {
     async initialize(): Promise<void> {
       if (!currentUser) {return;}
       console.log("Game initialize ran.")
@@ -244,7 +253,37 @@ const GameScreen = () => {
     loop(): void {
 
     }
-  }
+  }*/
+
+  const playerOneRef = useRef(playerOne);
+  const playerTwoRef = useRef(playerTwo);
+  const ballRef = useRef(ball);
+
+  useEffect(() => {
+    playerOneRef.current = playerOne;
+    playerTwoRef.current = playerTwo;
+    ballRef.current = ball;
+  }, [playerOne, playerTwo, ball])
+
+  useEffect(() => {
+    if (drawReady) {
+      const loop = () => {
+        if (!canvas || !context) {return;}
+        const playerOne = playerOneRef.current;
+        const playerTwo = playerTwoRef.current;
+        const ball = ballRef.current;
+
+        console.log(`PLAYERONE`);
+        console.log(playerOne);
+        console.log(`PLAYERTWO`);
+        console.log(playerTwo);
+        console.log(`BALL`);
+        console.log(ball);
+        requestAnimationFrame(loop);
+      }
+      window.requestAnimationFrame(loop);
+    }
+  }, [drawReady])
 
   useEffect(() => {
     if (!connectControl) {
@@ -263,11 +302,15 @@ const GameScreen = () => {
     if (socket) {
       socket.on("abortNotConnected", () => { setAbortNotConnected(true) });
       socket.on("abortNotReady", () => { setAbortNotReady(true) });
+      socket.on("playerOnePosition", (data) => { setPlayerOne(data) });
+      socket.on("playerTwoPosition", (data) => { setPlayerTwo(data) });
+      socket.on("ballPosition", (data) => { setBall(data) });
     }
-    if (context) {
-      Game.initialize();
+    if (context && !drawReady && playerOne && playerTwo && ball) {
+      console.log("ANAN");
+      setDrawReady(true);
     }
-  }, [connectControl, currentUser, socket, canvas, context])
+  }, [connectControl, currentUser, socket, canvas, context, playerOne, playerTwo, ball])
 
   useEffect(() => {
     if (abortNotConnected) {
@@ -280,16 +323,9 @@ const GameScreen = () => {
     }
   }, [abortNotConnected, abortNotReady])
 
-  const clickFunction = () => {
-    if (socket) {
-      socket.emit('ready');
-    }
-  }
-
   if (connectControl) {
     return (
       <div className='gameRoot'>
-        <button className="button" onClick={clickFunction}>!READY!</button>
         <canvas width="1000" height="585" id="game" style={{ background: 'black' }}></canvas>
       </div>
     );

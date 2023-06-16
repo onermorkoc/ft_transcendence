@@ -21,6 +21,8 @@ export class QueueService {
             /*setTimeout(() => { // OYUN İPTAL SAYAÇ BAŞLANGICI
                 this.gameService.countDownCheck(game.id);
             }, 20 * 1000) // 20sn*/
+            console.log("ASDSADSAASD");
+            this.gameService.sendRandomData(game.id);
 
             const playerOneClients = await this.userIdtoClients(playerOne, server);
             const playerTwoClients = await this.userIdtoClients(playerTwo, server);

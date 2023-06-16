@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Ball, Player } from './game.objects'
 import { GameGateway } from './game.gateway';
 import { UsersService } from 'src/users/users.service';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class GameService {
@@ -116,5 +117,19 @@ export class GameService {
             this.gameGateway.server.to(gameId).emit('abortNotReady');
             await this.deleteGame(gameId);
         }
+    }
+
+    async sendRandomData(gameId: string) {
+        const server = this.gameGateway.server;
+
+        server.to(gameId).emit('playerOnePosition', { x: 10, y: randomInt(0,100) });
+        server.to(gameId).emit('playerTwoPosition', { x: 90, y: randomInt(0,100) });
+        server.to(gameId).emit('ballPosition', { x: randomInt(20,80), y: randomInt(10, 90) });
+
+        console.log("sdasd");
+
+        setTimeout(() => {
+            this.sendRandomData(gameId);
+        }, 1000)
     }
 }
