@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import PageNotFoundCmp from "../componets/PageNotFoundCmp";
 import { Socket, io } from "socket.io-client";
 import { User } from "../dto/DataObject";
+import "../ui-design/styles/GameScreen.css"
 
 const GameScreen = () => {
 
@@ -148,7 +149,7 @@ const GameScreen = () => {
       context.fillStyle = colorWhite;
       context.textAlign = 'center';
       if (secondsLeft >= 0) {
-        context.font = '20px Courier New';
+        context.font = '20px "Press Start 2P"';
         context.fillText(
           playerOne.name,
           (canvas.width / 2) - 200,
@@ -160,7 +161,7 @@ const GameScreen = () => {
           300
         )
 
-        context.font = '60px Courier New';
+        context.font = '60px "Press Start 2P"';
         context.fillText(
           secondsLeft.toFixed(),
           canvas.width / 2,
@@ -168,7 +169,7 @@ const GameScreen = () => {
         )
       }
       else {
-        context.font = '60px Courier New';
+        context.font = '60px "Press Start 2P"';
         context.fillText(
           "Oyun iptal",
           canvas.width / 2,
@@ -226,7 +227,7 @@ const GameScreen = () => {
       context.strokeStyle = colorWhite;
       context.stroke();
 
-      context.font = '100px Courier New';
+      context.font = '100px "Press Start 2P"';
       context.textAlign = 'center';
       context.fillText(
         playerOne.score.toString(),
@@ -288,7 +289,7 @@ const GameScreen = () => {
   if (connectControl) {
     return (
       <div className='gameRoot'>
-        <button className="button" onClick={clickFunction}>READY!</button>
+        <button className="button" onClick={clickFunction}>!READY!</button>
         <canvas width="1000" height="585" id="game" style={{ background: 'black' }}></canvas>
       </div>
     );

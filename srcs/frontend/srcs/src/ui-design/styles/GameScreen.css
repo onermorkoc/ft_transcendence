@@ -82,6 +82,12 @@ transform: translate(-50%, -50%);
 overflow: hidden;
 }
 
+.button{
+  font-family: "Press Start 2P", cursive;
+  width: 150px;
+  height: 30px;
+}
+
 .scoreBoard
 {
 display: flex;
@@ -90,9 +96,4 @@ align-items: center;
 width: 80%;
 margin: 5px auto;
 font-size: 25px;
-}
-
-.vs
-{
-margin: 5px auto;
 }
