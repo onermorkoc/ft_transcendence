@@ -129,8 +129,6 @@ export class GameService {
         server.to(gameId).emit('playerTwoPosition', { x: 90, y: randomInt(0,100) });
         server.to(gameId).emit('ballPosition', { x: randomInt(20,80), y: randomInt(10, 90) });
 
-        console.log("sdasd");
-
         setTimeout(() => {
             this.sendRandomData(gameId);
         }, 1000)
