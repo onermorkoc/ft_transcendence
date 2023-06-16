@@ -6,6 +6,16 @@ import { Socket, io } from "socket.io-client";
 import { User } from "../dto/DataObject";
 import "../ui-design/styles/GameScreen.css"
 
+function ScoreBoard({ playerOneScore, playerTwoScore }: { playerOneScore: number, playerTwoScore: number }){
+  return(
+    <div className='scoreBoard'>
+      <div className="playerOneScore">peachadam:{playerOneScore}</div>
+      <div className='vs'>VS</div>
+      <div className="playerTwoScore">peachadam:{playerTwoScore}</div>
+    </div>
+  )
+}
+
 const GameScreen = () => {
 
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -34,7 +44,7 @@ const GameScreen = () => {
 
   interface Position {
     x: number;
-    y: number
+    y: number;
   }
 
   /*interface Ball {
@@ -258,6 +268,10 @@ const GameScreen = () => {
   const playerOneRef = useRef(playerOne);
   const playerTwoRef = useRef(playerTwo);
   const ballRef = useRef(ball);
+  const contextRef = useRef(context);
+  const canvasRef = useRef(canvas);
+  const playerOneScore = useRef(0);
+  const playerTwoScore = useRef(0);
 
   useEffect(() => {
     playerOneRef.current = playerOne;
@@ -266,19 +280,57 @@ const GameScreen = () => {
   }, [playerOne, playerTwo, ball])
 
   useEffect(() => {
+    const draw = () => {
+      const canvas = document.getElementById('game') as HTMLCanvasElement;
+      const context = canvas.getContext('2d');
+      const playerOne = playerOneRef.current;
+      const playerTwo = playerTwoRef.current;
+      const ball = ballRef.current;
+      const grid : number = 15;
+
+      if (!canvas || !context || !playerOne || !playerTwo || !ball){return;}
+      
+      context.clearRect(0, 0, canvas.width, canvas.height); // bir önceki döngütü temizle
+
+      context.fillStyle = 'white';
+      context.fillRect(20, playerOne.y, 10, 100); // player1
+      context.fillRect(canvas.width - 30, playerTwo.y, 10, 100); // player2
+      context.fillRect(ball.x, ball.y, grid, grid) //  top
+
+      //scoreboardın altını ve canvasın altını boyuyor
+      context.fillStyle = 'lightgrey';
+      context.fillRect(0, 0, canvas.width, grid);
+      context.fillRect(0, canvas.height - grid, canvas.width, canvas.height);
+
+      //net i çiziyor
+      for (let i = grid; i < canvas.height - grid; i += grid * 2) {
+        context.fillRect(canvas.width / 2 - grid / 2, i, grid, grid);
+      }
+
+      //input dinleyen yerler
+      document.addEventListener('keydown', function(e) {
+        if (e.which === 38) {
+          if(playerTwo.y > 0){
+            playerTwo.y--;
+          }
+        } else if (e.which === 40) {
+          if(playerTwo.y < 500){
+            playerTwo.y++;
+          }
+        }
+      });
+  
+      /*document.addEventListener('keyup', function(e) {
+        if (e.which === 38 || e.which === 40) {
+          console.log("asagi basiym");
+        }
+      });*/
+
+    }
+
     if (drawReady) {
       const loop = () => {
-        if (!canvas || !context) {return;}
-        const playerOne = playerOneRef.current;
-        const playerTwo = playerTwoRef.current;
-        const ball = ballRef.current;
-
-        console.log(`PLAYERONE`);
-        console.log(playerOne);
-        console.log(`PLAYERTWO`);
-        console.log(playerTwo);
-        console.log(`BALL`);
-        console.log(ball);
+        draw();
         requestAnimationFrame(loop);
       }
       window.requestAnimationFrame(loop);
@@ -307,7 +359,6 @@ const GameScreen = () => {
       socket.on("ballPosition", (data) => { setBall(data) });
     }
     if (context && !drawReady && playerOne && playerTwo && ball) {
-      console.log("ANAN");
       setDrawReady(true);
     }
   }, [connectControl, currentUser, socket, canvas, context, playerOne, playerTwo, ball])
@@ -326,7 +377,10 @@ const GameScreen = () => {
   if (connectControl) {
     return (
       <div className='gameRoot'>
-        <canvas width="1000" height="585" id="game" style={{ background: 'black' }}></canvas>
+        <div className="gameTable">
+          <ScoreBoard playerOneScore={playerOneScore.current} playerTwoScore={playerTwoScore.current}/>
+          <canvas width="1024" height="576" id="game" style={{ background: 'black' }}></canvas>
+        </div>
       </div>
     );
   }
