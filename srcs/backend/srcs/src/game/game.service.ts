@@ -134,6 +134,24 @@ export class GameService {
         }, 1000)
     }
 
+    sendInitialData(gameId: string) {
+        const server = this.gameGateway.server;
+
+        const playerOne: Paddle = this.playerOneMap.get(gameId);
+        const playerTwo: Paddle = this.playerTwoMap.get(gameId);
+
+        if (!playerOne || !playerTwo) {return;}
+
+        this.ballMap.set(gameId, new Ball());
+        const ball: Ball = this.ballMap.get(gameId);
+
+        server.to(gameId).emit('playerOneInitial', { id: playerOne.userId, name: playerOne.name, x: playerOne.x, y: playerOne.y, width: playerOne.width, height: playerOne.height });
+        server.to(gameId).emit('playerTwoInitial', { id: playerTwo.userId, name: playerTwo.name, x: playerTwo.x, y: playerTwo.y, width: playerTwo.width, height: playerTwo.height });
+        server.to(gameId).emit('ballPosition', { x: ball.x, y: ball.y });
+
+        this.calculateBall(gameId);
+    }
+
     calculateBall(gameId: string) {
         const server = this.gameGateway.server;
 
@@ -144,20 +162,37 @@ export class GameService {
         ball.updateBallPosition(playerOne, playerTwo);
         server.to(gameId).emit('ballPosition', { x: ball.x, y: ball.y });
 
+        console.log({x: ball.x, y: ball.y});
+
         setTimeout(() => {
-            this.sendRandomData(gameId);
+            this.calculateBall(gameId);
         }, 1000 / this.gameFPS)
     }
 
-    playerOneMove(gameId: string, direction: Direction): { name: string, x: number, y: number } {
+    playerOneMove(gameId: string, direction: Direction): number {
         const playerOne: Paddle = this.playerOneMap.get(gameId);
         playerOne.move(direction);
-        return { name: playerOne.name, x: playerOne.x, y: playerOne.y }
+        console.log(playerOne.y);
+        return playerOne.y;
     }
 
-    playerTwoMove(gameId: string, direction: Direction): { name: string, x: number, y: number } {
+    playerOneMoveMouse(gameId: string, newY: number): number {
+        const playerOne: Paddle = this.playerOneMap.get(gameId);
+        playerOne.changePosition(newY);
+        return playerOne.y;
+    }
+
+    playerTwoMove(gameId: string, direction: Direction): number {
         const playerTwo: Paddle = this.playerTwoMap.get(gameId);
         playerTwo.move(direction);
-        return { name: playerTwo.name, x: playerTwo.x, y: playerTwo.y }
+        console.log(playerTwo.y);
+        return playerTwo.y;
     }
+
+    playerTwoMoveMouse(gameId: string, newY: number): number {
+        const playerTwo: Paddle = this.playerTwoMap.get(gameId);
+        playerTwo.changePosition(newY);
+        return playerTwo.y;
+    }
+
 }

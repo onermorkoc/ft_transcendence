@@ -28,6 +28,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
         client.join(game.id);
         await this.gameService.createPlayer(user.id, game.id);
+        this.gameService.sendInitialData(game.id);
     }
 
     handleDisconnect(client: Socket) {
@@ -53,5 +54,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         const gameId: string = this.gameService.strFix(client.handshake.query.gameId);
 
         this.server.to(gameId).emit('playerTwoPosition', this.gameService.playerTwoMove(gameId, direction));
+    }
+
+    @SubscribeMessage('playerOneMoveMouse')
+    async handlePlayerOneMoveMouse(client: Socket, newY: number) {
+        const gameId: string = this.gameService.strFix(client.handshake.query.gameId);
+        
+        this.server.to(gameId).emit('playerOnePosition', this.gameService.playerOneMoveMouse(gameId, newY));
+    }
+
+    @SubscribeMessage('playerTwoMoveMouse')
+    async handlePlayerTwoMoveMouse(client: Socket, newY: number) {
+        const gameId: string = this.gameService.strFix(client.handshake.query.gameId);
+
+        this.server.to(gameId).emit('playerTwoPosition', this.gameService.playerTwoMoveMouse(gameId, newY));
     }
 }

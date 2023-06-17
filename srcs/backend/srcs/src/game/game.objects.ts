@@ -7,7 +7,7 @@ export class Paddle {
     userId: number;
     name: string;
     isReady: boolean = false;
-    width: number = 0.1;
+    width: number = 0.2;
     height: number = 2;
     x: number;
     y: number = 4.5 - (this.height / 2);
@@ -18,10 +18,10 @@ export class Paddle {
         this.userId = userId;
         this.name = name;
         if (side == 'left') {
-            this.x = 1;
+            this.x = 0.5;
         }
         else {
-            this.x = 15 - this.width;
+            this.x = 15.5 - this.width;
         }
     }
 
@@ -31,31 +31,41 @@ export class Paddle {
 
     move(direction: Direction) {
         if (direction === Direction.UP) {
-            this.y += this.speed;
-            if (this.y < 0) {
-                this.y = 0;
+            this.y -= this.speed;
+            if (this.y < 0.2) {
+                this.y = 0.2;
             }
         }
         else if (direction === Direction.DOWN) {
-            this.y -= this.speed
-            if (this.y + this.height > 9) {
-                this.y = 9 - this.height;
+            this.y += this.speed
+            if (this.y + this.height > 8.8) {
+                this.y = 8.8 - this.height;
             }
+        }
+    }
+
+    changePosition(newY: number) {
+        this.y = newY;
+        if (this.y < 0.2) {
+            this.y = 0.2;
+        }
+        else if (this.y + this.height > 8.8) {
+            this.y = 8.8 - this.height;
         }
     }
 }
 
 export class Ball {
-    maxSpeed: number = 0.1;
-    speedIncrease: number = 0.002;
-    initialSpeed: number = 0.05;
+    maxSpeed: number = 1;
+    speedIncrease: number = 0.02;
+    initialSpeed: number = 0.2;
     speed: number = this.initialSpeed;
     width: number = 0.2;
     height: number = 0.2;
     x: number = 8 - (this.height / 2);
     y: number = 4.5 - (this.width / 2);
-    dx: number = Math.floor(Math.random() * 2) === 0 ? Math.random() : -Math.random();
-    dy: number = Math.floor(Math.random() * 2) === 0 ? Math.random() : -Math.random();
+    dx: number = Math.floor(Math.random() * 2) === 0 ? -0.5 : 0.5;
+    dy: number = Math.floor(Math.random() * 2) === 0 ? -0.5 : 0.5;
     
 
     updateBallPosition(paddleOne: Paddle, paddleTwo: Paddle) {
@@ -123,7 +133,7 @@ export class Ball {
         this.speed = this.initialSpeed;
         this.x = 8 - (this.height / 2);
         this.y = 4.5 - (this.width / 2);
-        this.dx = Math.floor(Math.random() * 2) === 0 ? Math.random() : -Math.random();
-        this.dy = Math.floor(Math.random() * 2) === 0 ? Math.random() : -Math.random();
+        this.dx = Math.floor(Math.random() * 2) === 0 ? -0.5 : 0.5;
+        this.dy = Math.floor(Math.random() * 2) === 0 ? -0.5 : 0.5;
     }
 }

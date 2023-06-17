@@ -30,21 +30,28 @@ const GameScreen = () => {
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null) //canvas.getContext('2d')
 
   const [drawReady, setDrawReady] = useState<boolean>(false);
-  const [playerOne, setPlayerOne] = useState<Position>();
-  const [playerTwo, setPlayerTwo] = useState<Position>();
+  const [playerOne, setPlayerOne] = useState<Paddle>();
+  const [playerTwo, setPlayerTwo] = useState<Paddle>();
   const [ball, setBall] = useState<Position>();
 
   const DIRECTION = {
-    IDLE: 0,
-    UP: 1,
-    DOWN: 2,
-    LEFT: 3,
-    RIGHT: 4
+    UP: 0,
+    DOWN: 1,
   }
 
   interface Position {
     x: number;
     y: number;
+  }
+
+  interface Paddle {
+    id: number;
+    name: string;
+    x: number;
+    y: number;
+    score: number;
+    width: number;
+    height: number;
   }
 
   /*interface Ball {
@@ -272,6 +279,7 @@ const GameScreen = () => {
   const canvasRef = useRef(canvas);
   const playerOneScore = useRef(0);
   const playerTwoScore = useRef(0);
+  let prevDate = Date.now();
 
   useEffect(() => {
     playerOneRef.current = playerOne;
@@ -287,20 +295,25 @@ const GameScreen = () => {
       const playerTwo = playerTwoRef.current;
       const ball = ballRef.current;
       const grid : number = 15;
+      const mp: number = canvas.width / 16;
 
       if (!canvas || !context || !playerOne || !playerTwo || !ball){return;}
-      
+
+      //console.log(prevDate - Date.now());
+      //prevDate = Date.now();
+
       context.clearRect(0, 0, canvas.width, canvas.height); // bir önceki döngütü temizle
 
       context.fillStyle = 'white';
-      context.fillRect(20, playerOne.y, 10, 100); // player1
-      context.fillRect(canvas.width - 30, playerTwo.y, 10, 100); // player2
-      context.fillRect(ball.x, ball.y, grid, grid) //  top
+      context.fillRect(playerOne.x * mp, playerOne.y * mp, playerOne.width * mp, playerOne.height * mp); // player1
+      context.fillRect(playerTwo.x * mp, playerTwo.y * mp, playerTwo.width * mp, playerTwo.height * mp); // player2
+      context.fillRect(ball.x * mp, ball.y * mp, grid, grid) //  top
+      //console.log({x: ball.x, y: ball.y});
 
       //scoreboardın altını ve canvasın altını boyuyor
       context.fillStyle = 'lightgrey';
-      context.fillRect(0, 0, canvas.width, grid);
-      context.fillRect(0, canvas.height - grid, canvas.width, canvas.height);
+      context.fillRect(0, 0, canvas.width, 8);
+      context.fillRect(0, canvas.height - 8, canvas.width, canvas.height);
 
       //net i çiziyor
       for (let i = grid; i < canvas.height - grid; i += grid * 2) {
@@ -308,31 +321,63 @@ const GameScreen = () => {
       }
 
       //input dinleyen yerler
-      document.addEventListener('keydown', function(e) {
-        if (e.which === 38) {
-          if(playerTwo.y > 0){
-            playerTwo.y--;
-          }
-        } else if (e.which === 40) {
-          if(playerTwo.y < 500){
-            playerTwo.y++;
-          }
-        }
-      });
+      
   
       /*document.addEventListener('keyup', function(e) {
         if (e.which === 38 || e.which === 40) {
           console.log("asagi basiym");
         }
       });*/
-
     }
 
-    if (drawReady) {
-      const loop = () => {
-        draw();
-        requestAnimationFrame(loop);
-      }
+    const loop = () => {
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    const listen = () => {
+      const canvas = document.getElementById('game') as HTMLCanvasElement;
+      const playerOne = playerOneRef.current;
+      const playerTwo = playerTwoRef.current;
+      const mp: number = canvas.width / 16;
+
+      if (!playerOne || !playerTwo) {return;}
+
+      window.addEventListener('mousemove', (e) => {
+        if (!currentUser || !socket) {return;}
+
+        if (playerOne.id === currentUser.id) {
+          socket.emit('playerOneMoveMouse', (e.y - 370) / mp)
+        }
+        else if (playerTwo.id === currentUser.id) {
+          socket.emit('playerTwoMoveMouse', (e.y - 370) / mp)
+        }
+      });
+
+      /*window.addEventListener('keydown', function(e) {
+        if (!currentUser || !socket) {return;}
+        //console.log(e);
+        if (e.code === "ArrowDown") {
+          if (playerOne.id === currentUser.id) {
+            socket.emit('playerOneMove', DIRECTION.DOWN)
+          }
+          else if (playerTwo.id === currentUser.id) {
+            socket.emit('playerTwoMove', DIRECTION.DOWN)
+          }
+        }
+        else if (e.code === "ArrowUp") {
+          if (playerOne.id === currentUser.id) {
+            socket.emit('playerOneMove', DIRECTION.UP)
+          }
+          else if (playerTwo.id === currentUser.id) {
+            socket.emit('playerTwoMove', DIRECTION.UP)
+          }
+        }
+      });*/
+    }
+
+    if (drawReady) {  
+      listen();
       window.requestAnimationFrame(loop);
     }
   }, [drawReady])
@@ -354,14 +399,22 @@ const GameScreen = () => {
     if (socket) {
       socket.on("abortNotConnected", () => { setAbortNotConnected(true) });
       socket.on("abortNotReady", () => { setAbortNotReady(true) });
-      socket.on("playerOnePosition", (data) => { setPlayerOne(data) });
-      socket.on("playerTwoPosition", (data) => { setPlayerTwo(data) });
+      socket.on("playerOneInitial", (data) => { setPlayerOne(data) });
+      socket.on("playerTwoInitial", (data) => { setPlayerTwo(data) });
       socket.on("ballPosition", (data) => { setBall(data) });
     }
-    if (context && !drawReady && playerOne && playerTwo && ball) {
+    if (socket && context && !drawReady && playerOne && playerTwo && ball) {
+      socket.on("playerOnePosition", (data) => { setPlayerOne({id: playerOne.id, name: playerOne.name, x: playerOne.x, y: data, score: playerOne.score, width: playerOne.width, height: playerOne.height})});
+      socket.on("playerTwoPosition", (data) => { setPlayerTwo({id: playerTwo.id, name: playerTwo.name, x: playerTwo.x, y: data, score: playerTwo.score, width: playerTwo.width, height: playerTwo.height})});
       setDrawReady(true);
     }
   }, [connectControl, currentUser, socket, canvas, context, playerOne, playerTwo, ball])
+
+  useEffect(() => {
+    if (socket && playerOne && playerTwo) {
+      
+    }
+  }, [playerOne, playerTwo])
 
   useEffect(() => {
     if (abortNotConnected) {
