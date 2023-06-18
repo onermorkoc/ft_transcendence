@@ -1,9 +1,10 @@
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { GameService } from "./game.service";
-import { Server, Socket } from "socket.io";
+import { RemoteSocket, Server, Socket } from "socket.io";
 import { Inject, forwardRef } from "@nestjs/common";
 import { Game, User } from "@prisma/client";
 import { UsersService } from "src/users/users.service";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
 @WebSocketGateway({ cors: { origin: true, credentials: true }, namespace: 'game'})
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -29,8 +30,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         await this.gameService.sendInitialData(client, game.id);
     }
 
-    handleDisconnect(client: Socket) {
+    async handleDisconnect(client: Socket) {
         console.log(client.id + " disconnected from game.");
+        const gameId: string = this.gameService.strFix(client.handshake.query.gameId);
+
+        const socketsInGame: RemoteSocket<DefaultEventsMap, any>[] = await this.server.in(gameId).fetchSockets();
+        if (socketsInGame.length == 0) {
+            this.gameService.deleteGame(gameId);
+        }
     }
     
     @SubscribeMessage('ready')

@@ -2,6 +2,15 @@ import { User } from "@prisma/client";
 
 export const GAME_FPS = 60;
 const GRID_SIZE = 64;
+export const COUNTDOWN_SECONDS = 20;
+
+export enum GameState {
+    WAITINGTOSTART,
+    PLAYING,
+    PAUSED,
+    FINISHED,
+    ABORTED
+}
 
 export enum Direction {
     UP,
@@ -86,11 +95,11 @@ export class Ball {
 
         // Score Collisions
         if (this.x < -1) {
-            paddleOne.scoreUp();
+            paddleTwo.scoreUp();
             this.resetBall();
         }
         else if (this.x + this.width > 17) {
-            paddleTwo.scoreUp();
+            paddleOne.scoreUp();
             this.resetBall();
         }
     }
@@ -130,15 +139,17 @@ export class Ball {
 
 export class GameObject {
     intervalId: NodeJS.Timer;
+    gameState: GameState = GameState.WAITINGTOSTART;
     playerOne: Paddle;
     playerTwo: Paddle;
     ball: Ball;
     gridSize: number = GRID_SIZE;
+    countdownEndTime: number;
 
-    constructor(playerOneUser: User, playerTwoUser: User) {
+    constructor(playerOneUser: User, playerTwoUser: User, countdownEndTime: number) {
         this.playerOne = new Paddle(playerOneUser.id, playerOneUser.nickname, 'left');
         this.playerTwo = new Paddle(playerTwoUser.id, playerTwoUser.nickname, 'right');
         this.ball = new Ball();
-        console.log("GAMEOBJECT INITIATED");
+        this.countdownEndTime = countdownEndTime;
     }
 }

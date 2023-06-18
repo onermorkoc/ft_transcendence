@@ -6,7 +6,7 @@ import { Socket, io } from "socket.io-client";
 import { User } from "../dto/DataObject";
 import "../ui-design/styles/GameScreen.css"
 
-function ScoreBoard({ playerOneName, playerOneScore, playerTwoName, playerTwoScore }: { playerOneName: string, playerOneScore: number, playerTwoName: string, playerTwoScore: number }){
+function ScoreBoard({ playerOneName, playerOneScore, playerTwoName, playerTwoScore }: { playerOneName: string | undefined, playerOneScore: number | undefined, playerTwoName: string | undefined, playerTwoScore: number | undefined }){
   return(
     <div className='scoreBoard'>
       <div className="playerOneScore">{playerOneName}:{playerOneScore}</div>
@@ -24,15 +24,14 @@ const GameScreen = () => {
   const [connectControl, setConnectControl] = useState<boolean>(false)
   const { gameId } = useParams()
 
-  const [abortNotConnected, setAbortNotConnected] = useState<boolean>(false)
-  const [abortNotReady, setAbortNotReady] = useState<boolean>(false)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const [canvas, setCanvas] = useState<HTMLCanvasElement>()//document.getElementById('game') as HTMLCanvasElement
-  const [context, setContext] = useState<CanvasRenderingContext2D | null>(null) //canvas.getContext('2d')
-
-  enum Direction {
-    UP,
-    DOWN
+  enum GameState {
+    WAITINGTOSTART,
+    PLAYING,
+    PAUSED,
+    FINISHED,
+    ABORTED
   }
 
   interface Position {
@@ -43,6 +42,7 @@ const GameScreen = () => {
   interface Paddle {
     id: number;
     name: string;
+    isReady: boolean;
     position: Position;
     score: number;
     width: number;
@@ -57,29 +57,51 @@ const GameScreen = () => {
   }
 
   interface Game {
+    gameState: GameState;
     ball: Ball;
     playerPaddle: Paddle;
     opponentPaddle: Paddle;
     gridSize: number;
+    countdownEndTime: number;
   }
 
   let gameData: Game;
-  const [playerOne, setPlayerOne] = useState<Paddle>();
-  const [playerTwo, setPlayerTwo] = useState<Paddle>();
+  const [playerOneName, setPlayerOneName] = useState<string>();
+  const [playerTwoName, setPlayerTwoName] = useState<string>();
+  const [playerOneScore, setPlayerOneScore] = useState<number>();
+  const [playerTwoScore, setPlayerTwoScore] = useState<number>();
+
+  const [a, setA] = useState<number>(0);
 
   const draw = (game: Game | undefined) => {
     if (!game) {return;}
 
-    const canvas = document.getElementById('game') as HTMLCanvasElement;
+    const canvas = canvasRef.current;
+    if (!canvas) {return;}
     const context = canvas.getContext('2d');
-    if (!canvas || !context) {return;}
+    if (!context) {return;}
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (game.gameState === GameState.PLAYING) {
+      drawGame(game, canvas, context);
+    }
+    else if (game.gameState === GameState.WAITINGTOSTART) {
+      drawMenu(game, canvas, context);
+    }
+    else if (game.gameState === GameState.ABORTED) {
+      drawAbortedMenu(game, canvas, context);
+    }
+  }
+
+  const drawGame = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+    if (!game || !canvas || !context) {return;}
 
     const playerPaddle = game.playerPaddle;
     const opponentPaddle = game.opponentPaddle;
     const ball = game.ball;
     const gridSize = game.gridSize;
 
-    context.clearRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = 'white';
     context.fillRect(playerPaddle.position.x * gridSize, playerPaddle.position.y * gridSize, playerPaddle.width * gridSize, playerPaddle.height * gridSize);
     context.fillRect(opponentPaddle.position.x * gridSize, opponentPaddle.position.y * gridSize, opponentPaddle.width * gridSize, opponentPaddle.height * gridSize);
@@ -96,6 +118,51 @@ const GameScreen = () => {
     }
   }
 
+  const drawMenu = async (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+    if (!game || !canvas || !context) {return;}
+
+    let leftOverSeconds: number = Math.floor((game.countdownEndTime - Date.now()) / 1000);
+    if (leftOverSeconds < 0) {leftOverSeconds = 0;}
+    const playerOne = (game.playerPaddle.position.x < game.opponentPaddle.position.x) ? game.playerPaddle : game.opponentPaddle;
+    const playerTwo = (game.playerPaddle.position.x < game.opponentPaddle.position.x) ? game.opponentPaddle : game.playerPaddle;
+
+    context.fillStyle = 'white';
+    context.font = '60px Arial';
+    context.textAlign = 'center';
+    context.fillText(leftOverSeconds.toFixed(), canvas.width / 2, 100);
+
+    context.font = '20px Arial';
+    context.fillText("Press -Space- to get READY", canvas.width / 2, 400);
+
+    context.font = '30px Arial';
+    if (playerOne.isReady) {
+      context.fillText("READY", 200, canvas.height / 2);
+    }
+    else {
+      context.fillText("NOT READY", 200, canvas.height / 2);
+    }
+    if (playerTwo.isReady) {
+      context.fillText("READY", canvas.width - 200, canvas.height / 2);
+    }
+    else {
+      context.fillText("NOT READY", canvas.width - 200, canvas.height / 2);
+    }
+
+    setTimeout(() => draw(game), 1000 / 10); // 10 FPS
+  }
+
+  const drawAbortedMenu = async (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+    if (!game || !canvas || !context) {return;}
+
+    context.fillStyle = 'white';
+    context.font = '30px Arial';
+    context.textAlign = 'center';
+    context.fillText("Game Aborted", canvas.width / 2, canvas.height / 2);
+
+    context.font = '20px Arial';
+    context.fillText("Press -Space- to go to HOMEPAGE", canvas.width / 2, 400);
+  }
+
   const listen = (game: Game | undefined) => {
     if (!game) {return;}
 
@@ -106,39 +173,49 @@ const GameScreen = () => {
     const gridSize = game.gridSize;
 
     document.addEventListener('mousemove', (e) => {
-      const newY = (e.y - 370) / gridSize;
-      playerPaddle.position.y = newY;
-      paddleControl(playerPaddle);
-      if (playerPaddle.position.x < opponentPaddle.position.x) {
-        socket.emit('playerOneMove', newY)
-      }
-      else {
-        socket.emit('playerTwoMove', newY)
+      if (game.gameState === GameState.PLAYING) {
+        const newY = (e.y - 370) / gridSize;
+        playerPaddle.position.y = newY;
+        paddleControl(playerPaddle);
+        if (playerPaddle.position.x < opponentPaddle.position.x) {
+          socket.emit('playerOneMove', newY)
+        }
+        else {
+          socket.emit('playerTwoMove', newY)
+        }
       }
     });
 
     document.addEventListener('keydown', (e) => {
-      let direction: Direction;
-      let newY: number;
-      if (e.key === 'ArrowDown' || e.key === 'KeyS') {
-        direction = Direction.DOWN;
-        newY = playerPaddle.position.y + playerPaddle.speed;
+      if (game.gameState === GameState.PLAYING && (e.code === 'ArrowDown' || e.code === 'KeyS')) {
+        playerPaddle.position.y = playerPaddle.position.y + playerPaddle.speed;
+        paddleControl(playerPaddle);
+        if (playerPaddle.position.x < opponentPaddle.position.x) {
+          socket.emit('playerOneMove', playerPaddle.position.y)
+        }
+        else {
+          socket.emit('playerTwoMove', playerPaddle.position.y)
+        }
       }
-      else if (e.key === 'ArrowUp' || e.key === 'KeyW') {
-        direction = Direction.UP;
-        newY = playerPaddle.position.y - playerPaddle.speed;
+      else if (game.gameState === GameState.PLAYING && (e.code === 'ArrowUp' || e.code === 'KeyW')) {
+        playerPaddle.position.y = playerPaddle.position.y - playerPaddle.speed;
+        paddleControl(playerPaddle);
+        if (playerPaddle.position.x < opponentPaddle.position.x) {
+          socket.emit('playerOneMove', playerPaddle.position.y)
+        }
+        else {
+          socket.emit('playerTwoMove', playerPaddle.position.y)
+        }
+      }
+      else if (game.gameState === GameState.WAITINGTOSTART && e.code === 'Space') {
+        playerPaddle.isReady = true;
+        socket.emit('ready');
+      }
+      else if (game.gameState === GameState.ABORTED && e.code === 'Space') {
+        window.location.assign("/home");
       }
       else {
         return;
-      }
-
-      playerPaddle.position.y = newY;
-      paddleControl(playerPaddle);
-      if (playerPaddle.position.x < opponentPaddle.position.x) {
-        socket.emit('playerOneMove', newY)
-      }
-      else {
-        socket.emit('playerTwoMove', newY)
       }
       requestAnimationFrame(() => draw(gameData));
     })
@@ -160,59 +237,73 @@ const GameScreen = () => {
     if (connectControl && !currentUser) {
       axios.get(`/users/current`).then((response) => {setCurrentUser(response.data)});
     }
-    if (currentUser && !socket && !canvas) {
+    if (currentUser && !socket) {
       setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/game`, {query: {userId: currentUser.id, gameId: gameId}}))
-      setCanvas(document.getElementById('game') as HTMLCanvasElement);
-    }
-    if (canvas && !context) {
-      setContext(canvas.getContext('2d'));
     }
     if (socket && !socketListen) {
-      //socket.on("abortNotConnected", () => { setAbortNotConnected(true) });
-      //socket.on("abortNotReady", () => { setAbortNotReady(true) });
       socket.on("gameDataInitial", (data) => {
         gameData = JSON.parse(data);
         if (gameData.playerPaddle.position.x < gameData.opponentPaddle.position.x) {
-          setPlayerOne(gameData.playerPaddle);
-          setPlayerTwo(gameData.opponentPaddle);
+          console.log("AAAAAA");
+          setPlayerOneName(gameData.playerPaddle.name);
+          setPlayerOneScore(gameData.playerPaddle.score);
+          setPlayerTwoName(gameData.opponentPaddle.name);
+          setPlayerTwoScore(gameData.opponentPaddle.score);
         }
         else {
-          setPlayerTwo(gameData.playerPaddle);
-          setPlayerOne(gameData.opponentPaddle);
+          setPlayerTwoName(gameData.playerPaddle.name);
+          setPlayerTwoScore(gameData.playerPaddle.score);
+          setPlayerOneName(gameData.opponentPaddle.name);
+          setPlayerOneScore(gameData.opponentPaddle.score);
         }
         listen(gameData);
         requestAnimationFrame(() => draw(gameData));
-        socket.emit('ready');
         socket.off("gameDataInitial");
       });
+      socket.on("gameStarted", () => {
+        gameData.gameState = GameState.PLAYING;
+        socket.off("gameStarted");
+      })
       socket.on("gameData", (data) => {
         const dataJSON = JSON.parse(data);
         gameData.ball.position.x = dataJSON.ball.x;
         gameData.ball.position.y = dataJSON.ball.y;
         gameData.opponentPaddle.position.y = dataJSON.opponentPaddle.y;
+        gameData.playerPaddle.score = dataJSON.playerPaddle.score;
+        gameData.opponentPaddle.score = dataJSON.opponentPaddle.score;
+        if (gameData.playerPaddle.position.x < gameData.opponentPaddle.position.x) {
+          console.log("BBBBB");
+          setPlayerOneScore(gameData.playerPaddle.score);
+          setPlayerTwoScore(gameData.opponentPaddle.score);
+        }
+        else {
+          setPlayerOneScore(gameData.opponentPaddle.score);
+          setPlayerTwoScore(gameData.playerPaddle.score);
+        }
         requestAnimationFrame(() => draw(gameData));
       });
+      socket.on("opponentReady", () => {
+        gameData.opponentPaddle.isReady = true;
+        socket.off("opponentReady");
+      });
+      socket.on("gameAborted", () => {
+        gameData.gameState = GameState.ABORTED;
+        socket.off("gameAborted");
+        socket.disconnect();
+      })
       setSocketListen(true);
     }
-  }, [connectControl, currentUser, socket, canvas, context])
+  }, [connectControl, currentUser, socket])
 
-  /*useEffect(() => {
-    if (abortNotConnected) {
-      console.log("ADAM BAGLANMADI OYUN IPTAL");
-      window.location.reload();
-    }
-    else if (abortNotReady) {
-      console.log("ADAM READY VERMEDI OYUN IPTAL");
-      window.location.reload();
-    }
-  }, [abortNotConnected, abortNotReady])*/
-
-  if (connectControl && playerOne && playerTwo) {
+  useEffect(() => {
+  }, [playerOneName, playerOneScore, playerTwoName, playerTwoScore])
+  
+  if (connectControl) {
     return (
       <div className='gameRoot'>
         <div className="gameTable">
-          <ScoreBoard playerOneName={playerOne.name} playerOneScore={playerOne.score} playerTwoName={playerTwo.name} playerTwoScore={playerTwo.score}/>
-          <canvas width="1024" height="576" id="game" style={{ background: 'black' }}></canvas>
+          <ScoreBoard playerOneName={playerOneName} playerOneScore={playerOneScore} playerTwoName={playerTwoName} playerTwoScore={playerTwoScore}/>
+          <canvas width="1024" height="576" id="game" ref={canvasRef} style={{ background: 'black' }}></canvas>
         </div>
       </div>
     );

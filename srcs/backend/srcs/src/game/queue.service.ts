@@ -4,6 +4,7 @@ import { Game } from '@prisma/client';
 import { RemoteSocket, Server } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { GameService } from './game.service';
+import { COUNTDOWN_SECONDS } from './game.objects';
 
 @Injectable()
 export class QueueService {
@@ -18,9 +19,9 @@ export class QueueService {
             const [playerOne, playerTwo] = this.queueList;
             const game: Game = await this.gameService.createGame(playerOne, playerTwo);
             
-            /*setTimeout(() => { // OYUN İPTAL SAYAÇ BAŞLANGICI
+            setTimeout(() => { // OYUN İPTAL SAYAÇ BAŞLANGICI
                 this.gameService.countDownCheck(game.id);
-            }, 20 * 1000) // 20sn*/
+            }, COUNTDOWN_SECONDS * 1000) // 20sn
 
             const playerOneClients = await this.userIdtoClients(playerOne, server);
             const playerTwoClients = await this.userIdtoClients(playerTwo, server);
