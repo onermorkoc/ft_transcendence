@@ -1,3 +1,8 @@
+import { User } from "@prisma/client";
+
+export const GAME_FPS = 60;
+const GRID_SIZE = 64;
+
 export enum Direction {
     UP,
     DOWN
@@ -12,7 +17,7 @@ export class Paddle {
     x: number;
     y: number = 4.5 - (this.height / 2);
     score: number = 0;
-    speed: number = 0.2;
+    speed: number = 0.2 * 60 / GAME_FPS;
 
     constructor(userId: number, name: string, side: string) {
         this.userId = userId;
@@ -29,21 +34,6 @@ export class Paddle {
         this.score++;
     }
 
-    move(direction: Direction) {
-        if (direction === Direction.UP) {
-            this.y -= this.speed;
-            if (this.y < 0.2) {
-                this.y = 0.2;
-            }
-        }
-        else if (direction === Direction.DOWN) {
-            this.y += this.speed
-            if (this.y + this.height > 8.8) {
-                this.y = 8.8 - this.height;
-            }
-        }
-    }
-
     changePosition(newY: number) {
         this.y = newY;
         if (this.y < 0.2) {
@@ -56,16 +46,16 @@ export class Paddle {
 }
 
 export class Ball {
-    maxSpeed: number = 1;
-    speedIncrease: number = 0.02;
-    initialSpeed: number = 0.2;
+    maxSpeed: number = 0.5 * 60 / GAME_FPS;
+    speedIncrease: number = 0.008 * 60 / GAME_FPS;
+    initialSpeed: number = 0.15 * 60 / GAME_FPS;
     speed: number = this.initialSpeed;
     width: number = 0.2;
     height: number = 0.2;
     x: number = 8 - (this.height / 2);
     y: number = 4.5 - (this.width / 2);
-    dx: number = Math.floor(Math.random() * 2) === 0 ? -0.5 : 0.5;
-    dy: number = Math.floor(Math.random() * 2) === 0 ? -0.5 : 0.5;
+    dx: number = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
+    dy: number = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
     
 
     updateBallPosition(paddleOne: Paddle, paddleTwo: Paddle) {
@@ -133,7 +123,22 @@ export class Ball {
         this.speed = this.initialSpeed;
         this.x = 8 - (this.height / 2);
         this.y = 4.5 - (this.width / 2);
-        this.dx = Math.floor(Math.random() * 2) === 0 ? -0.5 : 0.5;
-        this.dy = Math.floor(Math.random() * 2) === 0 ? -0.5 : 0.5;
+        this.dx = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
+        this.dy = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
+    }
+}
+
+export class GameObject {
+    intervalId: NodeJS.Timer;
+    playerOne: Paddle;
+    playerTwo: Paddle;
+    ball: Ball;
+    gridSize: number = GRID_SIZE;
+
+    constructor(playerOneUser: User, playerTwoUser: User) {
+        this.playerOne = new Paddle(playerOneUser.id, playerOneUser.nickname, 'left');
+        this.playerTwo = new Paddle(playerTwoUser.id, playerTwoUser.nickname, 'right');
+        this.ball = new Ball();
+        console.log("GAMEOBJECT INITIATED");
     }
 }

@@ -1,20 +1,17 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Game, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Ball, Direction, Paddle } from './game.objects'
+import { Ball, Direction, GAME_FPS, GameObject, Paddle } from './game.objects'
 import { GameGateway } from './game.gateway';
 import { UsersService } from 'src/users/users.service';
-import { randomInt } from 'crypto';
+import { RemoteSocket, Socket } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 @Injectable()
 export class GameService {
     constructor(private prismaService: PrismaService, private gameGateway: GameGateway, private userService: UsersService) {}
 
-    private gameFPS: number = 60;
-
-    private playerOneMap: Map<string, Paddle> = new Map();
-    private playerTwoMap: Map<string, Paddle> = new Map();
-    private ballMap: Map<string, Ball> = new Map();
+    private gameMap: Map<string, GameObject> = new Map();
 
     async findGameByID(gameId: string): Promise<Game> {
         return await this.prismaService.game.findUnique({
@@ -25,12 +22,19 @@ export class GameService {
     }
 
     async createGame(playerOne: number, playerTwo: number): Promise<Game> {
-        return await this.prismaService.game.create({
+        const playerOneUser: User = await this.userService.findUserbyID(playerOne);
+        const playerTwoUser: User = await this.userService.findUserbyID(playerTwo);
+
+        const game = await this.prismaService.game.create({
             data: {
                 playerOneId: playerOne,
                 playerTwoId: playerTwo
             }
         });
+
+        this.gameMap.set(game.id, new GameObject(playerOneUser, playerTwoUser))
+
+        return game;
     }
 
     async joinGame(userId: number, gameId: string): Promise<boolean> {
@@ -65,34 +69,23 @@ export class GameService {
         }
     }
 
-    async createPlayer(userId: number, gameId: string) {
-        const user: User = await this.userService.findUserbyID(userId);
-        const game: Game = await this.findGameByID(gameId);
-        if (userId == game.playerOneId) {
-           this.playerOneMap.set(gameId, new Paddle(user.id, user.displayname, 'left'));
-        }
-        else if (userId == game.playerTwoId) {
-            this.playerTwoMap.set(gameId, new Paddle(user.id, user.displayname, 'right'));
-        }
-    }
+    playerReady(userId: number, gameId: string) {
+        const game = this.gameMap.get(gameId);
+        const playerOne = game.playerOne;
+        const playerTwo = game.playerTwo;
 
-    async playerReady(userId: number, gameId: string) {
-        const game: Game = await this.findGameByID(gameId);
-        let player: Paddle;
-        let otherPlayer: Paddle;
-        if (userId == game.playerOneId) {
-           player = this.playerOneMap.get(gameId);
-           otherPlayer = this.playerTwoMap.get(gameId);
-        }
-        else if (userId == game.playerTwoId) {
-            player = this.playerTwoMap.get(gameId);
-            otherPlayer = this.playerTwoMap.get(gameId);
-        }
+        if (userId == playerOne.userId) {
+            playerOne.isReady = true;
 
-        if (player) {
-            player.isReady = true;
-            if (otherPlayer && otherPlayer.isReady) {
-                this.ballMap.set(gameId, new Ball());
+            if (playerTwo.isReady == true && !game.intervalId) {
+                game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
+            }
+        }
+        else if (userId == playerTwo.userId) {
+            playerTwo.isReady = true;
+
+            if (playerOne.isReady == true && !game.intervalId) {
+                game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
             }
         }
     }
@@ -103,12 +96,11 @@ export class GameService {
                 id: gameId
             }
         })
-        this.playerOneMap.delete(gameId);
-        this.playerTwoMap.delete(gameId);
-        this.ballMap.delete(gameId);
+        clearInterval(this.gameMap.get(gameId).intervalId);
+        this.gameMap.delete(gameId);
     }
 
-    async countDownCheck(gameId: string) {
+    /*async countDownCheck(gameId: string) {
         console.log(gameId);
         const playerOne: Paddle = this.playerOneMap.get(gameId);
         const playerTwo: Paddle = this.playerTwoMap.get(gameId);
@@ -120,79 +112,144 @@ export class GameService {
             this.gameGateway.server.to(gameId).emit('abortNotReady');
             await this.deleteGame(gameId);
         }
-    }
+    }*/
 
-    async sendRandomData(gameId: string) {
+    async sendInitialData(client: Socket, gameId: string) {
         const server = this.gameGateway.server;
 
-        server.to(gameId).emit('playerOnePosition', { x: 10, y: randomInt(0,100) });
-        server.to(gameId).emit('playerTwoPosition', { x: 90, y: randomInt(0,100) });
-        server.to(gameId).emit('ballPosition', { x: randomInt(20,80), y: randomInt(10, 90) });
+        const ball: Ball = this.gameMap.get(gameId).ball;
+        const playerOne: Paddle = this.gameMap.get(gameId).playerOne;
+        const playerTwo: Paddle = this.gameMap.get(gameId).playerTwo;
+        const gridSize: number = this.gameMap.get(gameId).gridSize;
 
-        setTimeout(() => {
-            this.sendRandomData(gameId);
-        }, 1000)
+        let gameJSON;
+        if (parseInt(this.strFix(client.handshake.query.userId)) == playerOne.userId) {
+            gameJSON = {
+                ball: {
+                    position: {
+                        x: ball.x,
+                        y: ball.y
+                    },
+                    width: ball.width,
+                    height: ball.height
+                },
+                playerPaddle: {
+                    id: playerOne.userId,
+                    name: playerOne.name,
+                    position: {
+                        x: playerOne.x,
+                        y: playerOne.y
+                    },
+                    score: playerOne.score,
+                    width: playerOne.width,
+                    height: playerOne.height,
+                    speed: playerOne.speed
+                },
+                opponentPaddle: {
+                    id: playerTwo.userId,
+                    name: playerTwo.name,
+                    position: {
+                        x: playerTwo.x,
+                        y: playerTwo.y
+                    },
+                    score: playerTwo.score,
+                    width: playerTwo.width,
+                    height: playerTwo.height,
+                    speed: playerTwo.speed
+                },
+                gridSize: gridSize
+            }
+            server.to(client.id).emit('gameDataInitial', JSON.stringify(gameJSON));
+        }
+        else if (parseInt(this.strFix(client.handshake.query.userId)) == playerTwo.userId) {
+            gameJSON = {
+                ball: {
+                    position: {
+                        x: ball.x,
+                        y: ball.y
+                    },
+                    width: ball.width,
+                    height: ball.height
+                },
+                playerPaddle: {
+                    id: playerTwo.userId,
+                    name: playerTwo.name,
+                    position: {
+                        x: playerTwo.x,
+                        y: playerTwo.y
+                    },
+                    score: playerTwo.score,
+                    width: playerTwo.width,
+                    height: playerTwo.height,
+                    speed: playerTwo.speed
+                },
+                opponentPaddle: {
+                    id: playerOne.userId,
+                    name: playerOne.name,
+                    position: {
+                        x: playerOne.x,
+                        y: playerOne.y
+                    },
+                    score: playerOne.score,
+                    width: playerOne.width,
+                    height: playerOne.height,
+                    speed: playerOne.speed
+                },
+                gridSize: gridSize
+            }
+            server.to(client.id).emit('gameDataInitial', JSON.stringify(gameJSON));
+        }
     }
 
-    sendInitialData(gameId: string) {
+    async gameInterval(gameId: string) {
         const server = this.gameGateway.server;
 
-        const playerOne: Paddle = this.playerOneMap.get(gameId);
-        const playerTwo: Paddle = this.playerTwoMap.get(gameId);
-
-        if (!playerOne || !playerTwo) {return;}
-
-        this.ballMap.set(gameId, new Ball());
-        const ball: Ball = this.ballMap.get(gameId);
-
-        server.to(gameId).emit('playerOneInitial', { id: playerOne.userId, name: playerOne.name, x: playerOne.x, y: playerOne.y, width: playerOne.width, height: playerOne.height });
-        server.to(gameId).emit('playerTwoInitial', { id: playerTwo.userId, name: playerTwo.name, x: playerTwo.x, y: playerTwo.y, width: playerTwo.width, height: playerTwo.height });
-        server.to(gameId).emit('ballPosition', { x: ball.x, y: ball.y });
-
-        this.calculateBall(gameId);
-    }
-
-    calculateBall(gameId: string) {
-        const server = this.gameGateway.server;
-
-        const playerOne: Paddle = this.playerOneMap.get(gameId);
-        const playerTwo: Paddle = this.playerTwoMap.get(gameId);
-        const ball: Ball = this.ballMap.get(gameId);
+        const ball: Ball = this.gameMap.get(gameId).ball;
+        const playerOne: Paddle = this.gameMap.get(gameId).playerOne;
+        const playerTwo: Paddle = this.gameMap.get(gameId).playerTwo;
 
         ball.updateBallPosition(playerOne, playerTwo);
-        server.to(gameId).emit('ballPosition', { x: ball.x, y: ball.y });
 
-        console.log({x: ball.x, y: ball.y});
+        const socketsInGame: RemoteSocket<DefaultEventsMap, any>[] = await server.in(gameId).fetchSockets();
+        socketsInGame.forEach((socket) => {
+            let dataJSON;
+            if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
+                dataJSON = {
+                    ball: {
+                        x: ball.x,
+                        y: ball.y
+                    },
+                    opponentPaddle: {
+                        y: playerTwo.y
+                    }
+                }
+                server.to(socket.id).emit('gameData', JSON.stringify(dataJSON));
+            }
+            else if (parseInt(this.strFix(socket.handshake.query.userId)) == playerTwo.userId) {
+                dataJSON = {
+                    ball: {
+                        x: ball.x,
+                        y: ball.y
+                    },
+                    opponentPaddle: {
+                        y: playerOne.y
+                    }
+                }
+                server.to(socket.id).emit('gameData', JSON.stringify(dataJSON));
+            }
+        });
 
-        setTimeout(() => {
-            this.calculateBall(gameId);
-        }, 1000 / this.gameFPS)
+        //console.log({ x: ball.x, y: ball.y });
     }
 
-    playerOneMove(gameId: string, direction: Direction): number {
-        const playerOne: Paddle = this.playerOneMap.get(gameId);
-        playerOne.move(direction);
-        console.log(playerOne.y);
-        return playerOne.y;
-    }
-
-    playerOneMoveMouse(gameId: string, newY: number): number {
-        const playerOne: Paddle = this.playerOneMap.get(gameId);
+    playerOneMove(gameId: string, newY: number): void {
+        const playerOne: Paddle = this.gameMap.get(gameId).playerOne;
         playerOne.changePosition(newY);
-        return playerOne.y;
     }
 
-    playerTwoMove(gameId: string, direction: Direction): number {
-        const playerTwo: Paddle = this.playerTwoMap.get(gameId);
-        playerTwo.move(direction);
-        console.log(playerTwo.y);
-        return playerTwo.y;
-    }
-
-    playerTwoMoveMouse(gameId: string, newY: number): number {
-        const playerTwo: Paddle = this.playerTwoMap.get(gameId);
+    playerTwoMove(gameId: string, newY: number): void {
+        const playerTwo: Paddle = this.gameMap.get(gameId).playerTwo;
         playerTwo.changePosition(newY);
-        return playerTwo.y;
     }
 
 }
