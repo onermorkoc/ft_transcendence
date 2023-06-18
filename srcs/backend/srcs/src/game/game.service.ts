@@ -105,12 +105,12 @@ export class GameService {
     }
 
     async deleteGame(gameId: string) {
+        clearInterval(this.gameMap.get(gameId).intervalId);
         await this.prismaService.game.delete({
             where: {
                 id: gameId
             }
         })
-        clearInterval(this.gameMap.get(gameId).intervalId);
         this.gameMap.delete(gameId);
     }
 
@@ -120,7 +120,6 @@ export class GameService {
         const playerTwo: Paddle = game.playerTwo;
         if (!playerOne.isReady || !playerTwo.isReady) {
             this.gameGateway.server.to(gameId).emit('gameAborted');
-            await this.deleteGame(gameId);
         }
     }
 
