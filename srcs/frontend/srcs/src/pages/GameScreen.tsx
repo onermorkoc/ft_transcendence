@@ -28,6 +28,7 @@ const GameScreen = () => {
 
   enum GameState {
     WAITINGTOSTART,
+    STARTING,
     PLAYING,
     PAUSED,
     FINISHED,
@@ -63,6 +64,7 @@ const GameScreen = () => {
     opponentPaddle: Paddle;
     gridSize: number;
     countdownEndTime: number;
+    startingCountdown: number;
   }
 
   let gameData: Game;
@@ -70,8 +72,6 @@ const GameScreen = () => {
   const [playerTwoName, setPlayerTwoName] = useState<string>();
   const [playerOneScore, setPlayerOneScore] = useState<number>();
   const [playerTwoScore, setPlayerTwoScore] = useState<number>();
-
-  const [a, setA] = useState<number>(0);
 
   const draw = (game: Game | undefined) => {
     if (!game) {return;}
@@ -91,6 +91,9 @@ const GameScreen = () => {
     }
     else if (game.gameState === GameState.ABORTED) {
       drawAbortedMenu(game, canvas, context);
+    }
+    else if (game.gameState === GameState.STARTING) {
+      drawStartingMenu(game, canvas, context);
     }
   }
 
@@ -161,6 +164,23 @@ const GameScreen = () => {
 
     context.font = '20px Arial';
     context.fillText("Press -Space- to go to HOMEPAGE", canvas.width / 2, 400);
+  }
+
+  const drawStartingMenu = async (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+    if (!game || !canvas || !context) {return;}
+
+    let leftOverSeconds: number = Math.floor((game.startingCountdown - Date.now()) / 1000);
+    if (leftOverSeconds < 0) {leftOverSeconds = 0;}
+
+    context.fillStyle = 'white';
+    context.font = '60px Arial';
+    context.textAlign = 'center';
+    context.fillText(leftOverSeconds.toFixed(), canvas.width / 2, canvas.height / 2);
+
+    context.font = '30px Arial';
+    context.fillText("Game Starting In", canvas.width / 2, (canvas.height / 2) - 100);
+
+    setTimeout(() => draw(game), 1000 / 10); // 10 FPS
   }
 
   const listen = (game: Game | undefined) => {
@@ -244,7 +264,6 @@ const GameScreen = () => {
       socket.on("gameDataInitial", (data) => {
         gameData = JSON.parse(data);
         if (gameData.playerPaddle.position.x < gameData.opponentPaddle.position.x) {
-          console.log("AAAAAA");
           setPlayerOneName(gameData.playerPaddle.name);
           setPlayerOneScore(gameData.playerPaddle.score);
           setPlayerTwoName(gameData.opponentPaddle.name);
@@ -260,25 +279,30 @@ const GameScreen = () => {
         requestAnimationFrame(() => draw(gameData));
         socket.off("gameDataInitial");
       });
+      socket.on("gameStarting", (data: number) => {
+        gameData.gameState = GameState.STARTING;
+        gameData.startingCountdown = Date.now() + (data * 1000);
+      });
       socket.on("gameStarted", () => {
         gameData.gameState = GameState.PLAYING;
         socket.off("gameStarted");
-      })
+      });
       socket.on("gameData", (data) => {
         const dataJSON = JSON.parse(data);
         gameData.ball.position.x = dataJSON.ball.x;
         gameData.ball.position.y = dataJSON.ball.y;
         gameData.opponentPaddle.position.y = dataJSON.opponentPaddle.y;
-        gameData.playerPaddle.score = dataJSON.playerPaddle.score;
-        gameData.opponentPaddle.score = dataJSON.opponentPaddle.score;
-        if (gameData.playerPaddle.position.x < gameData.opponentPaddle.position.x) {
-          console.log("BBBBB");
-          setPlayerOneScore(gameData.playerPaddle.score);
-          setPlayerTwoScore(gameData.opponentPaddle.score);
-        }
-        else {
-          setPlayerOneScore(gameData.opponentPaddle.score);
-          setPlayerTwoScore(gameData.playerPaddle.score);
+        if (dataJSON.hasOwnProperty('playerPaddle')) {
+          gameData.playerPaddle.score = dataJSON.playerPaddle.score;
+          gameData.opponentPaddle.score = dataJSON.opponentPaddle.score;
+          if (gameData.playerPaddle.position.x < gameData.opponentPaddle.position.x) {
+            setPlayerOneScore(gameData.playerPaddle.score);
+            setPlayerTwoScore(gameData.opponentPaddle.score);
+          }
+          else {
+            setPlayerOneScore(gameData.opponentPaddle.score);
+            setPlayerTwoScore(gameData.playerPaddle.score);
+          }
         }
         requestAnimationFrame(() => draw(gameData));
       });

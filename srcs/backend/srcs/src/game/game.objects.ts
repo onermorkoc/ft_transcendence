@@ -3,9 +3,11 @@ import { User } from "@prisma/client";
 export const GAME_FPS = 60;
 const GRID_SIZE = 64;
 export const COUNTDOWN_SECONDS = 20;
+export const STARTING_SECONDS = 3;
 
 export enum GameState {
     WAITINGTOSTART,
+    STARTING,
     PLAYING,
     PAUSED,
     FINISHED,
@@ -58,7 +60,7 @@ export class Ball {
     maxSpeed: number = 0.5 * 60 / GAME_FPS;
     speedIncrease: number = 0.008 * 60 / GAME_FPS;
     initialSpeed: number = 0.15 * 60 / GAME_FPS;
-    speed: number = this.initialSpeed;
+    speed: number = this.initialSpeed * 0.6;
     width: number = 0.2;
     height: number = 0.2;
     x: number = 8 - (this.height / 2);

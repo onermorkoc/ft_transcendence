@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Game, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Ball, COUNTDOWN_SECONDS, Direction, GAME_FPS, GameObject, GameState, Paddle } from './game.objects'
+import { Ball, COUNTDOWN_SECONDS, Direction, GAME_FPS, GameObject, GameState, Paddle, STARTING_SECONDS } from './game.objects'
 import { GameGateway } from './game.gateway';
 import { UsersService } from 'src/users/users.service';
 import { RemoteSocket, Socket } from 'socket.io';
@@ -88,18 +88,26 @@ export class GameService {
             playerOne.isReady = true;
 
             if (playerTwo.isReady == true && !game.intervalId) {
-                server.to(gameId).emit("gameStarted");
-                game.gameState = GameState.PLAYING;
-                game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
+                server.to(gameId).emit("gameStarting", STARTING_SECONDS);
+                game.gameState = GameState.STARTING;
+                setTimeout(() => {
+                    game.gameState = GameState.PLAYING;
+                    server.to(gameId).emit("gameStarted");
+                    game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
+                }, STARTING_SECONDS * 1000)  
             }
         }
         else if (userId == playerTwo.userId) {
             playerTwo.isReady = true;
 
             if (playerOne.isReady == true && !game.intervalId) {
-                server.to(gameId).emit("gameStarted");
-                game.gameState = GameState.PLAYING;
-                game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
+                server.to(gameId).emit("gameStarting", STARTING_SECONDS);
+                game.gameState = GameState.STARTING;
+                setTimeout(() => {
+                    game.gameState = GameState.PLAYING;
+                    server.to(gameId).emit("gameStarted");
+                    game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
+                }, STARTING_SECONDS * 1000)
             }
         }
     }
@@ -172,7 +180,8 @@ export class GameService {
                     speed: playerTwo.speed
                 },
                 gridSize: gridSize,
-                countdownEndTime: countdownEndTime
+                countdownEndTime: countdownEndTime,
+                startingCountdown: 0
             }
             server.to(client.id).emit('gameDataInitial', JSON.stringify(gameJSON));
         }
@@ -212,7 +221,8 @@ export class GameService {
                     speed: playerOne.speed
                 },
                 gridSize: gridSize,
-                countdownEndTime: countdownEndTime
+                countdownEndTime: countdownEndTime,
+                startingCountdown: 0
             }
             server.to(client.id).emit('gameDataInitial', JSON.stringify(gameJSON));
         }
