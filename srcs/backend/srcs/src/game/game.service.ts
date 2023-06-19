@@ -231,48 +231,79 @@ export class GameService {
     async gameInterval(gameId: string) {
         const server = this.gameGateway.server;
 
-        const ball: Ball = this.gameMap.get(gameId).ball;
-        const playerOne: Paddle = this.gameMap.get(gameId).playerOne;
-        const playerTwo: Paddle = this.gameMap.get(gameId).playerTwo;
+        const game: GameObject = this.gameMap.get(gameId);
+        const ball: Ball = game.ball;
+        const playerOne: Paddle = game.playerOne;
+        const playerTwo: Paddle = game.playerTwo;
 
         ball.updateBallPosition(playerOne, playerTwo);
 
         const socketsInGame: RemoteSocket<DefaultEventsMap, any>[] = await server.in(gameId).fetchSockets();
         socketsInGame.forEach((socket) => {
             let dataJSON;
-            if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
-                dataJSON = {
-                    ball: {
-                        x: ball.x,
-                        y: ball.y
-                    },
-                    opponentPaddle: {
-                        y: playerTwo.y,
-                        score: playerTwo.score
-                    },
-                    playerPaddle: {
-                        score: playerOne.score
+            if (!game.sendScore) {
+                if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
+                    dataJSON = {
+                        ball: {
+                            x: ball.x,
+                            y: ball.y
+                        },
+                        opponentPaddle: {
+                            y: playerTwo.y
+                        }
                     }
+                    server.to(socket.id).emit('gameData', JSON.stringify(dataJSON));
                 }
-                server.to(socket.id).emit('gameData', JSON.stringify(dataJSON));
+                else if (parseInt(this.strFix(socket.handshake.query.userId)) == playerTwo.userId) {
+                    dataJSON = {
+                        ball: {
+                            x: ball.x,
+                            y: ball.y
+                        },
+                        opponentPaddle: {
+                            y: playerOne.y
+                        }
+                    }
+                    server.to(socket.id).emit('gameData', JSON.stringify(dataJSON));
+                }
             }
-            else if (parseInt(this.strFix(socket.handshake.query.userId)) == playerTwo.userId) {
-                dataJSON = {
-                    ball: {
-                        x: ball.x,
-                        y: ball.y
-                    },
-                    opponentPaddle: {
-                        y: playerOne.y,
-                        score: playerOne.score
-                    },
-                    playerPaddle: {
-                        score: playerTwo.score
+            else {
+                if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
+                    dataJSON = {
+                        ball: {
+                            x: ball.x,
+                            y: ball.y
+                        },
+                        opponentPaddle: {
+                            y: playerTwo.y,
+                            score: playerTwo.score
+                        },
+                        playerPaddle: {
+                            score: playerOne.score
+                        }
                     }
+                    server.to(socket.id).emit('gameData', JSON.stringify(dataJSON));
                 }
-                server.to(socket.id).emit('gameData', JSON.stringify(dataJSON));
+                else if (parseInt(this.strFix(socket.handshake.query.userId)) == playerTwo.userId) {
+                    dataJSON = {
+                        ball: {
+                            x: ball.x,
+                            y: ball.y
+                        },
+                        opponentPaddle: {
+                            y: playerOne.y,
+                            score: playerOne.score
+                        },
+                        playerPaddle: {
+                            score: playerTwo.score
+                        }
+                    }
+                    server.to(socket.id).emit('gameData', JSON.stringify(dataJSON));
+                }
             }
         });
+
+        game.sendScore = false;
 
         //console.log({ x: ball.x, y: ball.y });
     }

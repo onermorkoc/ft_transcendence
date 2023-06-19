@@ -41,8 +41,9 @@ export class Paddle {
         }
     }
 
-    scoreUp() {
+    scoreUp(game: GameObject) {
         this.score++;
+        game.sendScore = true;
     }
 
     changePosition(newY: number) {
@@ -67,7 +68,11 @@ export class Ball {
     y: number = 4.5 - (this.width / 2);
     dx: number = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
     dy: number = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
+    gameRef: GameObject;
     
+    constructor (game: GameObject) {
+        this.gameRef = game;
+    }
 
     updateBallPosition(paddleOne: Paddle, paddleTwo: Paddle) {
         this.x += this.dx * this.speed;
@@ -97,11 +102,11 @@ export class Ball {
 
         // Score Collisions
         if (this.x < -1) {
-            paddleTwo.scoreUp();
+            paddleTwo.scoreUp(this.gameRef);
             this.resetBall();
         }
         else if (this.x + this.width > 17) {
-            paddleOne.scoreUp();
+            paddleOne.scoreUp(this.gameRef);
             this.resetBall();
         }
     }
@@ -147,11 +152,12 @@ export class GameObject {
     ball: Ball;
     gridSize: number = GRID_SIZE;
     countdownEndTime: number;
+    sendScore: boolean = false;
 
     constructor(playerOneUser: User, playerTwoUser: User, countdownEndTime: number) {
         this.playerOne = new Paddle(playerOneUser.id, playerOneUser.nickname, 'left');
         this.playerTwo = new Paddle(playerTwoUser.id, playerTwoUser.nickname, 'right');
-        this.ball = new Ball();
+        this.ball = new Ball(this);
         this.countdownEndTime = countdownEndTime;
     }
 }
