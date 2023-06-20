@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Game, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Ball, COUNTDOWN_SECONDS, GAME_FPS, GameObject, GameState, PAUSE_WAIT_SECONDS, Paddle, STARTING_SECONDS } from './game.objects'
+import { Ball, COUNTDOWN_SECONDS, GAME_END_SCORE, GAME_FPS, GameObject, GameState, PAUSE_WAIT_SECONDS, Paddle, STARTING_SECONDS } from './game.objects'
 import { GameGateway } from './game.gateway';
 import { UsersService } from 'src/users/users.service';
 import { RemoteSocket, Socket } from 'socket.io';
@@ -92,28 +92,44 @@ export class GameService {
             playerOne.isReady = true;
 
             if (playerTwo.isReady == true && !game.intervalId) {
-                game.startingCountdownEndTime = Date.now() + (STARTING_SECONDS * 1000);
-                server.to(gameId).emit("gameStarting", game.startingCountdownEndTime);
+                server.to(gameId).emit("gameStarting");
                 game.gameState = GameState.STARTING;
-                game.setTimeoutId = setTimeout(() => {
-                    game.gameState = GameState.PLAYING;
-                    server.to(gameId).emit("gameStarted");
-                    game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
-                }, STARTING_SECONDS * 1000)  
+
+                game.countdownInSeconds = STARTING_SECONDS;
+                server.to(gameId).emit("countdown", game.countdownInSeconds);
+                game.countdownIntervalId = setInterval(() => {
+                    game.countdownInSeconds--;
+                    server.to(gameId).emit("countdown", game.countdownInSeconds);
+
+                    if (game.countdownInSeconds < 0) {
+                        clearInterval(game.countdownIntervalId);
+                        game.gameState = GameState.PLAYING;
+                        server.to(gameId).emit("gameStarted");
+                        game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
+                    }
+                }, 1000)
             }
         }
         else if (userId == playerTwo.userId) {
             playerTwo.isReady = true;
 
             if (playerOne.isReady == true && !game.intervalId) {
-                game.startingCountdownEndTime = Date.now() + (STARTING_SECONDS * 1000);
-                server.to(gameId).emit("gameStarting", game.startingCountdownEndTime);
                 game.gameState = GameState.STARTING;
-                game.setTimeoutId = setTimeout(() => {
-                    game.gameState = GameState.PLAYING;
-                    server.to(gameId).emit("gameStarted");
-                    game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
-                }, STARTING_SECONDS * 1000)
+                server.to(gameId).emit("gameStarting");
+
+                game.countdownInSeconds = STARTING_SECONDS;
+                server.to(gameId).emit("countdown", game.countdownInSeconds);
+                game.countdownIntervalId = setInterval(() => {
+                    game.countdownInSeconds--;
+                    server.to(gameId).emit("countdown", game.countdownInSeconds);
+
+                    if (game.countdownInSeconds < 0) {
+                        clearInterval(game.countdownIntervalId);
+                        game.gameState = GameState.PLAYING;
+                        server.to(gameId).emit("gameStarted");
+                        game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
+                    }
+                }, 1000)
             }
         }
     }
@@ -125,16 +141,23 @@ export class GameService {
         if (game.gameState != GameState.PAUSED) {return;}
         if (game.waitingUserId != waitingUserId) {return;}
 
-        clearTimeout(game.setTimeoutId);
-        game.startingCountdownEndTime = Date.now() + (STARTING_SECONDS * 1000);
-        console.log(game.startingCountdownEndTime);
-        server.to(gameId).emit("gameStarting", game.startingCountdownEndTime);
+        clearInterval(game.countdownIntervalId);
         game.gameState = GameState.STARTING;
-        game.setTimeoutId = setTimeout(() => {
-            game.gameState = GameState.PLAYING;
-            server.to(gameId).emit("gameStarted");
-            game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
-        }, STARTING_SECONDS * 1000)
+        server.to(gameId).emit("gameStarting");
+
+        game.countdownInSeconds = STARTING_SECONDS;
+        server.to(gameId).emit("countdown", game.countdownInSeconds);
+        game.countdownIntervalId = setInterval(() => {
+            game.countdownInSeconds--;
+            server.to(gameId).emit("countdown", game.countdownInSeconds);
+
+            if (game.countdownInSeconds < 0) {
+                clearInterval(game.countdownIntervalId);
+                game.gameState = GameState.PLAYING;
+                server.to(gameId).emit("gameStarted");
+                game.intervalId = setInterval(() => this.gameInterval(gameId), 1000 / GAME_FPS);
+            }
+        }, 1000)
     }
 
     pauseGame(gameId: string, waitingUserId: number) {
@@ -142,24 +165,36 @@ export class GameService {
         const game = this.gameMap.get(gameId);
 
         game.ball.resetBall();
+        game.playerOne.resetPosition();
+        game.playerTwo.resetPosition();
 
         clearInterval(game.intervalId);
-        clearTimeout(game.setTimeoutId);
-        game.pausedCountdownEndTime = Date.now() + (PAUSE_WAIT_SECONDS * 1000);
-        server.to(gameId).emit("gamePaused", game.pausedCountdownEndTime);
-        game.gameState = GameState.PAUSED;
+        clearInterval(game.countdownIntervalId);
+        
         game.waitingUserId = waitingUserId;
+        game.gameState = GameState.PAUSED;
+        server.to(gameId).emit("gamePaused");
+        game.countdownInSeconds = PAUSE_WAIT_SECONDS;
+        server.to(gameId).emit("countdown", game.countdownInSeconds);
+        game.countdownIntervalId = setInterval(() => {
+            game.countdownInSeconds--;
+            server.to(gameId).emit("countdown", game.countdownInSeconds);
 
-        game.setTimeoutId = setTimeout(() => {
-            if (game.gameState == GameState.PAUSED) {
-                game.gameState = GameState.FINISHED;
-                server.to(gameId).emit("gameFinished");
+            if (game.countdownInSeconds < 0) {
+                clearInterval(game.countdownIntervalId);
+                server.to(gameId).emit("win");
             }
-        }, PAUSE_WAIT_SECONDS * 1000);
+        }, 1000)
     }
 
     async deleteGame(gameId: string) {
+        if (this.gameMap.get(gameId).deleting == true) {
+            console.log("BUYUKSUN AB");
+            return;
+        }
+        this.gameMap.get(gameId).deleting = true;
         clearInterval(this.gameMap.get(gameId).intervalId);
+        
         const game: Game = await this.findGameByID(gameId);
         const playerOne: User = await this.userService.findUserbyID(game.playerOneId);
         const playerTwo: User = await this.userService.findUserbyID(game.playerTwoId);
@@ -167,6 +202,7 @@ export class GameService {
         playerTwo.currentGameId = '';
         await this.userService.update(playerOne);
         await this.userService.update(playerTwo);
+
         await this.prismaService.game.delete({
             where: {
                 id: gameId
@@ -234,8 +270,7 @@ export class GameService {
                 },
                 gridSize: gridSize,
                 firstCountdown: game.firstCountdownEndTime,
-                startingCountdown: game.startingCountdownEndTime,
-                pausedCountdown: game.pausedCountdownEndTime
+                countdown: game.countdownInSeconds
             }
             server.to(client.id).emit('gameDataInitial', JSON.stringify(gameJSON));
         }
@@ -276,8 +311,7 @@ export class GameService {
                 },
                 gridSize: gridSize,
                 firstCountdown: game.firstCountdownEndTime,
-                startingCountdown: game.startingCountdownEndTime,
-                pausedCountdown: game.pausedCountdownEndTime
+                countdown: game.countdownInSeconds
             }
             server.to(client.id).emit('gameDataInitial', JSON.stringify(gameJSON));
         }
@@ -291,9 +325,37 @@ export class GameService {
         const playerOne: Paddle = game.playerOne;
         const playerTwo: Paddle = game.playerTwo;
 
+        const socketsInGame: RemoteSocket<DefaultEventsMap, any>[] = await server.in(gameId).fetchSockets();
+
+        if (playerOne.score >= GAME_END_SCORE) {
+            socketsInGame.forEach((socket) => {
+                if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
+                    console.log("ASDA");
+                    server.to(socket.id).emit('win');
+                }
+                else if (parseInt(this.strFix(socket.handshake.query.userId)) == playerTwo.userId) {
+                    console.log("ASDA");
+                    server.to(socket.id).emit('lose');
+                }
+            });
+            clearInterval(game.intervalId);
+        }
+        else if (playerTwo.score >= GAME_END_SCORE) {
+            socketsInGame.forEach((socket) => {
+                if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
+                    console.log("ASDA");
+                    server.to(socket.id).emit('lose');
+                }
+                else if (parseInt(this.strFix(socket.handshake.query.userId)) == playerTwo.userId) {
+                    console.log("ASDA");
+                    server.to(socket.id).emit('win');
+                }
+            });
+            clearInterval(game.intervalId);
+        }
+
         ball.updateBallPosition(playerOne, playerTwo);
 
-        const socketsInGame: RemoteSocket<DefaultEventsMap, any>[] = await server.in(gameId).fetchSockets();
         socketsInGame.forEach((socket) => {
             let dataJSON;
             if (!game.sendScore) {

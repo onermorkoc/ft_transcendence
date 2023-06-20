@@ -1,18 +1,20 @@
 import { User } from "@prisma/client";
 
-export const GAME_FPS = 60;
+const AP_WIDTH = 16; // Aspect Ratio Width
+const AP_HEIGHT = 9; // Aspect Ratio Height
 const GRID_SIZE = 64;
+
+export const GAME_FPS = 60;
 export const COUNTDOWN_SECONDS = 20;
 export const STARTING_SECONDS = 3;
 export const PAUSE_WAIT_SECONDS = 10;
+export const GAME_END_SCORE = 1;
 
 export enum GameState {
     WAITINGTOSTART,
     STARTING,
     PLAYING,
-    PAUSED,
-    FINISHED,
-    ABORTED
+    PAUSED
 }
 
 export enum Direction {
@@ -27,7 +29,7 @@ export class Paddle {
     width: number = 0.2;
     height: number = 2;
     x: number;
-    y: number = 4.5 - (this.height / 2);
+    y: number = (AP_HEIGHT / 2) - (this.height / 2);
     score: number = 0;
     speed: number = 0.2 * 60 / GAME_FPS;
 
@@ -38,7 +40,7 @@ export class Paddle {
             this.x = 0.5;
         }
         else {
-            this.x = 15.5 - this.width;
+            this.x = (AP_WIDTH - 0.5) - this.width;
         }
     }
 
@@ -52,9 +54,13 @@ export class Paddle {
         if (this.y < 0.2) {
             this.y = 0.2;
         }
-        else if (this.y + this.height > 8.8) {
-            this.y = 8.8 - this.height;
+        else if (this.y + this.height > (AP_HEIGHT - 0.2)) {
+            this.y = (AP_HEIGHT - 0.2) - this.height;
         }
+    }
+
+    resetPosition() {
+        this.y = (AP_HEIGHT / 2) - (this.height / 2);
     }
 }
 
@@ -65,8 +71,8 @@ export class Ball {
     speed: number = this.initialSpeed * 0.6;
     width: number = 0.2;
     height: number = 0.2;
-    x: number = 8 - (this.height / 2);
-    y: number = 4.5 - (this.width / 2);
+    x: number = (AP_WIDTH / 2) - (this.height / 2);
+    y: number = (AP_HEIGHT / 2) - (this.width / 2);
     dx: number = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
     dy: number = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
     gameRef: GameObject;
@@ -84,8 +90,8 @@ export class Ball {
             this.y = 0;
             this.dy *= -1;
         }
-        else if (this.y + this.height > 9) {
-            this.y = 9 - this.height;
+        else if (this.y + this.height > AP_HEIGHT) {
+            this.y = AP_HEIGHT - this.height;
             this.dy *= -1;
         }
 
@@ -106,7 +112,7 @@ export class Ball {
             paddleTwo.scoreUp(this.gameRef);
             this.resetBall();
         }
-        else if (this.x + this.width > 17) {
+        else if (this.x + this.width > AP_WIDTH + 1) {
             paddleOne.scoreUp(this.gameRef);
             this.resetBall();
         }
@@ -138,8 +144,8 @@ export class Ball {
 
     resetBall() {
         this.speed = this.initialSpeed;
-        this.x = 8 - (this.height / 2);
-        this.y = 4.5 - (this.width / 2);
+        this.x = (AP_WIDTH / 2) - (this.height / 2);
+        this.y = (AP_HEIGHT / 2) - (this.width / 2);
         this.dx = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
         this.dy = Math.floor(Math.random() * 2) === 0 ? -1 : 1;
     }
@@ -155,11 +161,12 @@ export class GameObject {
 
     sendScore: boolean = false;
     waitingUserId: number;
-    setTimeoutId: NodeJS.Timer;
 
     firstCountdownEndTime: number;
-    startingCountdownEndTime: number = 0;
-    pausedCountdownEndTime: number = 0;
+    countdownIntervalId: NodeJS.Timer;
+    countdownInSeconds: number = 0;
+
+    deleting: boolean = false;
 
     constructor(playerOneUser: User, playerTwoUser: User, countdownEndTime: number) {
         this.playerOne = new Paddle(playerOneUser.id, playerOneUser.nickname, 'left');

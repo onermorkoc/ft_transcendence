@@ -6,8 +6,6 @@ import { Socket, io } from "socket.io-client";
 import { User } from "../dto/DataObject";
 import "../ui-design/styles/GameScreen.css"
 
-const DELAY = 2;
-
 function ScoreBoard({ playerOneName, playerOneScore, playerTwoName, playerTwoScore }: { playerOneName: string | undefined, playerOneScore: number | undefined, playerTwoName: string | undefined, playerTwoScore: number | undefined }){
   return(
     <div className='scoreBoard'>
@@ -33,7 +31,8 @@ const GameScreen = () => {
     STARTING,
     PLAYING,
     PAUSED,
-    FINISHED,
+    FINISHEDWIN,
+    FINISHEDLOSE,
     ABORTED
   }
 
@@ -66,8 +65,7 @@ const GameScreen = () => {
     opponentPaddle: Paddle;
     gridSize: number;
     firstCountdown: number;
-    startingCountdown: number;
-    pausedCountdown: number;
+    countdown: number;
   }
 
   let gameData: Game;
@@ -101,8 +99,11 @@ const GameScreen = () => {
     else if (game.gameState === GameState.PAUSED) {
       drawPausedMenu(game, canvas, context);
     }
-    else if (game.gameState === GameState.FINISHED) {
-      drawFinished(game, canvas, context);
+    else if (game.gameState === GameState.FINISHEDWIN) {
+      drawFinishedWin(game, canvas, context);
+    }
+    else if (game.gameState === GameState.FINISHEDLOSE) {
+      drawFinishedLose(game, canvas, context);
     }
   }
 
@@ -130,7 +131,7 @@ const GameScreen = () => {
     }
   }
 
-  const drawMenu = async (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+  const drawMenu = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
     if (!game || !canvas || !context) {return;}
 
     let leftOverSeconds: number = Math.floor((game.firstCountdown - Date.now()) / 1000);
@@ -165,7 +166,7 @@ const GameScreen = () => {
     setTimeout(() => draw(game), 1000 / 10); // 10 FPS
   }
 
-  const drawAbortedMenu = async (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+  const drawAbortedMenu = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
     if (!game || !canvas || !context) {return;}
 
     context.fillStyle = 'white';
@@ -177,10 +178,10 @@ const GameScreen = () => {
     context.fillText("Press -Space- to go to HOMEPAGE", canvas.width / 2, 400);
   }
 
-  const drawStartingMenu = async (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+  const drawStartingMenu = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
     if (!game || !canvas || !context) {return;}
 
-    let leftOverSeconds: number = Math.floor((game.startingCountdown - Date.now()) / 1000) - DELAY;
+    let leftOverSeconds: number = game.countdown;
     if (leftOverSeconds < 0) {leftOverSeconds = 0;}
 
     context.fillStyle = 'white';
@@ -194,10 +195,10 @@ const GameScreen = () => {
     setTimeout(() => draw(game), 1000 / 10); // 10 FPS
   }
 
-  const drawPausedMenu = async (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+  const drawPausedMenu = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
     if (!game || !canvas || !context) {return;}
 
-    let leftOverSeconds: number = Math.floor((game.pausedCountdown - Date.now()) / 1000) - DELAY;
+    let leftOverSeconds: number = game.countdown;
     if (leftOverSeconds < 0) {leftOverSeconds = 0;}
 
     context.fillStyle = 'white';
@@ -211,13 +212,22 @@ const GameScreen = () => {
     setTimeout(() => draw(game), 1000 / 10); // 10 FPS
   }
 
-  const drawFinished = async (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+  const drawFinishedWin = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
     if (!game || !canvas || !context) {return;}
 
     context.fillStyle = 'white';
     context.font = '60px Arial';
     context.textAlign = 'center';
-    context.fillText("GAME FINISHED", canvas.width / 2, canvas.height / 2);
+    context.fillText("VICTORY", canvas.width / 2, canvas.height / 2);
+  }
+
+  const drawFinishedLose = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+    if (!game || !canvas || !context) {return;}
+
+    context.fillStyle = 'white';
+    context.font = '60px Arial';
+    context.textAlign = 'center';
+    context.fillText("DEFEAT", canvas.width / 2, canvas.height / 2);
   }
 
   const listen = (game: Game | undefined) => {
@@ -316,16 +326,15 @@ const GameScreen = () => {
         requestAnimationFrame(() => draw(gameData));
         socket.off("gameDataInitial");
       });
+      socket.on("countdown", (data: number) => {
+        gameData.countdown = data;
+        requestAnimationFrame(() => draw(gameData));
+      });
       socket.on("gameStarting", (data: number) => {
         gameData.gameState = GameState.STARTING;
-        console.log(Date.now());
-        gameData.startingCountdown = data;
       });
       socket.on("gamePaused", (data: number) => {
-        console.log("GAME PAUSED");
         gameData.gameState = GameState.PAUSED;
-        gameData.pausedCountdown = data;
-        requestAnimationFrame(() => draw(gameData));
       });
       socket.on("gameStarted", () => {
         gameData.gameState = GameState.PLAYING;
@@ -358,9 +367,17 @@ const GameScreen = () => {
         socket.off("gameAborted");
         socket.disconnect();
       });
-      socket.on("gameFinished", () => {
-        gameData.gameState = GameState.FINISHED;
-        socket.off("gameFinished");
+      socket.on("win", () => {
+        console.log("AE");
+        gameData.gameState = GameState.FINISHEDWIN;
+        requestAnimationFrame(() => draw(gameData));
+        socket.off("win");
+        socket.disconnect();
+      });
+      socket.on("lose", () => {
+        gameData.gameState = GameState.FINISHEDLOSE;
+        requestAnimationFrame(() => draw(gameData));
+        socket.off("lose");
         socket.disconnect();
       });
       setSocketListen(true);
