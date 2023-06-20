@@ -4,6 +4,7 @@ export const GAME_FPS = 60;
 const GRID_SIZE = 64;
 export const COUNTDOWN_SECONDS = 20;
 export const STARTING_SECONDS = 3;
+export const PAUSE_WAIT_SECONDS = 10;
 
 export enum GameState {
     WAITINGTOSTART,
@@ -135,7 +136,7 @@ export class Ball {
         }
     }
 
-    private resetBall() {
+    resetBall() {
         this.speed = this.initialSpeed;
         this.x = 8 - (this.height / 2);
         this.y = 4.5 - (this.width / 2);
@@ -151,13 +152,19 @@ export class GameObject {
     playerTwo: Paddle;
     ball: Ball;
     gridSize: number = GRID_SIZE;
-    countdownEndTime: number;
+
     sendScore: boolean = false;
+    waitingUserId: number;
+    setTimeoutId: NodeJS.Timer;
+
+    firstCountdownEndTime: number;
+    startingCountdownEndTime: number = 0;
+    pausedCountdownEndTime: number = 0;
 
     constructor(playerOneUser: User, playerTwoUser: User, countdownEndTime: number) {
         this.playerOne = new Paddle(playerOneUser.id, playerOneUser.nickname, 'left');
         this.playerTwo = new Paddle(playerTwoUser.id, playerTwoUser.nickname, 'right');
         this.ball = new Ball(this);
-        this.countdownEndTime = countdownEndTime;
+        this.firstCountdownEndTime = countdownEndTime;
     }
 }

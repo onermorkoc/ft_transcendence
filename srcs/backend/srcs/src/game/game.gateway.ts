@@ -27,16 +27,37 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             return;
         }
         client.join(game.id);
+        this.gameService.continueGame(game.id, user.id);
         await this.gameService.sendInitialData(client, game.id);
     }
 
     async handleDisconnect(client: Socket) {
         console.log(client.id + " disconnected from game.");
-        const gameId: string = this.gameService.strFix(client.handshake.query.gameId);
+        const game: Game = await this.gameService.findGameByID(this.gameService.strFix(client.handshake.query.gameId));
 
-        const socketsInGame: RemoteSocket<DefaultEventsMap, any>[] = await this.server.in(gameId).fetchSockets();
+        const socketsInGame: RemoteSocket<DefaultEventsMap, any>[] = await this.server.in(game.id).fetchSockets();
         if (socketsInGame.length == 0) {
-            this.gameService.deleteGame(gameId);
+            this.gameService.deleteGame(game.id);
+        }
+        else {
+            let playerOneInGame: boolean = false;
+            let playerTwoInGame: boolean = false;
+            socketsInGame.forEach((socket) => {
+                if (parseInt(this.gameService.strFix(socket.handshake.query.userId)) == game.playerOneId) {
+                    playerOneInGame = true;
+                }
+                else if (parseInt(this.gameService.strFix(socket.handshake.query.userId)) == game.playerTwoId) {
+                    playerTwoInGame = true;
+                }
+            });
+            if (playerOneInGame && !playerTwoInGame) {
+                console.log("PAUSE")
+                this.gameService.pauseGame(game.id, game.playerTwoId);
+            }
+            else if (!playerOneInGame && playerTwoInGame) {
+                console.log("PAUSE")
+                this.gameService.pauseGame(game.id, game.playerOneId);
+            }
         }
     }
     
