@@ -27,6 +27,12 @@ export class UsersController {
         return (await this.userService.findUserbyID(parseInt(userId)))
     }
 
+    @Get('currentgameid/:userId')
+    @UseGuards(AuthenticatedGuard)
+    async getCurrentGameId(@Param("userId") userId: string) {
+        return (await this.userService.getCurrentGameId(parseInt(userId)))
+    }
+
     @Put("/update")
     @UseGuards(AuthenticatedGuard)
     async updateUserInfo(@Body() newUserInfo: Partial<User>): Promise<boolean> {

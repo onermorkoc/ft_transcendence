@@ -42,6 +42,10 @@ export class GameService {
     async joinGame(userId: number, gameId: string): Promise<boolean> {
         const game: Game = await this.findGameByID(gameId);
 
+        if (!game) {
+            throw new BadRequestException('Böyle bir oyun bulunmuyor.');
+        }
+
         if (userId != game.playerOneId && userId != game.playerTwoId) {
             throw new BadRequestException('Bu oyuna girme yetkin bulunmuyor.');
         }
@@ -114,6 +118,13 @@ export class GameService {
 
     async deleteGame(gameId: string) {
         clearInterval(this.gameMap.get(gameId).intervalId);
+        const game: Game = await this.findGameByID(gameId);
+        const playerOne: User = await this.userService.findUserbyID(game.playerOneId);
+        const playerTwo: User = await this.userService.findUserbyID(game.playerTwoId);
+        playerOne.currentGameId = '';
+        playerTwo.currentGameId = '';
+        await this.userService.update(playerOne);
+        await this.userService.update(playerTwo);
         await this.prismaService.game.delete({
             where: {
                 id: gameId

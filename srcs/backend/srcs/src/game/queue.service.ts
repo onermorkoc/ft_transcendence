@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Game } from '@prisma/client';
+import { Game, User } from '@prisma/client';
 import { RemoteSocket, Server } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { GameService } from './game.service';
 import { COUNTDOWN_SECONDS } from './game.objects';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class QueueService {
-    constructor(private gameService: GameService, private configService: ConfigService) {}
+    constructor(private gameService: GameService, private configService: ConfigService, private userService: UsersService) {}
 
     private queueList: Set<number> = new Set([]);
 
@@ -18,6 +19,13 @@ export class QueueService {
         if (this.queueList.size >= 2) {
             const [playerOne, playerTwo] = this.queueList;
             const game: Game = await this.gameService.createGame(playerOne, playerTwo);
+
+            const playerOneUser: User = await this.userService.findUserbyID(playerOne);
+            const playerTwoUser: User = await this.userService.findUserbyID(playerTwo);
+            playerOneUser.currentGameId = game.id;
+            playerTwoUser.currentGameId = game.id;
+            await this.userService.update(playerOneUser);
+            await this.userService.update(playerTwoUser);
             
             setTimeout(() => { // OYUN İPTAL SAYAÇ BAŞLANGICI
                 this.gameService.countDownCheck(game.id);

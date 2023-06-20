@@ -1,4 +1,4 @@
-import { Injectable, Session } from '@nestjs/common';
+import { BadRequestException, Injectable, Session } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -95,6 +95,11 @@ export class UsersService {
     async blockUser(user: User, blockedUserId: number): Promise<void> {
         user.blockedUserIds.push(blockedUserId);
         await this.update(user);
+    }
+
+    async getCurrentGameId(userId: number): Promise<string> {
+        const user: User = await this.findUserbyID(userId);
+        return user.currentGameId;
     }
 }
 

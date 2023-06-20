@@ -28,7 +28,13 @@ const RandomMatchGameCmp = () => {
     axios.get(`/users/current`).then((response) => {setCurrentUser(response.data)})
     const [matchLink, setMatchLink] = useState<string>('')
 
-    const randomMatch = () => {
+    const randomMatch = async () => {
+        if (!currentUser) {return;}
+        const currentGameId: string = (await axios.get(`users/currentgameid/${currentUser.id}`)).data;
+        if (currentGameId !== '') {
+            console.log(currentGameId);
+            window.location.assign(`/game/${currentGameId}`);
+        }
         //window.location.assign("/game")
         if(!searchStatus){
             animationRef.current!!.play()

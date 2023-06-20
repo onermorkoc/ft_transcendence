@@ -22,7 +22,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         const user: User = await this.userService.findUserbyID(parseInt(this.gameService.strFix(client.handshake.query.userId)));
         const game: Game = await this.gameService.findGameByID(this.gameService.strFix(client.handshake.query.gameId));
 
-        if (!game || !user) {
+        if ((!game || !user)) {
             client.disconnect();
             return;
         }

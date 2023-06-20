@@ -39,6 +39,7 @@ model User {
   sentFriendRequests     FriendRequest[] @relation("SentRequest")
   receivedFriendRequests FriendRequest[] @relation("ReceivedRequest")
 
+  currentGameId String @default("")
   gameHistory GameHistory[]
 }
 
