@@ -177,6 +177,7 @@ export class GameService {
 
     async countDownCheck(gameId: string) {
         const game: GameObject = this.gameMap.get(gameId);
+        if (!game) {return;}
         const playerOne: Paddle = game.playerOne;
         const playerTwo: Paddle = game.playerTwo;
         if (!playerOne.isReady || !playerTwo.isReady) {
