@@ -13,39 +13,25 @@
     opacity: 0.5;
 }
 
-.chatScreenSettingsImg {
+.chatScreenTopBarImgs {
     width: 30px;
     height: 30px;
+    margin-left: 30px;
     transition: 0.5s;
     cursor: pointer;
 }
 
-.chatScreenSettingsImg:hover {
+.chatScreenTopBarImgs:hover {
     width: 26px;
     height: 26px;
     padding: 2px;
     opacity: 0.5;
 }
 
-.chatScreenExitImg {
-    width: 32.5px;
-    height: 32.5px;
-    margin-right: 30px;
-    transition: 0.5s;
-    cursor: pointer;
-}
-
-.chatScreenExitImg:hover {
-    padding: 2px;
-    width: 30.5px;
-    height: 30.5px;
-    opacity: 0.5;
-}
-
 .chatMessagesRoot {
     display: flex;
     flex-direction: column;
-    flex: 10;
+    flex: 12;
     background-color: rgba(60, 60, 60, 0.25);
 }
 
@@ -195,10 +181,75 @@
 .chatScreenMessageDiv {
     display: inline-block;
     max-width: 500px;
-    
     min-width: 300px;
     margin: 20px;
     padding: 20px;
     color: white;
     border-radius: 25px;
+}
+
+.chatAllBanListCenterDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+}
+
+.chatAllBanListHeaderDiv {
+    display: flex;
+    flex-direction: row;
+    width: 900px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 1.6em;
+    background-color: lightsteelblue;
+    border-radius: 10px;
+}
+
+.chatAllBanListHeaderListDiv {
+    flex: 1;
+    border: solid;
+    border-width: 1px;
+    padding: 10px;
+    width: 175px;
+}
+
+.chatAllBanListScrollDiv {
+    height: 200px;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.chatAllBanListUsersDiv {
+    display: flex;
+    flex-direction: row;
+    width: 900px;
+    text-align: center;
+    background-color: white;
+    border-radius: 10px;
+    font-size: 1.4em;
+    margin-bottom: 10px;
+}
+
+.chatAllBanListUserListDiv, .chatAllBanListUnBanButton {
+    flex: 1;
+    border: solid;
+    border-width: 1px;
+    padding: 4px;
+    width: 175px;
+}
+
+.chatAllBanListUnBanButton {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    font-size: 1.0em;
+    transition: 0.5s;
+    cursor: pointer;
+}
+
+.chatAllBanListUnBanButton:hover {
+    background-color: rgba(128, 128, 128, 0.705);
 }

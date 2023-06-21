@@ -19,6 +19,12 @@ export class ChatController {
         return (await this.chatService.joinRoom(session.passport.user.id, body.roomId, body.password));
     }
 
+    @Post('room/update')
+    @UseGuards(AuthenticatedGuard)
+    async updateRoom(@Body() body: { roomId: string, roomName: string, roomStatus: RoomStatus, password?: string }, @Session() session: Record<string, any>) {
+        return (await this.chatService.updateRoom(session.passport.user.id, body.roomId, body.roomName, body.roomStatus, body.password));
+    }
+
     @Get('room/find/:id') // frontend url güvenliği eksik 
     async getRoom(@Param('id') roomId: string){
         return (await this.chatService.findChatRoombyID(roomId))
