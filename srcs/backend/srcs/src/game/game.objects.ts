@@ -8,7 +8,7 @@ export const GAME_FPS = 60;
 export const COUNTDOWN_SECONDS = 20;
 export const STARTING_SECONDS = 3;
 export const PAUSE_WAIT_SECONDS = 10;
-export const GAME_END_SCORE = 1;
+export const GAME_END_SCORE = 5;
 
 export enum GameState {
     WAITINGTOSTART,
@@ -162,16 +162,14 @@ export class GameObject {
     sendScore: boolean = false;
     waitingUserId: number;
 
-    firstCountdownEndTime: number;
     countdownIntervalId: NodeJS.Timer;
-    countdownInSeconds: number = 0;
+    countdownInSeconds: number = COUNTDOWN_SECONDS;
 
     deleting: boolean = false;
 
-    constructor(playerOneUser: User, playerTwoUser: User, countdownEndTime: number) {
+    constructor(playerOneUser: User, playerTwoUser: User) {
         this.playerOne = new Paddle(playerOneUser.id, playerOneUser.nickname, 'left');
         this.playerTwo = new Paddle(playerTwoUser.id, playerTwoUser.nickname, 'right');
         this.ball = new Ball(this);
-        this.firstCountdownEndTime = countdownEndTime;
     }
 }

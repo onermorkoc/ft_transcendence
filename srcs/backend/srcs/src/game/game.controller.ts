@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Session, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Session, UseGuards } from "@nestjs/common";
 import { AuthenticatedGuard } from "src/auth/guards/authenticated.guard";
 import { GameService } from "./game.service";
 

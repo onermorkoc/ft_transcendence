@@ -32,9 +32,7 @@ export class GameService {
             }
         });
 
-        const countdownEndTime: number = Date.parse(game.createdAt.toString()) + (COUNTDOWN_SECONDS * 1000);
-
-        this.gameMap.set(game.id, new GameObject(playerOneUser, playerTwoUser, countdownEndTime))
+        this.gameMap.set(game.id, new GameObject(playerOneUser, playerTwoUser))
 
         return game;
     }
@@ -92,6 +90,7 @@ export class GameService {
             playerOne.isReady = true;
 
             if (playerTwo.isReady == true && !game.intervalId) {
+                clearInterval(game.countdownIntervalId);
                 server.to(gameId).emit("gameStarting");
                 game.gameState = GameState.STARTING;
 
@@ -114,6 +113,7 @@ export class GameService {
             playerTwo.isReady = true;
 
             if (playerOne.isReady == true && !game.intervalId) {
+                clearInterval(game.countdownIntervalId);
                 game.gameState = GameState.STARTING;
                 server.to(gameId).emit("gameStarting");
 
@@ -188,13 +188,11 @@ export class GameService {
     }
 
     async deleteGame(gameId: string) {
-        if (this.gameMap.get(gameId).deleting == true) {
-            console.log("BUYUKSUN AB");
-            return;
-        }
+        if (this.gameMap.get(gameId).deleting == true) {return;}
         this.gameMap.get(gameId).deleting = true;
         clearInterval(this.gameMap.get(gameId).intervalId);
-        
+        clearInterval(this.gameMap.get(gameId).countdownIntervalId);
+
         const game: Game = await this.findGameByID(gameId);
         const playerOne: User = await this.userService.findUserbyID(game.playerOneId);
         const playerTwo: User = await this.userService.findUserbyID(game.playerTwoId);
@@ -211,7 +209,23 @@ export class GameService {
         this.gameMap.delete(gameId);
     }
 
-    async countDownCheck(gameId: string) {
+    setCountDown(gameId: string) {
+        const server = this.gameGateway.server;
+        const game: GameObject = this.gameMap.get(gameId);
+        game.countdownIntervalId = setInterval(() => {
+            game.countdownInSeconds--;
+            server.to(gameId).emit("countdown", game.countdownInSeconds);
+
+            if (game.countdownInSeconds < 0) {
+                clearInterval(game.countdownIntervalId);
+                if (!game.playerOne.isReady || !game.playerTwo.isReady) {
+                    this.gameGateway.server.to(gameId).emit('gameAborted');
+                }
+            }
+        }, 1000);
+    }
+
+    countDownCheck(gameId: string) {
         const game: GameObject = this.gameMap.get(gameId);
         if (!game) {return;}
         const playerOne: Paddle = game.playerOne;
@@ -221,7 +235,7 @@ export class GameService {
         }
     }
 
-    async sendInitialData(client: Socket, gameId: string) {
+    sendInitialData(client: Socket, gameId: string) {
         const server = this.gameGateway.server;
 
         const game = this.gameMap.get(gameId);
@@ -269,7 +283,6 @@ export class GameService {
                     speed: playerTwo.speed
                 },
                 gridSize: gridSize,
-                firstCountdown: game.firstCountdownEndTime,
                 countdown: game.countdownInSeconds
             }
             server.to(client.id).emit('gameDataInitial', JSON.stringify(gameJSON));
@@ -310,7 +323,6 @@ export class GameService {
                     speed: playerOne.speed
                 },
                 gridSize: gridSize,
-                firstCountdown: game.firstCountdownEndTime,
                 countdown: game.countdownInSeconds
             }
             server.to(client.id).emit('gameDataInitial', JSON.stringify(gameJSON));
@@ -330,11 +342,9 @@ export class GameService {
         if (playerOne.score >= GAME_END_SCORE) {
             socketsInGame.forEach((socket) => {
                 if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
-                    console.log("ASDA");
                     server.to(socket.id).emit('win');
                 }
                 else if (parseInt(this.strFix(socket.handshake.query.userId)) == playerTwo.userId) {
-                    console.log("ASDA");
                     server.to(socket.id).emit('lose');
                 }
             });
@@ -343,11 +353,9 @@ export class GameService {
         else if (playerTwo.score >= GAME_END_SCORE) {
             socketsInGame.forEach((socket) => {
                 if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
-                    console.log("ASDA");
                     server.to(socket.id).emit('lose');
                 }
                 else if (parseInt(this.strFix(socket.handshake.query.userId)) == playerTwo.userId) {
-                    console.log("ASDA");
                     server.to(socket.id).emit('win');
                 }
             });
@@ -421,8 +429,6 @@ export class GameService {
         });
 
         game.sendScore = false;
-
-        //console.log({ x: ball.x, y: ball.y });
     }
 
     playerOneMove(gameId: string, newY: number): void {

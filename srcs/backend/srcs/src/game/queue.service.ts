@@ -27,9 +27,7 @@ export class QueueService {
             await this.userService.update(playerOneUser);
             await this.userService.update(playerTwoUser);
             
-            setTimeout(() => { // OYUN İPTAL SAYAÇ BAŞLANGICI
-                this.gameService.countDownCheck(game.id);
-            }, COUNTDOWN_SECONDS * 1000) // 20sn
+            this.gameService.setCountDown(game.id);
 
             const playerOneClients = await this.userIdtoClients(playerOne, server);
             const playerTwoClients = await this.userIdtoClients(playerTwo, server);

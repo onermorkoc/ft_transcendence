@@ -64,7 +64,6 @@ const GameScreen = () => {
     playerPaddle: Paddle;
     opponentPaddle: Paddle;
     gridSize: number;
-    firstCountdown: number;
     countdown: number;
   }
 
@@ -134,7 +133,7 @@ const GameScreen = () => {
   const drawMenu = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
     if (!game || !canvas || !context) {return;}
 
-    let leftOverSeconds: number = Math.floor((game.firstCountdown - Date.now()) / 1000);
+    let leftOverSeconds: number = game.countdown;
     if (leftOverSeconds < 0) {leftOverSeconds = 0;}
     const playerOne = (game.playerPaddle.position.x < game.opponentPaddle.position.x) ? game.playerPaddle : game.opponentPaddle;
     const playerTwo = (game.playerPaddle.position.x < game.opponentPaddle.position.x) ? game.opponentPaddle : game.playerPaddle;
@@ -162,8 +161,6 @@ const GameScreen = () => {
     else {
       context.fillText("NOT READY", canvas.width - 200, canvas.height / 2);
     }
-
-    setTimeout(() => draw(game), 1000 / 10); // 10 FPS
   }
 
   const drawAbortedMenu = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
@@ -219,6 +216,9 @@ const GameScreen = () => {
     context.font = '60px Arial';
     context.textAlign = 'center';
     context.fillText("VICTORY", canvas.width / 2, canvas.height / 2);
+
+    context.font = '20px Arial';
+    context.fillText("Press -Space- to go to HOMEPAGE", canvas.width / 2, 400);
   }
 
   const drawFinishedLose = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
@@ -228,6 +228,9 @@ const GameScreen = () => {
     context.font = '60px Arial';
     context.textAlign = 'center';
     context.fillText("DEFEAT", canvas.width / 2, canvas.height / 2);
+  
+    context.font = '20px Arial';
+    context.fillText("Press -Space- to go to HOMEPAGE", canvas.width / 2, 400);
   }
 
   const listen = (game: Game | undefined) => {
@@ -278,7 +281,7 @@ const GameScreen = () => {
         playerPaddle.isReady = true;
         socket.emit('ready');
       }
-      else if (game.gameState === GameState.ABORTED && e.code === 'Space') {
+      else if ((game.gameState === GameState.ABORTED || game.gameState === GameState.FINISHEDLOSE || game.gameState === GameState.FINISHEDWIN) && e.code === 'Space') {
         window.location.assign("/home");
       }
       else {
@@ -364,11 +367,11 @@ const GameScreen = () => {
       });
       socket.on("gameAborted", () => {
         gameData.gameState = GameState.ABORTED;
+        requestAnimationFrame(() => draw(gameData));
         socket.off("gameAborted");
         socket.disconnect();
       });
       socket.on("win", () => {
-        console.log("AE");
         gameData.gameState = GameState.FINISHEDWIN;
         requestAnimationFrame(() => draw(gameData));
         socket.off("win");
