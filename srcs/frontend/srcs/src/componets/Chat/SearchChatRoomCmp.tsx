@@ -43,7 +43,10 @@ const SearchChatRoomCmp = () => {
 
         axios.post("/chat/room/join", postData).then((response) => {
             window.location.assign(`/chat/${response.data.id}`)
-        }).catch((error) => setWarningMessage(error.response.data.message))
+        }).catch((error) => {
+            setWarningMessage(error.response.data.message)
+            setSelectedRoom(null)
+        })
     }
 
     const viewForProtected: JSX.Element = <>

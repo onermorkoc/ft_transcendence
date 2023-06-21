@@ -16,6 +16,7 @@ export interface User {
   globalRank: number  
   chatRoomIds: Array<number>
   friendIds: Array<number>
+  blockedUserIds: Array<number>
   gameHistory: Array<GameHistory>
 }
   
@@ -52,6 +53,9 @@ export type RoomAuthority = "LEADER" | "ADMIN" | "NORMAL"
 
 export interface RoomMember {
   user: User,
+  status?: Status,
+  muted?: Boolean,
+  blocked?: Boolean,
   authority: RoomAuthority
 }
 
@@ -69,5 +73,14 @@ export interface Message {
   chatroomId: string,
   createdAt: Date,
   data: string
-  userId: number
+  userId: number,
+  userDisplayname: string
+}
+
+export interface ChatBan {
+  userId: number,
+  userDisplayname: string,
+  userNickname: string,
+  createdAt: Date,
+  chatroomId: string,
 }

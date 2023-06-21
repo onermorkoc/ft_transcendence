@@ -22,10 +22,10 @@ export class ChatService {
         return (chatRooms)
     }
 
-    async findChatRoombyID(roomId: string): Promise<Chatroom> {
+    async findChatRoombyID(chatRoomId: string): Promise<Chatroom> {
         return this.prismaService.chatroom.findUnique({
             where: {
-                id: roomId
+                id: chatRoomId
             }
         })
     }
@@ -88,7 +88,7 @@ export class ChatService {
                 throw new BadRequestException('Yanlış parola !');
         }
 
-        if ((await this.getBannedUserInRoom(chatRoom.id)).includes(userId))
+        if ((await this.getBannedUserIdsInRoom(chatRoom.id)).includes(userId))
             throw new BadRequestException('Sen bu kanaldan banlandın !');
 
         const user: User = await this.userService.findUserbyID(userId);
@@ -99,8 +99,29 @@ export class ChatService {
             await this.update(chatRoom);
         }
 
-        this.chatGateway.server.to(chatRoom.id).emit('allUsersInRoom', await this.getAllUsersInRoom(chatRoom));        
+        this.chatGateway.server.to(chatRoom.id).emit('allUsersInRoom', await this.getAllUsersInRoom(chatRoom.id));        
         return (chatRoom);
+    }
+
+    async updateRoom(ownerId: number, chatRoomId: string, newRoomName: string, newRoomStatus: RoomStatus, newPassword?: string): Promise<boolean>{
+
+        const chatRoom: Chatroom = await this.findChatRoombyID(chatRoomId)
+
+        if (newRoomStatus === "PROTECTED" && newPassword === null)   // Bu Kontrol frontende yapıldı
+            throw new BadRequestException('Password needed.');
+        else if (chatRoom.ownerId !== ownerId)
+            throw new BadRequestException('You not owner this channel.');
+
+        chatRoom.name = newRoomName
+        chatRoom.roomStatus = newRoomStatus
+        chatRoom.password = null
+
+        if (newRoomStatus === "PROTECTED"){
+            const hashedPassword = await this.hashPassword(newPassword);
+            chatRoom.password = hashedPassword;
+        }
+        await this.update(chatRoom)
+        return (true)
     }
 
     async hashPassword(password: string): Promise<string> {
@@ -109,7 +130,7 @@ export class ChatService {
         return (hash);
     }
 
-    async comparePassword(password: string, hash: string): Promise<boolean> {
+    comparePassword(password: string, hash: string): boolean {
         return (bcrypt.compare(password, hash));
     }
 
@@ -117,62 +138,60 @@ export class ChatService {
         return (Array.isArray(str) ? null : str)
     }
 
-    async getMessages(chatRoom: Chatroom): Promise<Array<Message>>{
+    async getAllMessages(chatRoomId: string): Promise<Array<Message>>{
         return await this.prismaService.message.findMany({
             where: {
-                chatroomId: chatRoom.id
+                chatroomId: chatRoomId
             }
         });
     }
 
-    async createNewMessage(userId: number, roomId: string, message: string): Promise<Message> {
+    async createNewMessage(user: User, chatRoomId: string, message: string): Promise<Message> {
+
         const msg: Message = await this.prismaService.message.create({
             data: {
-                userId: userId,
+                userId: user.id,
+                userDisplayname: user.displayname,
                 data: message,
-                chatroom: { connect: { id: roomId } }
+                chatroom: { connect: { id: chatRoomId } }
             }
         });
-        await this.databaseDeleteOldMessages(msg.chatroomId);
+        await this.databaseDeleteOldMessages(chatRoomId);
         return (msg);
     }
 
-    async createNewMute(userId: number, expireDate: number, roomId: string,): Promise<MuteObject> {
+    async createNewMute(userId: number, expireDate: number, chatRoomId: string): Promise<MuteObject> {
         return this.prismaService.muteObject.create({
             data: {
                 userId: userId,
                 expireDate: expireDate,
-                chatroom: { connect: { id: roomId } }
+                chatroom: { connect: { id: chatRoomId } }
             }
         });
     }
 
-    async createNewBan(userId: number, expireDate: number, roomId: string): Promise<MuteObject> {
-        
-        const user = await this.userService.findUserbyID(userId);
-        const chatRoom = await this.findChatRoombyID(roomId)
+    async createNewBan(bannedUserId: number, chatRoom: Chatroom): Promise<BanObject> {
 
-        user.chatRoomIds.splice(user.chatRoomIds.indexOf(roomId), 1);
+        const bannedUser: User = await this.userService.findUserbyID(bannedUserId)
+
+        bannedUser.chatRoomIds.splice(bannedUser.chatRoomIds.indexOf(chatRoom.id), 1);
         chatRoom.userCount--
         
         await this.update(chatRoom)
-        await this.userService.update(user);
+        await this.userService.update(bannedUser);
         
         return this.prismaService.banObject.create({
             data: {
-                userId: userId,
-                expireDate: expireDate,
-                chatroom: { connect: { id: roomId } }
+                userId: bannedUser.id,
+                userDisplayname: bannedUser.displayname,
+                userNickname: bannedUser.nickname,
+                chatroom: { connect: { id: chatRoom.id } }
             }
         });
     }
 
-    async databaseDeleteOldMessages(roomId: string) {
-        const messages: Array<Message> = await this.prismaService.message.findMany({
-            where: {
-                chatroomId: roomId
-            }
-        });
+    async databaseDeleteOldMessages(chatRoomId: string) {
+        const messages: Array<Message> = await this.getAllMessages(chatRoomId)
         while (messages.length > 30) {
             const delMsgId = messages[0].id;
             await this.prismaService.message.delete({
@@ -184,56 +203,56 @@ export class ChatService {
         }
     }
 
-    async getOnlineUsersInRoom(chatRoom: Chatroom, server: Server): Promise<Array<number>> {
-        const clientsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoom.id).fetchSockets();
+    async getOnlineUserIdsInRoom(chatRoomId: string, server: Server): Promise<Array<number>> {
+        const clientsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoomId).fetchSockets();
         const userIdsInRoom: Array<number> = clientsInRoom.map((obj) => parseInt(this.strFix(obj.handshake.query.userId)));
         const uniqueUserIdsInRoom: Array<number> = [...new Set(userIdsInRoom)];
         return (uniqueUserIdsInRoom);
     }
 
-    async getAllUsersIdsInRoom(chatRoom: Chatroom): Promise<Array<number>>{ // Bu daha optimize şekilde yazılabilir
-        const usersInfo = await this.getAllUsersInRoom(chatRoom)
+    async getAllUserIdsInRoom(chatRoomId: string): Promise<Array<number>>{ // Bu daha optimize şekilde yazılabilir
+        const usersInfo = await this.getAllUsersInRoom(chatRoomId)
         let userIds: Array<number> = []
         for (const user of usersInfo)
             userIds.push(user.id)
         return (userIds)
     }
 
-    async getAllUsersInRoom(chatRoom: Chatroom): Promise<Array<User>> {
+    async getAllUsersInRoom(chatRoomId: string): Promise<Array<User>> {
         return await this.prismaService.user.findMany({
             where: {
                 chatRoomIds: {
-                    has: chatRoom.id
+                    has: chatRoomId
                 }
             }
         });
     }
 
-    async getMutedUsersInRoom(chatRoom: Chatroom): Promise<Array<number>> {
-        await this.updateMutes(chatRoom.id);
-        const muteObjects: Array<MuteObject> = await this.prismaService.muteObject.findMany({
-            where: {
-                chatroomId: chatRoom.id
-            }
-        });
+    async getMutedUserIdsInRoom(chatRoomId: string): Promise<Array<number>> {
+        await this.updateMutes(chatRoomId);
+        const muteObjects: Array<MuteObject> = await this.getMutedUsersInRoom(chatRoomId)
         const mutedUsers: Array<number> = muteObjects.map((obj) => {
             return obj.userId;
         });
         return (mutedUsers);
     }
 
-    async userIdtoClients(userId: number, chatRoom: Chatroom, server: Server): Promise<RemoteSocket<DefaultEventsMap, any>[]> {
-        const socketsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoom.id).fetchSockets();
+    async userIdtoClients(userId: number, chatRoomId: string, server: Server): Promise<RemoteSocket<DefaultEventsMap, any>[]> {
+        const socketsInRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(chatRoomId).fetchSockets();
         const clientsOfUser: RemoteSocket<DefaultEventsMap, any>[] = socketsInRoom.filter((obj) => parseInt(this.strFix(obj.handshake.query.userId)) == userId);
         return (clientsOfUser);
     }
 
-    async updateMutes(roomId: string): Promise<void> {
-        const muteObjects: Array<BanObject> = await this.prismaService.muteObject.findMany({
+    async getMutedUsersInRoom(roomId: string): Promise<Array<MuteObject>> {
+        return await this.prismaService.muteObject.findMany({
             where: {
                 chatroomId: roomId
             }
         });
+    }
+
+    async updateMutes(roomId: string): Promise<void> {
+        const muteObjects: Array<MuteObject> = await this.getMutedUsersInRoom(roomId)
         for (const obj of muteObjects) {
             if (obj.expireDate <= Date.now()) {
                 await this.prismaService.muteObject.delete({
@@ -245,53 +264,39 @@ export class ChatService {
         }
     }
 
-    async updateBans(roomId: string): Promise<void> {
-        const banObjects: Array<BanObject> = await this.prismaService.banObject.findMany({
+    async getBannedUsersInRoom(roomId: string): Promise<Array<BanObject>> {
+        return await this.prismaService.banObject.findMany({
             where: {
                 chatroomId: roomId
             }
         });
-        for (const obj of banObjects) {
-            if (obj.expireDate <= Date.now()) {
-                await this.prismaService.banObject.delete({
-                    where: {
-                        id: obj.id
-                    }
-                });
-            }
-        }
     }
 
-    async getBannedUserInRoom(roomId: string): Promise<Array<number>> {
-        await this.updateBans(roomId);
-        const banObjects: Array<BanObject> = await this.prismaService.banObject.findMany({
-            where: {
-                chatroomId: roomId
-            }
-        });
+    async getBannedUserIdsInRoom(roomId: string): Promise<Array<number>> {
+        const banObjects: Array<BanObject> = await this.getBannedUsersInRoom(roomId)
         const bannedUsers: Array<number> = banObjects.map((obj) => {
             return obj.userId;
         });
         return (bannedUsers);
     }
 
-    async leaveRoom(user: User, chatRoom: Chatroom, server: Server): Promise<boolean> {
+    async leaveRoom(user: User, chatRoom: Chatroom): Promise<boolean> { // Hata Yok
         
         if (chatRoom.ownerId === user.id) {
             
-            let newOwner = chatRoom.adminIds[0] // ilk admin olan kişi yeni owner
+            let newOwner = chatRoom.adminIds[0] // İlk admin olan kişi yeni owner
 
-            if (newOwner === undefined) {
-                const usersIds: Array<number> = await this.getAllUsersIdsInRoom(chatRoom)
-                usersIds.forEach((obj) => {
-                    if (obj != user.id) {
-                        newOwner = obj; // Grubta admin yoksa yeni owner rastgele biri oluyor
+            if (newOwner === undefined) { // Eğer grupta hiç admin yoksa
+                const usersIds: Array<number> = await this.getAllUserIdsInRoom(chatRoom.id)
+                usersIds.forEach((id) => {
+                    if (id != user.id) {
+                        newOwner = id; // Yeni owner normal üyelerden biri olsun
                         return;
                     }
                 });
             }
 
-            if (newOwner == undefined) { // Yine owner yoksa grubu sil
+            if (newOwner === undefined) { // Yine owner yoksa grubu sil
                 user.chatRoomIds.splice(user.chatRoomIds.indexOf(chatRoom.id), 1);
                 await this.userService.update(user);
                 await this.deleteChatRoom(chatRoom);
@@ -310,7 +315,7 @@ export class ChatService {
         return (true);
     }
 
-    async deleteChatRoom(chatRoom: Chatroom) {
+    async deleteChatRoom(chatRoom: Chatroom) {      // Hata Yok
         await this.prismaService.message.deleteMany({
             where: {
                 chatroomId: chatRoom.id
@@ -331,5 +336,78 @@ export class ChatService {
                 id: chatRoom.id
             }
         })
+    }
+
+    async kickUser(kickedUserId: number, chatRoom: Chatroom): Promise<boolean> {      // Hata Yok
+
+        const kickedUser: User = await this.userService.findUserbyID(kickedUserId)
+
+        if (chatRoom.adminIds.includes(kickedUser.id)) // Tekmelenen kişi eğer adminse
+            chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(kickedUser.id), 1) // Adminliğinden çıkart
+        
+        kickedUser.chatRoomIds.splice(kickedUser.chatRoomIds.indexOf(chatRoom.id), 1)
+        chatRoom.userCount--
+
+        await this.userService.update(kickedUser)
+        await this.update(chatRoom)
+        return (true)
+    }
+
+    async changeGroupOwner(chatRoom: Chatroom, oldOwnerId: number, newOwnerId: number): Promise<boolean> {      // Hata Yok
+        
+        chatRoom.ownerId = newOwnerId; // Yeni lideri belirle
+        chatRoom.adminIds.push(oldOwnerId) // Eski liderin yetkisini adminliğe düşür
+        
+        if (chatRoom.adminIds.includes(newOwnerId)) // Eğer yeni lider önceden admin ise onun adminliten çıkart terfi aldı çünkü
+            chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(newOwnerId), 1)
+        
+        await this.update(chatRoom);
+        return (true)
+    }
+
+    async blockUser(user: User, blockedUserId: number): Promise<boolean> {      // Hata Yok
+        user.blockedUserIds.push(blockedUserId);
+        await this.userService.update(user);
+        return (true);
+    }
+
+    async getBlockUserIds(userId): Promise<Array<number>> {         // Hata Yok
+        return ((await this.userService.findUserbyID(userId)).blockedUserIds)
+    }
+
+    async unBlockUser(user: User, blockedUserId: number): Promise<boolean> {      // Hata Yok
+        user.blockedUserIds.splice(user.blockedUserIds.indexOf(blockedUserId), 1)
+        await this.userService.update(user);
+        return (true);
+    }
+
+    async unMute(userId: number, chatRoomId: string): Promise<boolean> {        // Yanlış olabilir altuga sor
+        const muteObject = await this.prismaService.muteObject.findFirst({
+            where: {
+                userId: userId,
+                chatroomId: chatRoomId
+            }
+        })
+        await this.prismaService.muteObject.delete({
+            where: {
+                id: muteObject.id
+            }
+        })
+        return (true)
+    }
+
+    async unBan(userId: number, chatRoomId: string): Promise<boolean> {        // Yanlış olabilir altuğa sor
+        const banObject = await this.prismaService.banObject.findFirst({
+            where: {
+                userId: userId,
+                chatroomId: chatRoomId
+            }
+        })
+        await this.prismaService.banObject.delete({
+            where: {
+                id: banObject.id
+            }
+        })
+        return (true)
     }
 }

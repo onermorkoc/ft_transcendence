@@ -23,23 +23,14 @@ const CreateChatRoomCmp = () => {
         })
     }
 
-    const selectListener = (value: string) => {
-        if (value === "Public")
-            setRoomStatus("PUBLIC")
-        else if (value === "Private")
-            setRoomStatus("PRIVATE")
-        else
-            setRoomStatus("PROTECTED")
-    }
-
     return (
         <>
             <div className="createRoomCenterDiv">
                 <img style={{width: "100px"}} src={require("../../ui-design/images/team.png")} alt=""/>
-                <select className="createRoomSelectMenu" onChange={event => selectListener(event.target.value)}>
-                    <option>Public</option>
-                    <option>Private</option>
-                    <option>Protected</option>
+                <select className="createRoomSelectMenu" onChange={event => setRoomStatus(event.target.value as RoomStatus)}>
+                    <option>PUBLIC</option>
+                    <option>PRIVATE</option>
+                    <option>PROTECTED</option>
                 </select>
                 <input className="createRoomInput" ref={roomNameRef} type="text" placeholder="Oda Adı" />
                 {

@@ -4,6 +4,10 @@ import { ChatService } from "./chat.service";
 import { Chatroom, User } from "@prisma/client";
 import { UsersService } from "src/users/users.service";
 
+const GROUP_MUTE_TIME: number = 1800000 // 30dk
+const GROUP_BAN_TIME: number = 120000 // 2dk
+
+
 @WebSocketGateway({ cors: { origin: true, credentials: true }, namespace: 'chat'})
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     constructor(private chatService: ChatService, private userService: UsersService) {}
@@ -28,33 +32,35 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
         client.join(chatRoom.id);
 
-        this.server.to(chatRoom.id).emit('onlineUsersInRoom', await this.chatService.getOnlineUsersInRoom(chatRoom, this.server));
-        this.server.to(client.id).emit('adminsInRoom', chatRoom.adminIds);
-        this.server.to(client.id).emit('mutedUsersInRoom', await this.chatService.getMutedUsersInRoom(chatRoom));
-        this.server.to(client.id).emit('ownersInRoom', chatRoom.ownerId);
-        this.server.to(client.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(chatRoom));
-        this.server.to(client.id).emit('messages', await this.chatService.getMessages(chatRoom));
+        this.server.to(chatRoom.id).emit('onlineUserIdsInRoom', await this.chatService.getOnlineUserIdsInRoom(chatRoom.id, this.server));
+        this.server.to(client.id).emit('adminUserIdsInRoom', chatRoom.adminIds);
+        this.server.to(chatRoom.id).emit('mutedUserIdsInRoom', await this.chatService.getMutedUserIdsInRoom(chatRoom.id));
+        this.server.to(client.id).emit('ownerIdInRoom', chatRoom.ownerId);
+        this.server.to(client.id).emit('allUserIdsInRoom', await this.chatService.getAllUserIdsInRoom(chatRoom.id));
+        this.server.to(client.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(chatRoom.id));
+        this.server.to(client.id).emit('allMessages', await this.chatService.getAllMessages(chatRoom.id));
+        this.server.to(client.id).emit('blockUserIds', user.blockedUserIds);
     }
 
     async handleDisconnect(client: Socket) {
         
         console.log("Client disconnected: " + client.id);
 
-        const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
-        this.server.to(chatRoom.id).emit('onlineUsersInRoom', await this.chatService.getOnlineUsersInRoom(chatRoom, this.server));
+        const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
+        this.server.to(chatRoomId).emit('onlineUserIdsInRoom', await this.chatService.getOnlineUserIdsInRoom(chatRoomId, this.server));
     }
 
     @SubscribeMessage('newMessageToServer')
     async handleNewMessage(client: Socket, message: string) {
 
-        const userId: number = parseInt(this.chatService.strFix(client.handshake.query.userId));
-        const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
+        const user: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
+        const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
 
-        if ((await this.chatService.getMutedUsersInRoom(chatRoom)).includes(userId))
+        if ((await this.chatService.getMutedUserIdsInRoom(chatRoomId)).includes(user.id))
             throw new Error("You can't send messages right now. You are muted.");
 
-        await this.chatService.createNewMessage(userId, chatRoom.id, message);
-        this.server.to(chatRoom.id).emit('messages', await this.chatService.getMessages(chatRoom));
+        await this.chatService.createNewMessage(user, chatRoomId, message);
+        this.server.to(chatRoomId).emit('allMessages', await this.chatService.getAllMessages(chatRoomId));
     }
 
     @SubscribeMessage('setAdmin')
@@ -69,13 +75,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         else if (chatRoom.adminIds.includes(newAdminId)) {
             throw new Error('The user is already an admin of this channel.');
         }
-        else if (!(await this.chatService.getAllUsersIdsInRoom(chatRoom)).includes(newAdminId)) {
+        else if (!(await this.chatService.getAllUserIdsInRoom(chatRoom.id)).includes(newAdminId)) {
             throw new Error('The user needs to be in channel to be promoted as an admin.');
         }
 
         chatRoom.adminIds.push(newAdminId);
         await this.chatService.update(chatRoom);
-        this.server.to(chatRoom.id).emit('adminsInRoom', chatRoom.adminIds);
+        this.server.to(chatRoom.id).emit('adminUserIdsInRoom', chatRoom.adminIds);
     }
 
     @SubscribeMessage('unsetAdmin')
@@ -90,18 +96,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         else if (!chatRoom.adminIds.includes(adminId)) {
             throw new Error('The user is not an admin.');
         }
-         else if (!(await this.chatService.getAllUsersIdsInRoom(chatRoom)).includes(adminId)) {
+         else if (!(await this.chatService.getAllUserIdsInRoom(chatRoom.id)).includes(adminId)) {
             throw new Error('The user needs to be in channel to be promoted as an admin.');
         }
 
         chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(adminId), 1);
         await this.chatService.update(chatRoom);
-        this.server.to(chatRoom.id).emit('adminsInRoom', chatRoom.adminIds);
+        this.server.to(chatRoom.id).emit('adminUserIdsInRoom', chatRoom.adminIds);
     }
 
     @SubscribeMessage('kickUser')
-    async handleKickUser(client: Socket, kickedUserId: number) {
-        
+    async handleKickUser(client: Socket, kickedUserId: number) {       // Hata yok
+
         const userId: number = parseInt(this.chatService.strFix(client.handshake.query.userId));
         const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
 
@@ -111,14 +117,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         else if (chatRoom.adminIds.includes(kickedUserId) && userId != chatRoom.ownerId) {
             throw new Error("You can't kick the channel owner or an admin.");
         }
-        else if (!(await this.chatService.getAllUsersIdsInRoom(chatRoom)).includes(kickedUserId)) {
+        else if (!(await this.chatService.getAllUserIdsInRoom(chatRoom.id)).includes(kickedUserId)) {
             throw new Error('The user needs to be in channel to be kicked.');
         }
 
-        const clientsOfUser = await this.chatService.userIdtoClients(kickedUserId, chatRoom, this.server);
-        clientsOfUser.forEach((client) => client.disconnect()); // Burada ekstradan 'kickListen' gibi bir şeye emit de atılabilir o clientlar için
-        this.server.to(chatRoom.id).emit('onlineUsersInRoom', await this.chatService.getOnlineUsersInRoom(chatRoom, this.server));
-        this.server.to(client.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(chatRoom));
+        if (await this.chatService.kickUser(kickedUserId, chatRoom)){
+            this.server.to(chatRoom.id).emit('allUserIdsInRoom', await this.chatService.getAllUserIdsInRoom(chatRoom.id));
+            this.server.to(chatRoom.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(chatRoom.id));
+        }
+
+        const clientsOfUser = await this.chatService.userIdtoClients(kickedUserId, chatRoom.id, this.server);
+        clientsOfUser.forEach((client) => client.disconnect());
     }
 
     @SubscribeMessage('muteUser')
@@ -133,12 +142,22 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         else if (chatRoom.adminIds.includes(mutedUserId) && userId != chatRoom.ownerId) {
             throw new Error("You can't mute the channel owner or an admin.");
         }
-        else if (!(await this.chatService.getAllUsersIdsInRoom(chatRoom)).includes(mutedUserId)) {
+        else if (!(await this.chatService.getAllUserIdsInRoom(chatRoom.id)).includes(mutedUserId)) {
             throw new Error('The user needs to be in channel to be muted.');
         }
 
-        await this.chatService.createNewMute(mutedUserId, Date.now() + 60000, chatRoom.id); // 1 dk hardcoded
-        this.server.to(chatRoom.id).emit('mutedUsersInRoom', await this.chatService.getMutedUsersInRoom(chatRoom));
+        await this.chatService.createNewMute(mutedUserId, Date.now() + GROUP_MUTE_TIME, chatRoom.id);
+        this.server.to(chatRoom.id).emit('mutedUserIdsInRoom', await this.chatService.getMutedUserIdsInRoom(chatRoom.id));
+    }
+
+    @SubscribeMessage('unMuteUser')
+    async handleUnMuteUser(client: Socket, mutedUserId: number) {       // Altuğnun kontrolleri eksik
+
+        const userId: number = parseInt(this.chatService.strFix(client.handshake.query.userId));
+        const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
+
+        if (this.chatService.unMute(mutedUserId, chatRoomId))
+            this.server.to(chatRoomId).emit('mutedUserIdsInRoom', await this.chatService.getMutedUserIdsInRoom(chatRoomId));
     }
 
     @SubscribeMessage('banUser')
@@ -153,35 +172,65 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         else if (chatRoom.adminIds.includes(bannedUserId) && userId != chatRoom.ownerId) {
             throw new Error("You can't ban the channel owner or an admin.");
         }
-        else if (!(await this.chatService.getAllUsersIdsInRoom(chatRoom)).includes(bannedUserId)) {
+        else if (!(await this.chatService.getAllUserIdsInRoom(chatRoom.id)).includes(bannedUserId)) {
             throw new Error('The user needs to be in channel to be banned.');
         }
 
-        await this.chatService.createNewBan(bannedUserId, Date.now() + 120000, chatRoom.id); // 2 dk hardcoded
-        const clientsOfUser = await this.chatService.userIdtoClients(bannedUserId, chatRoom, this.server);
-        clientsOfUser.forEach((client) => client.disconnect()); // Burada ekstradan 'kickListen' gibi bir şeye emit de atılabilir o clientlar için
-        this.server.to(chatRoom.id).emit('onlineUsersInRoom', await this.chatService.getOnlineUsersInRoom(chatRoom, this.server));
-        this.server.to(client.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(chatRoom));
+        if (await this.chatService.createNewBan(bannedUserId, chatRoom)){
+            this.server.to(chatRoom.id).emit('allUserIdsInRoom', await this.chatService.getAllUserIdsInRoom(chatRoom.id));
+            this.server.to(chatRoom.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(chatRoom.id));
+            this.server.to(chatRoom.id).emit('bannedUsersInRoom', await this.chatService.getBannedUsersInRoom(chatRoom.id))
+        }
+
+        const clientsOfUser = await this.chatService.userIdtoClients(bannedUserId, chatRoom.id, this.server);
+        clientsOfUser.forEach((client) => client.disconnect());
+    }
+
+    @SubscribeMessage('getBannedUsersInRoom')
+    async handleGetBannedUsersInRoom(client: Socket) {
+        const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
+        this.server.to(chatRoomId).emit('bannedUsersInRoom', await this.chatService.getBannedUsersInRoom(chatRoomId))
+    }
+
+    @SubscribeMessage('unBanUser')
+    async handleUnBanUser(client: Socket, bannedUserId: number) {       // Altuğnun kontrolleri eksik
+        
+        const userId: number = parseInt(this.chatService.strFix(client.handshake.query.userId));
+        const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
+
+        if (await this.chatService.unBan(bannedUserId, chatRoomId))
+            this.server.to(chatRoomId).emit('bannedUsersInRoom', await this.chatService.getBannedUsersInRoom(chatRoomId))
     }
 
     @SubscribeMessage('blockUser')
-    async handleBlockUser(client: Socket, blockedUserId: number) {
+    async handleBlockUser(client: Socket, blockedUserId: number) {      // Hata Yok
 
         const user: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
-        const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
+        const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
 
-        if (!(await this.chatService.getAllUsersIdsInRoom(chatRoom)).includes(blockedUserId)) {
+        if (!(await this.chatService.getAllUserIdsInRoom(chatRoomId)).includes(blockedUserId)) {
             throw new Error('The user needs to be in channel to be blocked.');
         }
         else if (user.blockedUserIds.includes(blockedUserId)) {
             throw new Error('The user is already blocked.');
         }
         
-        await this.userService.blockUser(user, blockedUserId);
+        if (await this.chatService.blockUser(user, blockedUserId))
+            this.server.to(client.id).emit('blockUserIds', await this.chatService.getBlockUserIds(user.id));
+    }
+
+    @SubscribeMessage('unBlockUser')
+    async handleUnBlockUser(client: Socket, blockedUserId: number) {       // Altuğnun Kontrolleri eksik
+
+        const user: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
+        const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
+
+        if (await this.chatService.unBlockUser(user, blockedUserId))
+            this.server.to(client.id).emit('blockUserIds', await this.chatService.getBlockUserIds(user.id));
     }
 
     @SubscribeMessage('handOverOwnership')
-    async handleHandOverOwnership(client: Socket, newOwnerId: number) {
+    async handleHandOverOwnership(client: Socket, newOwnerId: number) {     // Hata Yok
 
         const userId: number = parseInt(this.chatService.strFix(client.handshake.query.userId));
         const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
@@ -189,33 +238,31 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         if (chatRoom.ownerId != userId) {
             throw new Error('You need to be channel owner to execute this command.');
         }
-        else if (!(await this.chatService.getAllUsersIdsInRoom(chatRoom)).includes(newOwnerId)) {
+        else if (!(await this.chatService.getAllUserIdsInRoom(chatRoom.id)).includes(newOwnerId)) {
             throw new Error('The user needs to be in channel to be prometed as channel owner.');
         }
 
-        chatRoom.ownerId = newOwnerId;
-        if (!chatRoom.adminIds.includes(newOwnerId)) {
-            chatRoom.adminIds.push(newOwnerId);
+        if (await this.chatService.changeGroupOwner(chatRoom, userId, newOwnerId)){
+            this.server.to(chatRoom.id).emit('ownerIdInRoom', chatRoom.ownerId);
+            this.server.to(chatRoom.id).emit('adminUserInRoom', chatRoom.adminIds);
         }
-        await this.chatService.update(chatRoom);
-        this.server.to(chatRoom.id).emit('ownersInRoom', chatRoom.ownerId);
     }
 
     @SubscribeMessage('leaveRoom')
-    async handleLeaveRoom(client: Socket) {
+    async handleLeaveRoom(client: Socket) {     // Hata Yok
         
         const user: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
         const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
-
-        const clientsOfUser = await this.chatService.userIdtoClients(user.id, chatRoom, this.server);
-        clientsOfUser.forEach((client) => client.disconnect()); // Burada ekstradan 'kickListen' gibi bir şeye emit de atılabilir o clientlar için
         
-        if (await this.chatService.leaveRoom(user, chatRoom, this.server)) {
+        const clientsOfUser = await this.chatService.userIdtoClients(user.id, chatRoom.id, this.server);
+        clientsOfUser.forEach((client) => client.disconnect());
+
+        if (await this.chatService.leaveRoom(user, chatRoom)) {
             const updatedChatRoom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
-            this.server.to(chatRoom.id).emit('onlineUsersInRoom', await this.chatService.getOnlineUsersInRoom(updatedChatRoom, this.server));
-            this.server.to(chatRoom.id).emit('adminsInRoom', updatedChatRoom.adminIds);
-            this.server.to(chatRoom.id).emit('ownersInRoom', updatedChatRoom.ownerId);
-            this.server.to(client.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(updatedChatRoom));
+            this.server.to(chatRoom.id).emit('adminUserIdsInRoom', updatedChatRoom.adminIds);
+            this.server.to(chatRoom.id).emit('ownerIdInRoom', updatedChatRoom.ownerId);
+            this.server.to(chatRoom.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(updatedChatRoom.id));
+            this.server.to(chatRoom.id).emit('allUserIdsInRoom', await this.chatService.getAllUserIdsInRoom(chatRoom.id));
         }
     }
 }

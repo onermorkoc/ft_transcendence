@@ -37,7 +37,14 @@ const MyFriendsRoomCmp = () => {
                                         <img className="friendsAvatarImg" src={value.photoUrl} alt=""/>
                                         <div className="listViewInfoDiv">
                                             <div>Ad: {value.displayname}</div>
-                                            <div>Durum: {value.status}</div>
+                                            <div>Durum:
+                                                {
+                                                    value.status === "ONLINE" ? 
+                                                        <span style={{color: "green"}}> {value.status}</span>
+                                                    :
+                                                        <span style={{color: "red"}}> {value.status}</span>
+                                                }
+                                            </div>
                                         </div>
                                         <img className="unFriendImg" onClick={() => unFriend(value)} src={require("../../ui-design/images/unfriend.png")} alt=""/>
                                     </div>

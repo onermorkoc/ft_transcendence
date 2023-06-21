@@ -70,9 +70,11 @@ model MuteObject {
 
 model BanObject {
   id  Int @id @default(autoincrement())
-
+  
   userId Int
-  expireDate BigInt
+  userDisplayname String
+  userNickname String
+  createdAt DateTime @default(now())
   
   chatroom   Chatroom @relation("BanList", fields: [chatroomId], references: [id])
   chatroomId String
@@ -82,6 +84,7 @@ model Message {
   id Int @id @default(autoincrement())
 
   userId    Int
+  userDisplayname String
   createdAt DateTime @default(now())
   data      String
 
