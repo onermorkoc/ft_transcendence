@@ -21,7 +21,7 @@ export class UsersController {
         return (this.userService.currentUser(session))
     }
 
-    @Get(':userId')
+    @Get('getuser/:userId')
     @UseGuards(AuthenticatedGuard)
     async findUserbyID(@Param("userId") userId: string) {
         return (await this.userService.findUserbyID(parseInt(userId)))
@@ -55,5 +55,11 @@ export class UsersController {
         @Session() session: Record<string, any>
     ) {
         return (await this.userService.uploadAvatar(session.passport.user.id, file))
+    }
+
+    @Get('gamehistory')
+    @UseGuards(AuthenticatedGuard)
+    async getGameHistory(@Session() session: Record<string, any>) {
+        return (await this.userService.getGameHistory(session.passport.user.id));
     }
 }

@@ -160,9 +160,11 @@ export class GameService {
         }, 1000)
     }
 
-    pauseGame(gameId: string, waitingUserId: number) {
+    async pauseGame(gameId: string, waitingUserId: number) {
         const server = this.gameGateway.server;
         const game = this.gameMap.get(gameId);
+
+        if (game.gameState == GameState.ABORTED || game.gameState == GameState.FINISHEDP1 || game.gameState == GameState.FINISHEDP2) {return;}
 
         game.ball.resetBall();
         game.playerOne.resetPosition();
@@ -181,6 +183,8 @@ export class GameService {
             server.to(gameId).emit("countdown", game.countdownInSeconds);
 
             if (game.countdownInSeconds < 0) {
+                if (game.waitingUserId == game.playerOne.userId) {game.gameState = GameState.FINISHEDP2;}
+                else if (game.waitingUserId == game.playerTwo.userId) {game.gameState = GameState.FINISHEDP1;}
                 clearInterval(game.countdownIntervalId);
                 server.to(gameId).emit("win");
             }
@@ -190,6 +194,7 @@ export class GameService {
     async deleteGame(gameId: string) {
         if (this.gameMap.get(gameId).deleting == true) {return;}
         this.gameMap.get(gameId).deleting = true;
+        await this.saveGameHistory(gameId);
         clearInterval(this.gameMap.get(gameId).intervalId);
         clearInterval(this.gameMap.get(gameId).countdownIntervalId);
 
@@ -219,6 +224,7 @@ export class GameService {
             if (game.countdownInSeconds < 0) {
                 clearInterval(game.countdownIntervalId);
                 if (!game.playerOne.isReady || !game.playerTwo.isReady) {
+                    game.gameState = GameState.ABORTED;
                     this.gameGateway.server.to(gameId).emit('gameAborted');
                 }
             }
@@ -231,6 +237,7 @@ export class GameService {
         const playerOne: Paddle = game.playerOne;
         const playerTwo: Paddle = game.playerTwo;
         if (!playerOne.isReady || !playerTwo.isReady) {
+            game.gameState = GameState.ABORTED;
             this.gameGateway.server.to(gameId).emit('gameAborted');
         }
     }
@@ -340,6 +347,7 @@ export class GameService {
         const socketsInGame: RemoteSocket<DefaultEventsMap, any>[] = await server.in(gameId).fetchSockets();
 
         if (playerOne.score >= GAME_END_SCORE) {
+            game.gameState = GameState.FINISHEDP1;
             socketsInGame.forEach((socket) => {
                 if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
                     server.to(socket.id).emit('win');
@@ -349,8 +357,10 @@ export class GameService {
                 }
             });
             clearInterval(game.intervalId);
+            return;
         }
         else if (playerTwo.score >= GAME_END_SCORE) {
+            game.gameState = GameState.FINISHEDP2;
             socketsInGame.forEach((socket) => {
                 if (parseInt(this.strFix(socket.handshake.query.userId)) == playerOne.userId) {
                     server.to(socket.id).emit('lose');
@@ -360,6 +370,7 @@ export class GameService {
                 }
             });
             clearInterval(game.intervalId);
+            return;
         }
 
         ball.updateBallPosition(playerOne, playerTwo);
@@ -439,6 +450,28 @@ export class GameService {
     playerTwoMove(gameId: string, newY: number): void {
         const playerTwo: Paddle = this.gameMap.get(gameId).playerTwo;
         playerTwo.changePosition(newY);
+    }
+
+    async saveGameHistory(gameId: string) {
+        const game: GameObject = this.gameMap.get(gameId);
+
+        if (game.gameState != GameState.FINISHEDP1 && game.gameState != GameState.FINISHEDP2) {return;}
+
+        let winnerId: number;
+        if (game.gameState == GameState.FINISHEDP1) {winnerId = game.playerOne.userId;}
+        else {winnerId = game.playerTwo.userId;}
+
+        await this.prismaService.gameHistory.create({
+            data: {
+                playerOne: { connect: {id: game.playerOne.userId} },
+                playerTwo: { connect: {id: game.playerTwo.userId} },
+                winnerId: winnerId,
+                playerOneScore: game.playerOne.score,
+                playerTwoScore: game.playerTwo.score
+            }
+        });
+
+        const playerOne: User = await this.userService.findUserbyID(game.playerOne.userId);
     }
 
 }

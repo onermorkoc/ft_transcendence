@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Session } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@prisma/client';
+import { GameHistory, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -100,6 +100,22 @@ export class UsersService {
     async getCurrentGameId(userId: number): Promise<string> {
         const user: User = await this.findUserbyID(userId);
         return user.currentGameId;
+    }
+
+    async getGameHistory(userId: number): Promise<Array<GameHistory>> {
+        const gameHistoryAsPlayerOne: Array<GameHistory> = await this.prismaService.gameHistory.findMany({
+            where: {
+                playerOneId: userId
+            }
+        });
+        const gameHistoryAsPlayerTwo: Array<GameHistory> = await this.prismaService.gameHistory.findMany({
+            where: {
+                playerTwoId: userId
+            }
+        });
+        const gameHistory: Array<GameHistory> = gameHistoryAsPlayerOne.concat(gameHistoryAsPlayerTwo);
+        gameHistory.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        return (gameHistory);
     }
 }
 

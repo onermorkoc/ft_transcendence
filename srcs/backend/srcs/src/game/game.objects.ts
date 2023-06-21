@@ -14,7 +14,10 @@ export enum GameState {
     WAITINGTOSTART,
     STARTING,
     PLAYING,
-    PAUSED
+    PAUSED,
+    ABORTED,
+    FINISHEDP1,
+    FINISHEDP2
 }
 
 export enum Direction {
