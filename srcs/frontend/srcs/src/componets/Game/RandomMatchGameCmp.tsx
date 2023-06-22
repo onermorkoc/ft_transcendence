@@ -1,8 +1,8 @@
 import Lottie, { LottieRefCurrentProps }  from "lottie-react"
 import { useEffect, useRef, useState} from "react"
 import { Socket, io } from "socket.io-client"
-import { User } from "../../dto/DataObject"
 import axios from "axios"
+import useCurrentUser from "../../services/Auth"
 
 function secondToTime(second: number): string {
     let minute = Math.floor(second / 60)
@@ -17,69 +17,61 @@ function secondToTime(second: number): string {
 }
 
 const RandomMatchGameCmp = () => {
-    
+
     const animationRef = useRef<LottieRefCurrentProps>(null)
     const [second, setSecond] = useState<number>(0)
     const [searchStatus, setSearchStatus] = useState<boolean>(false)
     let intervalID: NodeJS.Timer
 
+    const currentUser = useCurrentUser()
     const [socket, setSocket] = useState<Socket | null>(null)
-    const [currentUser, setCurrentUser] = useState<User | null>(null)
-    axios.get(`/users/current`).then((response) => {setCurrentUser(response.data)})
-    const [matchLink, setMatchLink] = useState<string>('')
+
+    const connectBackGame = () => {
+        axios.get(`users/currentgameid/${currentUser!!.id}`).then((response) => {
+            if (response.data !== "")
+                window.location.assign(`/game/${response.data}`)
+        })
+    }
 
     const randomMatch = async () => {
-        if (!currentUser) {return;}
-        const currentGameId: string = (await axios.get(`users/currentgameid/${currentUser.id}`)).data;
-        if (currentGameId !== '') {
-            console.log(currentGameId);
-            window.location.assign(`/game/${currentGameId}`);
-        }
-        //window.location.assign("/game")
+        connectBackGame()
         if(!searchStatus){
             animationRef.current!!.play()
             setSecond(0)
             setSearchStatus(true)
-            // rastgele birinn eşleşmesini bekler
         }
     }
 
     const cancelRandomMatch = () => {
-        if (socket) {
-            socket.disconnect();
-            setSocket(null);
-        }
         animationRef.current!!.stop()
         setSearchStatus(false)
-        // rastgele eşleşme istegi iptal         
+        socket!!.disconnect();
+        setSocket(null);     
     }
 
     useEffect(() => {
+        
         if (searchStatus){
+
             // eslint-disable-next-line
             intervalID = setInterval(() => {
                 setSecond(second => second + 1)
             }, 1000)
+
+            if (!socket)
+                setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/queue`, {query: {userId: currentUser!!.id}}))
+
+            if (socket){
+                socket.on("matchFound", (data: string) => {
+                    if (data !== "")
+                        window.location.assign(data)
+                })
+            }
         }
+
         return () => clearInterval(intervalID)
-    }, [searchStatus])
 
-    useEffect(() => {
-        if (matchLink !== '') {
-            window.location.assign(matchLink)
-        }
-    }, [matchLink])
-
-    useEffect(() => {
-        if (searchStatus) {
-            if (currentUser && !socket) {
-                setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/queue`, {query: {userId: currentUser.id}}))
-            }
-            if (socket) {
-                socket.on("matchFound", (data: string) => setMatchLink(data))
-            }
-        }
-    }, [currentUser, searchStatus, socket])
+    }, [searchStatus, socket])
 
     return (
         <>
