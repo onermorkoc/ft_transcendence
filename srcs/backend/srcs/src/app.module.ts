@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
@@ -9,6 +9,7 @@ import { join } from 'path';
 import { ChatModule } from './chat/chat.module';
 import { StatusModule } from './status/status.module';
 import { GameModule } from './game/game.module';
+import { InitializationService } from './initialization/initialization.service';
 
 @Module({
   
@@ -21,7 +22,13 @@ import { GameModule } from './game/game.module';
   PrismaModule, AuthModule, UsersModule, ChatModule, StatusModule, GameModule],
 
   controllers: [AppController],
-  providers: [],
+  providers: [InitializationService],
 
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor (private initializationService: InitializationService) {}
+
+  async onModuleInit() {
+    await this.initializationService.initialize();
+  }
+}

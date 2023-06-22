@@ -1,6 +1,6 @@
 import { Injectable, Session } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GameHistory, User } from '@prisma/client';
+import { Achievement, GameHistory, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -112,4 +112,8 @@ export class UsersService {
         gameHistory.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         return (gameHistory);
     }
+
+    /*async getAchievements(userId: number): Promise<Array<Achievement>> {
+        const achievements
+    }*/
 }

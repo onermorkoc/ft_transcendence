@@ -42,6 +42,8 @@ model User {
   currentGameId String @default("")
   gameHistoryAsPlayerOne GameHistory[] @relation("PlayerOne")
   gameHistoryAsPlayerTwo GameHistory[] @relation("PlayerTwo")
+
+  achievements UserAchievement[]
 }
 
 model Chatroom {
@@ -127,6 +129,23 @@ model FriendRequest {
   uniqueIdentifier String @unique
 
   @@id([senderId, receiverId])
+}
+
+model Achievement {
+  id            Int @id @default(autoincrement())
+  name          String @unique
+  description   String?
+  users         UserAchievement[]
+}
+
+model UserAchievement {
+  id            Int @id @default(autoincrement())
+  user          User @relation(fields: [userId], references: [id])
+  userId        Int
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  achievementId Int
+
+  @@unique([userId, achievementId])
 }
 
 enum Title {

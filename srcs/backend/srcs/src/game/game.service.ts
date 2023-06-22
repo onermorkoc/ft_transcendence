@@ -164,7 +164,7 @@ export class GameService {
         const server = this.gameGateway.server;
         const game = this.gameMap.get(gameId);
 
-        if (game.gameState == GameState.ABORTED || game.gameState == GameState.FINISHEDP1 || game.gameState == GameState.FINISHEDP2) {return;}
+        if (game.gameState == GameState.WAITINGTOSTART || game.gameState == GameState.ABORTED || game.gameState == GameState.FINISHEDP1 || game.gameState == GameState.FINISHEDP2) {return;}
 
         game.ball.resetBall();
         game.playerOne.resetPosition();
@@ -470,8 +470,6 @@ export class GameService {
                 playerTwoScore: game.playerTwo.score
             }
         });
-
-        const playerOne: User = await this.userService.findUserbyID(game.playerOne.userId);
     }
 
 }

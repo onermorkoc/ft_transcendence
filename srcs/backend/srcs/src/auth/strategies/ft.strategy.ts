@@ -28,8 +28,7 @@ export class FtStrategy extends PassportStrategy(Strategy, '42') {
                 displayname: profile._json.displayname,
                 email: profile._json.email,
                 nickname: profile._json.login,
-                photoUrl: profile._json.image.link,
-                status: Status.OFFLINE
+                photoUrl: profile._json.image.link
             },
         });
 
