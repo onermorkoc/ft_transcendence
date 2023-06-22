@@ -45,7 +45,8 @@ const SearchChatRoomCmp = () => {
             window.location.assign(`/chat/${response.data.id}`)
         }).catch((error) => {
             setWarningMessage(error.response.data.message)
-            setSelectedRoom(null)
+            if (selectedRoom!!.roomStatus !== "PROTECTED")
+                setSelectedRoom(null)
         })
     }
 

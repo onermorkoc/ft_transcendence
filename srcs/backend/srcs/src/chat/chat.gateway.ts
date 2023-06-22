@@ -244,7 +244,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
         if (await this.chatService.changeGroupOwner(chatRoom, userId, newOwnerId)){
             this.server.to(chatRoom.id).emit('ownerIdInRoom', chatRoom.ownerId);
-            this.server.to(chatRoom.id).emit('adminUserInRoom', chatRoom.adminIds);
+            this.server.to(chatRoom.id).emit('adminUserIdsInRoom', chatRoom.adminIds);
         }
     }
 
