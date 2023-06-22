@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Game, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Ball, COUNTDOWN_SECONDS, GAME_END_SCORE, GAME_FPS, GameObject, GameState, PAUSE_WAIT_SECONDS, Paddle, STARTING_SECONDS } from './game.objects'
+import { Ball, COUNTDOWN_SECONDS, GAME_END_SCORE, GAME_FPS, GameObject, GameState, LOSE_XP, PAUSE_WAIT_SECONDS, Paddle, STARTING_SECONDS, WIN_XP } from './game.objects'
 import { GameGateway } from './game.gateway';
 import { UsersService } from 'src/users/users.service';
 import { RemoteSocket, Socket } from 'socket.io';
@@ -194,7 +194,7 @@ export class GameService {
     async deleteGame(gameId: string) {
         if (this.gameMap.get(gameId).deleting == true) {return;}
         this.gameMap.get(gameId).deleting = true;
-        await this.saveGameHistory(gameId);
+        await this.afterGame(gameId);
         clearInterval(this.gameMap.get(gameId).intervalId);
         clearInterval(this.gameMap.get(gameId).countdownIntervalId);
 
@@ -210,7 +210,8 @@ export class GameService {
             where: {
                 id: gameId
             }
-        })
+        });
+        console.log(gameId);
         this.gameMap.delete(gameId);
     }
 
@@ -452,7 +453,7 @@ export class GameService {
         playerTwo.changePosition(newY);
     }
 
-    async saveGameHistory(gameId: string) {
+    async afterGame(gameId: string) {
         const game: GameObject = this.gameMap.get(gameId);
 
         if (game.gameState != GameState.FINISHEDP1 && game.gameState != GameState.FINISHEDP2) {return;}
@@ -470,6 +471,110 @@ export class GameService {
                 playerTwoScore: game.playerTwo.score
             }
         });
+
+        const playerOne: User = await this.userService.findUserbyID(game.playerOne.userId);
+        const playerTwo: User = await this.userService.findUserbyID(game.playerTwo.userId);
+        playerOne.totalGame++;
+        playerTwo.totalGame++;
+        if (winnerId == playerOne.id) {
+            playerOne.totalWin++;
+            playerOne.xp += WIN_XP;
+            playerTwo.xp += LOSE_XP;
+        }
+        else {
+            playerTwo.totalWin++;
+            playerTwo.xp += WIN_XP;
+            playerOne.xp += LOSE_XP;
+        }
+        await this.userService.update(playerOne);
+        await this.userService.update(playerTwo);
+
+        await this.achievementControl(playerOne);
+        await this.achievementControl(playerTwo);
+    }
+
+    async achievementControl(user: User) {
+        const gameHistory = await this.userService.getGameHistory(user.id);
+
+        if (user.totalWin == 1) {
+            this.userService.unlockAchievement(user.id, "İlk Galibiyet");
+        }
+        else if (user.totalWin == 10) {
+            this.userService.unlockAchievement(user.id, "Alışıyoruz");
+        }
+        else if (user.totalWin == 25) {
+            this.userService.unlockAchievement(user.id, "Kalite");
+        }
+        else if (user.totalWin == 50) {
+            this.userService.unlockAchievement(user.id, "Pong'un sefiri");
+        }
+
+        if (user.totalGame == 10) {
+            this.userService.unlockAchievement(user.id, "Oyuncu");
+        }
+        else if (user.totalGame == 25) {
+            this.userService.unlockAchievement(user.id, "Bilgili");
+        }
+        else if (user.totalGame == 50) {
+            this.userService.unlockAchievement(user.id, "Deneyimli");
+        }
+        else if (user.totalGame == 100) {
+            this.userService.unlockAchievement(user.id, "Pong Bağımlısı");
+        }
+
+        if (gameHistory.length > 0 && gameHistory[0].winnerId == user.id) {
+            if (gameHistory[0].playerOneId == user.id && gameHistory[0].playerTwoScore == 0) {
+                this.userService.unlockAchievement(user.id, "Mükemmel Defans");
+            }
+            else if (gameHistory[0].playerTwoId == user.id && gameHistory[0].playerOneScore == 0) {
+                this.userService.unlockAchievement(user.id, "Mükemmel Defans");
+            }
+        }
+
+        if (gameHistory.length >= 5) {
+            let ok: boolean = true;
+            for (var i = 0; i < 5; i++) {
+                if (gameHistory[i].winnerId != user.id) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok) {
+                this.userService.unlockAchievement(user.id, "Galibiyet Zinciri");
+            }
+        }
+
+        if (gameHistory.length >= 10) {
+            let ok: boolean = true;
+            for (var i = 0; i < 10; i++) {
+                if (gameHistory[i].winnerId != user.id) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok) {
+                this.userService.unlockAchievement(user.id, "Ultra Galibiyet Zinciri");
+            }
+        }
+
+        if (gameHistory.length >= 2 && gameHistory[0].winnerId == user.id && gameHistory[1].winnerId != user.id) {
+            if (gameHistory[0].playerOneId == user.id && gameHistory[0].playerTwoScore == 0) {
+                if (gameHistory[1].playerOneId == user.id && gameHistory[1].playerOneScore == 0) {
+                    this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                }
+                else if (gameHistory[1].playerTwoId == user.id && gameHistory[1].playerTwoScore == 0) {
+                    this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                }
+            }
+            else if (gameHistory[0].playerTwoId == user.id && gameHistory[0].playerOneScore == 0) {
+                if (gameHistory[1].playerOneId == user.id && gameHistory[1].playerOneScore == 0) {
+                    this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                }
+                else if (gameHistory[1].playerTwoId == user.id && gameHistory[1].playerTwoScore == 0) {
+                    this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                }
+            }
+        }
     }
 
 }

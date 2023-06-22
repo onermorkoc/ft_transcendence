@@ -62,4 +62,10 @@ export class UsersController {
     async getGameHistory(@Session() session: Record<string, any>) {
         return (await this.userService.getGameHistory(session.passport.user.id));
     }
+
+    @Get('achievements')
+    @UseGuards(AuthenticatedGuard)
+    async getAchievements(@Session() session: Record<string, any>) {
+        return (await this.userService.getAchievements(session.passport.user.id));
+    }
 }

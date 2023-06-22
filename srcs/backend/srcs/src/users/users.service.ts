@@ -1,6 +1,7 @@
 import { Injectable, Session } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Achievement, GameHistory, User } from '@prisma/client';
+import { Achievement, GameHistory, Prisma, User } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -113,7 +114,44 @@ export class UsersService {
         return (gameHistory);
     }
 
-    /*async getAchievements(userId: number): Promise<Array<Achievement>> {
-        const achievements
-    }*/
+    async getAchievements(userId: number): Promise<Array<{ name: string, description?: string, achieved: boolean, percentage: number }>> {
+        const allUserCount: number = (await this.allUsers()).length;
+        const allAchievements = await this.prismaService.achievement.findMany({
+            include: {
+                users: true
+            }
+        });
+        const achievementObjects: Array<{ name: string, description?: string, achieved: boolean, percentage: number }> = [];
+
+        allAchievements.forEach((achievement) => {
+            let achieved: boolean;
+            if (achievement.users.some((obj) => obj.userId == userId)) {achieved = true;}
+            else {achieved = false;}
+            achievementObjects.push({ name: achievement.name, description: achievement.description, achieved: achieved, percentage: (achievement.users.length / allUserCount) * 100 })
+        });
+
+        return achievementObjects;
+    }
+
+    async unlockAchievement(userId: number, achievementName: string) {
+        const user: User = await this.findUserbyID(userId);
+        const oldAchievement = await this.prismaService.userAchievement.findUnique({
+            where: {
+                userId_achievementName: {userId: userId, achievementName: achievementName}
+            }
+        });
+
+        if (!oldAchievement) {
+            const userAchievement = await this.prismaService.userAchievement.create({
+                data: {
+                    user: { connect: {id: userId} },
+                    achievement: { connect: {name: achievementName} }
+                },
+                include: {
+                    achievement: true
+                }
+            });
+            user.xp += userAchievement.achievement.xp;
+        }
+    }
 }

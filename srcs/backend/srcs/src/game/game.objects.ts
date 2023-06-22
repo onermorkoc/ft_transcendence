@@ -10,6 +10,9 @@ export const STARTING_SECONDS = 3;
 export const PAUSE_WAIT_SECONDS = 10;
 export const GAME_END_SCORE = 5;
 
+export const WIN_XP = 300;
+export const LOSE_XP = 200;
+
 export enum GameState {
     WAITINGTOSTART,
     STARTING,

@@ -27,9 +27,8 @@ model User {
 
   totalGame  Int   @default(0)
   totalWin   Int   @default(0)
-  totalLose  Int   @default(0)
-  winRate    Int   @default(0)
   title      Title @default(CAYLAK)
+  xp         Int   @default(0)
   globalRank Int   @default(0)
 
   chatRoomIds String[]
@@ -135,6 +134,7 @@ model Achievement {
   id            Int @id @default(autoincrement())
   name          String @unique
   description   String?
+  xp            Int
   users         UserAchievement[]
 }
 
@@ -142,10 +142,10 @@ model UserAchievement {
   id            Int @id @default(autoincrement())
   user          User @relation(fields: [userId], references: [id])
   userId        Int
-  achievement   Achievement @relation(fields: [achievementId], references: [id])
-  achievementId Int
+  achievement   Achievement @relation(fields: [achievementName], references: [name])
+  achievementName String
 
-  @@unique([userId, achievementId])
+  @@unique([userId, achievementName])
 }
 
 enum Title {
