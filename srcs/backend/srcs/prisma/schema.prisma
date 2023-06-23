@@ -27,9 +27,7 @@ model User {
 
   totalGame  Int   @default(0)
   totalWin   Int   @default(0)
-  title      Title @default(CAYLAK)
   xp         Int   @default(0)
-  globalRank Int   @default(0)
 
   chatRoomIds String[]
   friendIds   Int[]
@@ -146,14 +144,6 @@ model UserAchievement {
   achievementName String
 
   @@unique([userId, achievementName])
-}
-
-enum Title {
-  CAYLAK
-  USTA
-  BUYUKUSTA
-  EFSANE
-  SANLI
 }
 
 enum Status {

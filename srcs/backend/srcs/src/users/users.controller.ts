@@ -57,15 +57,21 @@ export class UsersController {
         return (await this.userService.uploadAvatar(session.passport.user.id, file))
     }
 
-    @Get('gamehistory')
+    @Get('gamehistory/:userId')
     @UseGuards(AuthenticatedGuard)
-    async getGameHistory(@Session() session: Record<string, any>) {
-        return (await this.userService.getGameHistory(session.passport.user.id));
+    async getGameHistory(@Param("userId") userId: string) {
+        return (await this.userService.getGameHistory(parseInt(userId)));
     }
 
-    @Get('achievements')
+    @Get('achievements/:userId')
     @UseGuards(AuthenticatedGuard)
-    async getAchievements(@Session() session: Record<string, any>) {
-        return (await this.userService.getAchievements(session.passport.user.id));
+    async getAchievements(@Param("userId") userId: string) {
+        return (await this.userService.getAchievements(parseInt(userId)));
+    }
+
+    @Get('stats/:userId')
+    @UseGuards(AuthenticatedGuard)
+    async getStats(@Param("userId") userId: string) {
+        return (await this.userService.getStats(parseInt(userId)));
     }
 }

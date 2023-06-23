@@ -152,6 +152,22 @@ export class UsersService {
                 }
             });
             user.xp += userAchievement.achievement.xp;
+            await this.update(user);
         }
+    }
+
+    async getStats(userId: number): Promise<{ globalRank: number, level: number, progression: number, xp: number }> {
+        const user: User = await this.findUserbyID(userId);
+        const allUsers: Array<User> = await this.allUsers();
+        allUsers.sort((a, b) => b.xp - a.xp);
+        const rank: number = allUsers.findIndex((obj) => obj.id == userId) + 1;
+        const level: number = Math.floor(Math.log((user.xp / 1000) * (1.25 - 1) + 1) / Math.log(1.25)) + 1;
+        const currentLevelMaxXP = 1000 * Math.pow(1.25, level - 1);
+        let relevantXP = user.xp;
+        for (var i = 0; i < level - 1; i++) {
+            relevantXP -= 1000 * Math.pow(1.25, i);
+        }
+        const progression: number = (relevantXP / currentLevelMaxXP) * 100;
+        return ({ globalRank: rank, level: level, progression: progression, xp: user.xp });
     }
 }
