@@ -157,3 +157,11 @@ enum RoomStatus {
   PUBLIC
   PROTECTED
 }
+
+model DirectMessage {
+  id                  Int @id @default(autoincrement())
+  data                String
+  senderId            Int
+  createdAt           DateTime  @default(now())
+  uniqueIdentifier    String
+}

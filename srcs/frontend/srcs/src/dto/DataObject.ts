@@ -9,14 +9,10 @@ export interface User {
   twoFactorSecret: string,
   twoFactorQrCode: string,
   totalGame: number,
-  totalWin: number,
-  totalLose: number,
-  winRate: number,
-  title: Title,
-  globalRank: number  
-  chatRoomIds: Array<number>
-  friendIds: Array<number>
-  blockedUserIds: Array<number>
+  totalWin: number,  
+  chatRoomIds: Array<number>,
+  friendIds: Array<number>,
+  blockedUserIds: Array<number>,
   gameHistory: Array<GameHistory>
 }
   
@@ -83,4 +79,10 @@ export interface ChatBan {
   userNickname: string,
   createdAt: Date,
   chatroomId: string,
+}
+
+export interface DirectMessage {
+  data: string,
+  senderId: number,
+  createdAt: Date
 }

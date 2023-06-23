@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { ChatBan, ChatRoom, Message, Point, RoomAuthority, RoomMember, RoomStatus, User } from "../dto/DataObject"
+import { ChatBan, ChatRoom, DirectMessage, Message, Point, RoomAuthority, RoomMember, RoomStatus, User } from "../dto/DataObject"
 import "../ui-design/styles/ChatScreen.css"
 import { useParams } from "react-router-dom"
 import { Socket, io } from "socket.io-client"
@@ -232,11 +232,19 @@ const ChatSetting = (props: {data: ChatRoom}) => {
     )
 }
 
-const MessageUi = (direction: "right" | "left", message: Message) => {
+const isMessageType = (obj: any): obj is Message => {
+    return (obj.userDisplayname !== undefined ? true : false)
+}
+
+export const MessageUi = (direction: "right" | "left", message: Message | DirectMessage) => {
 
     const date = new Date(message.createdAt)
     const messageDate = date.getHours() + ":" + date.getMinutes()
-    const messageInfo = message.userDisplayname + " - " + messageDate
+    let messageInfo: string = ""
+    
+    if (isMessageType(message))
+        messageInfo = message.userDisplayname + " - "
+    messageInfo += messageDate
 
     if (direction === "right") {
         return (
@@ -429,7 +437,7 @@ const ChatScreen = () => {
     
     const sendMessage = () => {
         const data = messageInputRef.current?.value
-        if (data !== ""){
+        if (data !== "" && !(mutedIds?.includes(currentUser!!.id))){
             socket!!.emit("newMessageToServer", data)
             messageInputRef.current!!.value = ""
         }
@@ -459,7 +467,7 @@ const ChatScreen = () => {
                     <img className="chatScreenBackImg" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
                     <div style={{display: "flex", flexDirection: "column"}}>
                         <div style={{color: "black", fontSize: "1.6em"}} >{roomInfo?.name}</div>
-                        <div style={{color: "black", fontSize: "1.1em"}} >{members?.length} üye</div>
+                        <div style={{color: "black", fontSize: "1.1em"}} >{members?.length} üye, {onlineIds?.length} çevrimiçi</div>
                     </div>
                     <div style={{marginRight: "50px", marginLeft: "auto", display: "flex", flexDirection: "row", alignItems: "center"}}>
                         {(ownerId === currentUser?.id || adminIds?.includes(currentUser!!.id)) && <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("banList")} src={require("../ui-design/images/all-users-ban.png")} alt=""/>}

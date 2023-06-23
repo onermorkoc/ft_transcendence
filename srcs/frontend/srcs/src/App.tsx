@@ -8,6 +8,7 @@ import axios from 'axios'
 import TwoFactorAuthScreen from './pages/TwoFactorAuthScreen'
 import PageNotFoundCmp from './componets/PageNotFoundCmp'
 import ChatScreen from './pages/ChatScreen'
+import DirectMessageScreen from './pages/DirectMessageScreen'
 
 const axiosSetup = () => {
 
@@ -34,6 +35,7 @@ function App() {
           <Route path='/game/:gameId' element={<GameScreen/>}/>
           <Route path='/history' element={<GameHistoryCmp/>}/> 
           <Route path='/chat/:roomId' element={<ChatScreen/>}/>
+          <Route path='/directmessage/:userId' element={<DirectMessageScreen/>}/>
           <Route path='*'element={<PageNotFoundCmp/>}/>
         </Routes>
       </BrowserRouter>

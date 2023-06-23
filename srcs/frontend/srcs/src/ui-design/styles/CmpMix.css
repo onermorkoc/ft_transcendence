@@ -170,6 +170,7 @@
     margin-left: 10px;
     font-size: 1.2em;
     justify-content: center;
+    flex: 1;
 }
 
 .friendsAvatarImg {
@@ -188,10 +189,6 @@
     padding: 4px;
     transition: 0.5s;
     cursor: pointer;
-}
-
-.addFriendImg, .unFriendImg, .rejectImg {
-    margin-left: auto;
 }
 
 .addFriendImg:hover, .unFriendImg:hover, .acceptImg:hover, .rejectImg:hover {

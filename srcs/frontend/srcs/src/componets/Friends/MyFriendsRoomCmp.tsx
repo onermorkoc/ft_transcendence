@@ -13,16 +13,20 @@ const MyFriendsRoomCmp = () => {
 
     const [usersInfo, setUsersInfo] = useState<Array<User> | null>(null)
 
-    useEffect(() => {
-        if (!usersInfo)
-            axios.get(`/friends/myfriends`).then( response => setUsersInfo(response.data))
-    }, [usersInfo])
-
     const unFriend = (value: User) => {
         axios.post(`/friends/unfriend`, {userId: value.id}).then(() => {
             setUsersInfo(usersInfo!!.filter(predicate => predicate !== value))
         })
     }
+
+    const goDirectMessagePage = (userId: number) => {
+        window.location.assign(`/directmessage/${userId}`)
+    }
+    
+    useEffect(() => {
+        if (!usersInfo)
+            axios.get(`/friends/myfriends`).then( response => setUsersInfo(response.data))
+    }, [usersInfo])
 
     return(
         <>
@@ -35,7 +39,7 @@ const MyFriendsRoomCmp = () => {
                                 <div key={index}>
                                     <div className="listViewDiv">
                                         <img className="friendsAvatarImg" src={value.photoUrl} alt=""/>
-                                        <div className="listViewInfoDiv">
+                                        <div onClick={() => goDirectMessagePage(value.id)} className="listViewInfoDiv">
                                             <div>Ad: {value.displayname}</div>
                                             <div>Durum:
                                                 {
