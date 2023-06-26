@@ -5,8 +5,6 @@ import { Chatroom, User } from "@prisma/client";
 import { UsersService } from "src/users/users.service";
 
 const GROUP_MUTE_TIME: number = 1800000 // 30dk
-const GROUP_BAN_TIME: number = 120000 // 2dk
-
 
 @WebSocketGateway({ cors: { origin: true, credentials: true }, namespace: 'chat'})
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -215,18 +213,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             throw new Error('The user is already blocked.');
         }
         
-        if (await this.chatService.blockUser(user, blockedUserId))
+        if (await this.userService.blockUser(user.id, blockedUserId))
             this.server.to(client.id).emit('blockUserIds', await this.chatService.getBlockUserIds(user.id));
     }
 
     @SubscribeMessage('unBlockUser')
     async handleUnBlockUser(client: Socket, blockedUserId: number) {       // Altuğnun Kontrolleri eksik
 
-        const user: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
+        const userId: number = parseInt(this.chatService.strFix(client.handshake.query.userId));
         const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
 
-        if (await this.chatService.unBlockUser(user, blockedUserId))
-            this.server.to(client.id).emit('blockUserIds', await this.chatService.getBlockUserIds(user.id));
+        if (await this.userService.unBlockUser(userId, blockedUserId))
+            this.server.to(client.id).emit('blockUserIds', await this.chatService.getBlockUserIds(userId));
     }
 
     @SubscribeMessage('handOverOwnership')

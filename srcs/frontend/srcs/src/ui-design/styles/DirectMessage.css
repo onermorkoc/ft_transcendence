@@ -6,6 +6,22 @@
     cursor: pointer;
 }
 
+.directMessageUserImg {
+    height: 70px;
+    width: 70px;
+    object-fit: cover;
+    border-radius: 35px;
+    transition: 0.5s;
+    cursor: pointer;
+}
+
+.directMessageUserImg:hover {
+    opacity: 0.5;
+    padding: 2px;
+    height: 66px;
+    width: 66px;
+}
+
 .directMessageBackImg:hover {
     padding: 22px;
     width: 26px;

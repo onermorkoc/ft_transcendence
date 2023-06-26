@@ -15,6 +15,9 @@
 
 .editProfileButton:hover {
     opacity: 0.5;
+    padding: 2;
+    height: 26px;
+    width: 26px;
 }
 
 .textTabDiv {
@@ -38,7 +41,14 @@
     transition: 0.5s;
 }
 
-.textTabDiv:hover, .imgTabDiv:hover {
+.imgTabDiv:hover {
+    background-color: rgb(129, 205, 249);
+    padding: 12px;
+    width: 36px;
+    height: 36px;
+}
+
+.textTabDiv:hover {
     background-color: rgb(129, 205, 249);
 }
 

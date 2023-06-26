@@ -13,7 +13,6 @@ const UserInfoCmp = () => {
     const [ enable2faClick, setEnable2faClick ] = useState<boolean>(false)
     const [ secretKey, setSecretKey ] = useState<string | null>(null)
     const [ qrcode, setQrCode ] = useState<string | null>(null)
-    
 
     const disable2fa = () => {
         axios.post(`/auth/2fa/disable`).then(() => setStatus2fa(inactive2faView))

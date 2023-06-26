@@ -57,6 +57,18 @@ export class UsersController {
         return (await this.userService.uploadAvatar(session.passport.user.id, file))
     }
 
+    @Post('blockuser')
+    @UseGuards(AuthenticatedGuard)
+    async blockUser(@Session() session: Record<string, any>, @Body() body: {blockedUserId: number}): Promise<boolean> {
+        return (await this.userService.blockUser(session.passport.user.id, body.blockedUserId))
+    }
+
+    @Post('unblockuser')
+    @UseGuards(AuthenticatedGuard)
+    async unBlockUser(@Session() session: Record<string, any>, @Body() body: {blockedUserId: number}): Promise<boolean> {
+        return (await this.userService.unBlockUser(session.passport.user.id, body.blockedUserId))
+    }
+
     @Get('gamehistory/:userId')
     @UseGuards(AuthenticatedGuard)
     async getGameHistory(@Param("userId") userId: string) {

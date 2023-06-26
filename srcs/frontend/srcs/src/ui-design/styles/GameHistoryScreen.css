@@ -1,20 +1,12 @@
 .historyDiv {
+    align-items: center;
     display: flex;
+    flex-direction: row;
     margin: 10px;
-    flex-direction: row;
-    border-radius: 30px;
-    background-color: rgb(153,153,153);
+    border-radius: 15px;
+    background-color: rgba(153, 153, 153, 0.350)
 }
 
-.historyResultImg {
-    width: 100px;
-}
-
-.historySkoreBoardDiv {
-    display: flex;
-    flex-direction: row;
-    font-size: 1.6em;
-}
 .skoreBox {
     flex: 1;
     border: solid;
@@ -22,6 +14,7 @@
     border-width: 2px;
     text-align: center;
     margin: 1px;
+    font-size: 1.6em;
 }
 
 .historyRivalImg {
@@ -33,26 +26,56 @@
     margin-right: 15px;
 }
 
-.historyHeaderDiv {
-    background-color: rgb(119,119,119);
-    font-size: 1.5em;
-    text-align: center;
+.historyViewList{
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto;
+    height: 80vh;
+    margin-top: 30px;
+    margin-left: 200px;
+    margin-right: 200px;
+    padding-right: 10px;
 }
 
-.historyView{
-    margin-top: 15px;
-    margin-left: 250px;
-    margin-right: 250px;
-}
-
-.gameHistoryHeader {
-    background-color: rgb(153,153,153);
-    border-radius: 360px;
+.gameHistoryTextTabDiv {
+    flex: 1;
     text-align: center;
     font-size: 2.0em;
-    margin-top: 30px;
-    margin-left: 50px;
-    margin-right: 50px;
-    margin-bottom: 50px;
-    padding: 15px;
+    min-width: 350px;
+}
+
+.gameHistoryImgTabDiv {
+    width: 40px;
+    height: 40px;
+}
+
+.gameHistoryTextTabDiv, .gameHistoryImgTabDiv {
+    margin: 10px;
+    padding: 10px;
+    border-radius: 360px;
+    background-color: rgb(195, 229, 248);
+    cursor: pointer;
+    transition: 0.5s;
+}
+
+.gameHistoryImgTabDiv:hover {
+    background-color: rgb(129, 205, 249);
+    padding: 12px;
+    width: 36px;
+    height: 36px;
+}
+
+.gameHistoryTextTabDiv:hover {
+    background-color: rgb(129, 205, 249);
+}
+
+.gameHistoryTextTabDiv:active, .gameHistoryImgTabDiv:active {
+    opacity: 0.5;
+}
+
+.gameHistoryTabsDiv {
+    display: flex;
+    flex-direction: row;
+    margin-right: 100px;
+    margin-top: 10px;
 }

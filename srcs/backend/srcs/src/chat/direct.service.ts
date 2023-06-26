@@ -47,20 +47,6 @@ export class DirectService {
         return (blockedUserIdsInRoom)
     }
     
-    async blockUser(userId: number, blockedUserId: number): Promise<boolean> {
-        const user: User = await this.usersService.findUserbyID(userId)
-        user.blockedUserIds.push(blockedUserId)
-        await this.usersService.update(user);
-        return (true);
-    }
-
-    async unBlockUser(userId: number, blockedUserId: number): Promise<boolean> {
-        const user: User = await this.usersService.findUserbyID(userId)
-        user.blockedUserIds.splice(user.blockedUserIds.indexOf(blockedUserId), 1)
-        await this.usersService.update(user);
-        return (true);
-    }
-
     async deleteOldMessages(uniqueIdentifier: string) {
         const messages: Array<DirectMessage> = await this.getAllMessages(uniqueIdentifier)
         while (messages.length > 30) {

@@ -1,11 +1,12 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { DirectService } from "./direct.service";
+import { UsersService } from "src/users/users.service";
 
 @WebSocketGateway({cors: { origin: true, credentials: true }, namespace: "directChat"})
 export class DirectGateway {
 
-    constructor(private directService: DirectService){}
+    constructor(private directService: DirectService, private usersService: UsersService){}
 
     @WebSocketServer()
     server: Server
@@ -39,7 +40,7 @@ export class DirectGateway {
         const blockedUserId = parseInt(this.directService.strFix(client.handshake.query.receiverId))
         const uniqueIdentifier = this.directService.createUniqueIdentifier(userId, blockedUserId)
 
-        if (await this.directService.blockUser(userId, blockedUserId))
+        if (await this.usersService.blockUser(userId, blockedUserId))
             this.server.to(uniqueIdentifier).emit("blockedUserIdsInRoom", await this.directService.getBlockedUserIdsInRoom(userId, blockedUserId))
     }
 
@@ -50,7 +51,7 @@ export class DirectGateway {
         const blockedUserId = parseInt(this.directService.strFix(client.handshake.query.receiverId))
         const uniqueIdentifier = this.directService.createUniqueIdentifier(userId, blockedUserId)
 
-        if (await this.directService.unBlockUser(userId, blockedUserId))
+        if (await this.usersService.unBlockUser(userId, blockedUserId))
             this.server.to(uniqueIdentifier).emit("blockedUserIdsInRoom", await this.directService.getBlockedUserIdsInRoom(userId, blockedUserId))
     }
 }

@@ -159,6 +159,8 @@
 
 .chatSettingsNextImg:hover{
     opacity: 0.5;
+    padding: 2px;
+    width: 56px;
 }
 
 .chatScreenSendAndGameImg {
