@@ -13,7 +13,9 @@ export interface User {
   chatRoomIds: Array<number>,
   friendIds: Array<number>,
   blockedUserIds: Array<number>,
-  gameHistory: Array<GameHistory>
+  gameHistory: Array<GameHistory>,
+  pongShapeStyle: number,
+  pongColorStyle: number
 }
   
 export interface ChatRoom {

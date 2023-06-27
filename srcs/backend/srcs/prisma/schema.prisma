@@ -41,6 +41,8 @@ model User {
   gameHistoryAsPlayerTwo GameHistory[] @relation("PlayerTwo")
 
   achievements UserAchievement[]
+  pongShapeStyle Int @default(0)
+  pongColorStyle Int @default(0)
 }
 
 model Chatroom {
