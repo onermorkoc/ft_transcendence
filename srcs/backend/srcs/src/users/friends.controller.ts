@@ -13,9 +13,9 @@ export class FriendsController {
         return (await this.friendsService.myFriends(session.passport.user.friendIds))
     }
 
-    @Get(':userId/sent-requests') // Kullanıcının attığı istekler - Frontende kullanılmadı
+    @Get(':userId/sent-requests') // Kullanıcının attığı istekler
     @UseGuards(AuthenticatedGuard)
-    async getSentRequests(@Param('userId') userId: string): Promise<FriendRequest[]> {
+    async getSentRequests(@Param('userId') userId: string): Promise<Array<number>> {
         return (await this.friendsService.getSentRequests(parseInt(userId)))
     }
 

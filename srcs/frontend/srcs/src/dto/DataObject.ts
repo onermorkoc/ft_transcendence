@@ -1,5 +1,6 @@
 export interface User {
   id: number,
+  createdAt: Date,
   displayname: string,
   email: string,
   nickname: string,

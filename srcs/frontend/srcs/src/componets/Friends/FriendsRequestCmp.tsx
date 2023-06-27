@@ -9,11 +9,6 @@ const FriendsRequestCmp = () => {
     const currentUser = useCurrentUser()
     const [usersInfo, setUsersInfo] = useState<Array<User> | null>()
 
-    useEffect(() => {
-        if (currentUser && !usersInfo)
-            axios.get(`/friends/${currentUser.id}/received-requests`).then(response => setUsersInfo(response.data))
-    }, [currentUser, usersInfo])
-
     const acceptRequest = (value: User) => {
         const postData: RequestData = {
             senderId: value.id,
@@ -34,6 +29,15 @@ const FriendsRequestCmp = () => {
         })
     }
 
+    const goLookProfilePage = (userId: number) => {
+        window.location.assign(`/profile/${userId}/home`)
+    }
+
+    useEffect(() => {
+        if (currentUser && !usersInfo)
+            axios.get(`/friends/${currentUser.id}/received-requests`).then(response => setUsersInfo(response.data))
+    }, [currentUser, usersInfo])
+
     return (
         <>
             {
@@ -44,7 +48,7 @@ const FriendsRequestCmp = () => {
                     usersInfo?.map((value, index) => (
                         <div key={index}>
                             <div className="listViewDiv">
-                                <img className="friendsAvatarImg" src={value.photoUrl} alt=""/>
+                                <img onClick={() => goLookProfilePage(value.id)} className="friendsAvatarImg" src={value.photoUrl} alt=""/>
                                 <div className="listViewInfoDiv">
                                     <div>Ad: {value.displayname}</div>
                                     <div>Nickname: {value.nickname}</div>

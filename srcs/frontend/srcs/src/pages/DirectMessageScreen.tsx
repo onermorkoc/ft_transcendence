@@ -43,6 +43,10 @@ const DirectMessageScreen = () => {
         socket!!.emit("unBlockUser")
     }
 
+    const goLookProfilePage = (userId: number) => {
+        window.location.assign(`/profile/${userId}/directmessage/${userId}`)
+    }
+
     useEffect(() => {
 
         dummyRef.current?.scrollIntoView({behavior: "smooth"})
@@ -65,7 +69,8 @@ const DirectMessageScreen = () => {
             <div style={{display: "flex", flexDirection: "column"}}>
                 <div style={{display: "flex", flexDirection: "row", flex: "10vh", alignItems: "center"}} >
                     <img className="directMessageBackImg" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
-                    <div style={{display: "flex", flexDirection: "column"}}>
+                    <img className="directMessageUserImg" onClick={() => goLookProfilePage(receiverUser!!.id)} src={receiverUser?.photoUrl} alt=""/>
+                    <div style={{display: "flex", flexDirection: "column", marginLeft: "10px"}}>
                         <div style={{color: "black", fontSize: "1.6em"}} >{receiverUser?.displayname}</div>
                         <div style={{color: "black", fontSize: "1.1em"}} >
                             {

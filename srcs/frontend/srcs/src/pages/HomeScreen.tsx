@@ -15,12 +15,6 @@ const HomeScreen = () => {
     const currentUser = useCurrentUser()
     const [tab, setTab] = useState<JSX.Element>(<UserInfoCmp/>)
 
-    useEffect(() => {
-        if (currentUser)
-            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id}})
-        // eslint-disable-next-line
-    }, [currentUser])
-
     const goEditProfilePage = () => {
         window.location.assign(`/editprofile`)
     }
@@ -30,7 +24,11 @@ const HomeScreen = () => {
     }
 
     const goGlobalRankPage = () => {
+        window.location.assign("/rank")
+    }
 
+    const goAchievementsPage = () => {
+        window.location.assign("/achievements")
     }
 
     const logout = () => {
@@ -38,6 +36,12 @@ const HomeScreen = () => {
             window.location.assign("/")
         })
     }
+
+    useEffect(() => {
+        if (currentUser)
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id}})
+        // eslint-disable-next-line
+    }, [currentUser])
 
     if (currentUser){
         return (
@@ -58,7 +62,8 @@ const HomeScreen = () => {
                                             <div className="textTabDiv" onClick={() => setTab(<UserInfoCmp/>)}>Profil Bilgilerim</div>
                                             <div className="textTabDiv" onClick={() => setTab(<UserStatisticsCmp/>)}>İstatistiklerim</div>
                                             <img className="imgTabDiv" onClick={goMatchHistoryPage} src={require("../ui-design/images/history.png")} alt=""/>
-                                            <img className="imgTabDiv" onClick={goGlobalRankPage} src={require("../ui-design/images/global-rank.png")} alt=""/>
+                                            <img className="imgTabDiv" onClick={goAchievementsPage} src={require("../ui-design/images/achievements.png")} alt=""/>
+                                            <img className="imgTabDiv" onClick={goGlobalRankPage} src={require("../ui-design/images/rank.png")} alt=""/>
                                             <img className="imgTabDiv" onClick={logout} src={require("../ui-design/images/logout.png")} alt=""/>
                                         </div>
                                     </div>

@@ -365,20 +365,8 @@ export class ChatService {
         return (true)
     }
 
-    async blockUser(user: User, blockedUserId: number): Promise<boolean> {      // Hata Yok
-        user.blockedUserIds.push(blockedUserId);
-        await this.userService.update(user);
-        return (true);
-    }
-
     async getBlockUserIds(userId): Promise<Array<number>> {         // Hata Yok
         return ((await this.userService.findUserbyID(userId)).blockedUserIds)
-    }
-
-    async unBlockUser(user: User, blockedUserId: number): Promise<boolean> {      // Hata Yok
-        user.blockedUserIds.splice(user.blockedUserIds.indexOf(blockedUserId), 1)
-        await this.userService.update(user);
-        return (true);
     }
 
     async unMute(userId: number, chatRoomId: string): Promise<boolean> {        // Yanlış olabilir altuga sor

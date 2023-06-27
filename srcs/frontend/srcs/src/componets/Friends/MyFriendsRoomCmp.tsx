@@ -22,6 +22,10 @@ const MyFriendsRoomCmp = () => {
     const goDirectMessagePage = (userId: number) => {
         window.location.assign(`/directmessage/${userId}`)
     }
+
+    const goLookProfilePage = (userId: number) => {
+        window.location.assign(`/profile/${userId}/home`)
+    }
     
     useEffect(() => {
         if (!usersInfo)
@@ -38,7 +42,7 @@ const MyFriendsRoomCmp = () => {
                             usersInfo?.map((value, index) => (
                                 <div key={index}>
                                     <div className="listViewDiv">
-                                        <img className="friendsAvatarImg" src={value.photoUrl} alt=""/>
+                                        <img onClick={() => goLookProfilePage(value.id)} className="friendsAvatarImg" src={value.photoUrl} alt=""/>
                                         <div onClick={() => goDirectMessagePage(value.id)} className="listViewInfoDiv">
                                             <div>Ad: {value.displayname}</div>
                                             <div>Durum:

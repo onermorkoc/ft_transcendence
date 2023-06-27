@@ -9,11 +9,6 @@ const SearchUserCmp = () => {
     const [allUsers, setAllUsers] = useState<Array<User> | null>()
     const [filterArray, setFilterArray] = useState<Array<User>>([])
 
-    useEffect(() => {
-        if (!allUsers)
-            axios.get(`/users/`).then(response => setAllUsers(response.data))
-    }, [allUsers, filterArray])
-
     const onChangeText = (searchText: string) => {
         if (allUsers && searchText && searchText.length > 3){
             const userArray: Array<User> = []
@@ -34,6 +29,15 @@ const SearchUserCmp = () => {
         await axios.post(`/friends/send-request/${value.id}`)
     }
 
+    const goLookProfilePage = (userId: number) => {
+        window.location.assign(`/profile/${userId}/home`)
+    }
+
+    useEffect(() => {
+        if (!allUsers)
+            axios.get(`/users/`).then(response => setAllUsers(response.data))
+    }, [allUsers, filterArray])
+
     return (
         <>
             <div className="searchBarBox">
@@ -46,7 +50,7 @@ const SearchUserCmp = () => {
                     filterArray?.map((value, index) => (
                         <div key={index}>
                             <div className="listViewDiv">
-                                <img className="friendsAvatarImg" src={value.photoUrl} alt=""/>
+                                <img onClick={() => goLookProfilePage(value.id)} className="friendsAvatarImg" src={value.photoUrl} alt=""/>
                                 <div className="listViewInfoDiv">
                                     <div>Ad: {value.displayname}</div>
                                     <div>Nickname: {value.nickname}</div>

@@ -9,6 +9,9 @@ import TwoFactorAuthScreen from './pages/TwoFactorAuthScreen'
 import PageNotFoundCmp from './componets/PageNotFoundCmp'
 import ChatScreen from './pages/ChatScreen'
 import DirectMessageScreen from './pages/DirectMessageScreen'
+import LookProfileScreen from './pages/LookProfileScreen'
+import GlobalRankScreen from './pages/GlobalRankScreen'
+import AchievementsScreen from './pages/AchievementsScreen'
 
 const axiosSetup = () => {
 
@@ -36,6 +39,11 @@ function App() {
           <Route path='/history' element={<GameHistoryCmp/>}/> 
           <Route path='/chat/:roomId' element={<ChatScreen/>}/>
           <Route path='/directmessage/:userId' element={<DirectMessageScreen/>}/>
+          <Route path='/profile/:userId' element={<LookProfileScreen/>}/>
+          <Route path='/profile/:userId/:backPage' element={<LookProfileScreen/>}/>
+          <Route path='/profile/:userId/:backPage/:backPageArg' element={<LookProfileScreen/>}/>
+          <Route path='/rank' element={<GlobalRankScreen/>}/>
+          <Route path='/achievements' element={<AchievementsScreen/>}/>
           <Route path='*'element={<PageNotFoundCmp/>}/>
         </Routes>
       </BrowserRouter>

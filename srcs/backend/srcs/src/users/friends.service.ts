@@ -91,8 +91,13 @@ export class FriendsService {
         return ((await this.userService.findUserbyID(userId)).friendIds)
     }
 
-    async getSentRequests(userId: number): Promise<FriendRequest[]> {
-        return (await this.findUserByID(userId).sentFriendRequests())
+    async getSentRequests(userId: number): Promise<Array<number>> {
+        const mySendRequests: Array<FriendRequest> = await this.findUserByID(userId).sentFriendRequests()
+        let receiverIds: Array<number> = []
+        for (const request of mySendRequests){
+            receiverIds.push(request.receiverId)
+        }
+        return (receiverIds)
     }
 
     async getReceivedRequests(userId: number): Promise<Array<User>> {

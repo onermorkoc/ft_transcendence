@@ -92,6 +92,20 @@ export class UsersService {
             }
         });
     }
+    
+    async blockUser(userId: number, blockedUserId: number): Promise<boolean>{
+        const user: User = await this.findUserbyID(userId)
+        user.blockedUserIds.push(blockedUserId)
+        await this.update(user)
+        return (true)
+    }
+
+    async unBlockUser(userId: number, blockedUserId: number): Promise<boolean>{
+        const user: User = await this.findUserbyID(userId)
+        user.blockedUserIds.splice(user.blockedUserIds.indexOf(blockedUserId), 1)
+        await this.update(user)
+        return (true)
+    }
 
     async getCurrentGameId(userId: number): Promise<string> {
         const user: User = await this.findUserbyID(userId);

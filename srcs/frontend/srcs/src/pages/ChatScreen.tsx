@@ -10,10 +10,18 @@ const allCommand = (socket: Socket, command: string, id: number) => {
     socket.emit(command, id)
 }
 
-const viewForNormal = (member: RoomMember, point: Point, socket: Socket): JSX.Element => {
+const goLookProfilePage = (userId: number, roomId: string) => {
+    window.location.assign(`/profile/${userId}/chat/${roomId}`)
+}
+
+const viewForNormal = (member: RoomMember, point: Point, socket: Socket, roomId: string): JSX.Element => {
     return (
         <>
             <div className="chatMenuDiv" style={{top: `${point.y}px`, left: `${point.x}px`}}>
+                <div onClick={() => goLookProfilePage(member.user.id, roomId)} className="chatMenuListDiv">
+                    <img style={{width: "25px"}} src={require("../ui-design/images/eye.png")} alt=""/>
+                    <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Profili incele</div>
+                </div>
                 {
                     member.blocked ? 
                         <div onClick={() => allCommand(socket, "unBlockUser", member.user.id)} className="chatMenuListDiv">
@@ -31,10 +39,14 @@ const viewForNormal = (member: RoomMember, point: Point, socket: Socket): JSX.El
     )
 }
 
-const viewForAdmin = (member: RoomMember, point: Point, socket: Socket): JSX.Element => {
+const viewForAdmin = (member: RoomMember, point: Point, socket: Socket, roomId: string): JSX.Element => {
     return (
         <>
             <div className="chatMenuDiv" style={{top: `${point.y}px`, left: `${point.x}px`}}>
+                <div onClick={() => goLookProfilePage(member.user.id, roomId)} className="chatMenuListDiv">
+                    <img style={{width: "25px"}} src={require("../ui-design/images/eye.png")} alt=""/>
+                    <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Profili incele</div>
+                </div>
                 {
                     member.blocked ? 
                         <div onClick={() => allCommand(socket, "unBlockUser", member.user.id)} className="chatMenuListDiv">
@@ -72,11 +84,14 @@ const viewForAdmin = (member: RoomMember, point: Point, socket: Socket): JSX.Ele
     )
 }
 
-const viewForLeader = (member: RoomMember, point: Point, socket: Socket): JSX.Element => {
-
+const viewForLeader = (member: RoomMember, point: Point, socket: Socket, roomId: string): JSX.Element => {
     return (
         <>
             <div className="chatMenuDiv" style={{top: `${point.y}px`, left: `${point.x}px`}}>
+                <div onClick={() => goLookProfilePage(member.user.id, roomId)} className="chatMenuListDiv">
+                    <img style={{width: "25px"}} src={require("../ui-design/images/eye.png")} alt=""/>
+                    <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Profili incele</div>
+                </div>
                 {
                     member.blocked ? 
                         <div onClick={() => allCommand(socket, "unBlockUser", member.user.id)} className="chatMenuListDiv">
@@ -130,20 +145,20 @@ const viewForLeader = (member: RoomMember, point: Point, socket: Socket): JSX.El
     )
 }
 
-const chatMenu = (currentUserAuthority: RoomAuthority, member: RoomMember, point: Point, socket: Socket, currentUser: User): JSX.Element => {
-
+const chatMenu = (currentUserAuthority: RoomAuthority, member: RoomMember, point: Point, socket: Socket, currentUser: User, roomId: string): JSX.Element => {
+    
     if (currentUser.id === member.user.id)
         return (<></>)
     else if (currentUserAuthority === "LEADER")
-        return (viewForLeader(member, point, socket))
+        return (viewForLeader(member, point, socket, roomId))
     else if (currentUserAuthority === "ADMIN"){
         if (member.authority === "LEADER" || member.authority === "ADMIN")
-            return (viewForNormal(member, point, socket))
+            return (viewForNormal(member, point, socket, roomId))
         else
-            return (viewForAdmin(member, point, socket))
+            return (viewForAdmin(member, point, socket, roomId))
     }
     else
-        return (viewForNormal(member, point, socket))
+        return (viewForNormal(member, point, socket, roomId))
 }
 
 const memberList = (member: RoomMember) => {
@@ -188,13 +203,6 @@ const ChatSetting = (props: {data: ChatRoom}) => {
     const roomPassInputRef = useRef<HTMLInputElement>(null)
     const selectRef = useRef<HTMLSelectElement>(null)
 
-    useEffect(() => {
-        setRoomStatus(props.data.roomStatus)
-        selectRef.current!!.value = props.data.roomStatus as string
-        roomNameInputRef.current!!.value = props.data.name
-        // eslint-disable-next-line
-    }, [])
-
     const updateRoom = () => {
 
         const roomName = roomNameInputRef.current?.value
@@ -209,6 +217,13 @@ const ChatSetting = (props: {data: ChatRoom}) => {
                 window.location.assign(`/chat/${props.data.id}`)
         })
     }
+
+    useEffect(() => {
+        setRoomStatus(props.data.roomStatus)
+        selectRef.current!!.value = props.data.roomStatus as string
+        roomNameInputRef.current!!.value = props.data.name
+        // eslint-disable-next-line
+    }, [])
 
     return (
         <>
@@ -272,13 +287,13 @@ export const MessageUi = (direction: "right" | "left", message: Message | Direct
     }
 }
 
+export const timeSplit = (date: Date): string => {
+    return (`${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`)
+}
+
 const ChatAllBanList = (props: {socket: Socket}) => {
 
     const [bannedUsers, setBannedUsers] = useState<Array<ChatBan> | null>(null)
-
-    const timeSplit = (date: Date): string => {
-        return (`${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`)
-    }
 
     useEffect(() => {
         props.socket.emit("getBannedUsersInRoom")
@@ -392,6 +407,35 @@ const ChatScreen = () => {
             setCurrentUserAuthority("NORMAL")
     }
 
+    const goHomePage = () => {
+        window.location.assign("/home")
+    }
+    
+    const sendMessage = () => {
+        const data = messageInputRef.current?.value
+        if (data !== "" && !(mutedIds?.includes(currentUser!!.id))){
+            socket!!.emit("newMessageToServer", data)
+            messageInputRef.current!!.value = ""
+        }
+    }
+
+    const keyboardListener = (key: string) => {
+        if (key === "Enter")
+            sendMessage()
+    }
+
+    const leaveRoom = () => {
+        socket!!.emit("leaveRoom")
+        goHomePage()
+    }
+
+    const topBarButtonSelectAlgorithm = (context: "settings" | "banList") => {
+        if (context === "settings")
+            topBarButtonSelect !== "settings" ? setTopBarButtonSelect("settings") : setTopBarButtonSelect("messages")
+        else if (context === "banList")
+            topBarButtonSelect !== "banList" ? setTopBarButtonSelect("banList") : setTopBarButtonSelect("messages")
+    }
+
     useEffect(() => {
 
         dummyRef.current?.scrollIntoView({behavior: "smooth"})
@@ -431,35 +475,6 @@ const ChatScreen = () => {
         // eslint-disable-next-line
     }, [currentUser, roomInfo, socket, adminIds, usersInfo, mutedIds, ownerId, onlineIds, allMessages, usersIds, blockUserIds])
 
-    const goHomePage = () => {
-        window.location.assign("/home")
-    }
-    
-    const sendMessage = () => {
-        const data = messageInputRef.current?.value
-        if (data !== "" && !(mutedIds?.includes(currentUser!!.id))){
-            socket!!.emit("newMessageToServer", data)
-            messageInputRef.current!!.value = ""
-        }
-    }
-
-    const keyboardListener = (key: string) => {
-        if (key === "Enter")
-            sendMessage()
-    }
-
-    const leaveRoom = () => {
-        socket!!.emit("leaveRoom")
-        goHomePage()
-    }
-
-    const topBarButtonSelectAlgorithm = (context: "settings" | "banList") => {
-        if (context === "settings")
-            topBarButtonSelect !== "settings" ? setTopBarButtonSelect("settings") : setTopBarButtonSelect("messages")
-        else if (context === "banList")
-            topBarButtonSelect !== "banList" ? setTopBarButtonSelect("banList") : setTopBarButtonSelect("messages")
-    }
-
     return (
         <>
             <div style={{display: "flex", flexDirection: "column"}}>
@@ -496,7 +511,7 @@ const ChatScreen = () => {
                                         </div>
                                      ))
                                 }
-                                {show && chatMenu(currentUserAuthority!!, selectedContex!!, point!!, socket!!, currentUser!!)}
+                                {show && chatMenu(currentUserAuthority!!, selectedContex!!, point!!, socket!!, currentUser!!, roomId!!)}
                             </div>
                         </div>
                     </div>
