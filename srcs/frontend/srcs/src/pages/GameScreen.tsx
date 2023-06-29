@@ -31,10 +31,18 @@ const GameScreen = () => {
     ABORTED
   }
 
-  const COLOR_STYLE_COUNT = 2;
+  const COLOR_STYLE_COUNT = 10;
   enum ColorStyle {
     DEFAULT,
-    NEON
+    PAPERBACK,
+    MAC,
+    CASIO,
+    IBM,
+    GOOP,
+    URINE,
+    NOKIA,
+    SANGRE,
+    PORT
   }
 
   const SHAPE_STYLE_COUNT = 2;
@@ -221,16 +229,112 @@ const GameScreen = () => {
     let colorPalette: ColorPalette;
 
     switch (styleNumber) {
-      case ColorStyle.NEON:
+      case ColorStyle.PORT:
         colorPalette = {
-          background: '#000000',
-          paddle: '#ff52d2',
-          ball: '#ff52d2',
-          net: '#3241e0',
-          text: '#a4ef00',
-          button: '#3241e0',
-          buttonText: '#ffffff',
-          buttonHighlight: '#ffff00'
+          background: '#10368f',
+          paddle: '#ff8e42',
+          ball: '#ff8e42',
+          net: '#ff8e42',
+          text: '#ff8e42',
+          button: '#ff8e42',
+          buttonText: '#10368f',
+          buttonHighlight: 'yellow'
+        }
+        break;
+      case ColorStyle.SANGRE:
+        colorPalette = {
+          background: '#120628',
+          paddle: '#610e0e',
+          ball: '#610e0e',
+          net: '#610e0e',
+          text: '#610e0e',
+          button: '#610e0e',
+          buttonText: '#120628',
+          buttonHighlight: 'yellow'
+        }
+        break;
+      case ColorStyle.NOKIA:
+        colorPalette = {
+          background: '#43523d',
+          paddle: '#c7f0d8',
+          ball: '#c7f0d8',
+          net: '#c7f0d8',
+          text: '#c7f0d8',
+          button: '#c7f0d8',
+          buttonText: '#43523d',
+          buttonHighlight: 'yellow'
+        }
+        break;
+      case ColorStyle.URINE:
+        colorPalette = {
+          background: '#002f40',
+          paddle: '#ffd500',
+          ball: '#ffd500',
+          net: '#ffd500',
+          text: '#ffd500',
+          button: '#ffd500',
+          buttonText: '#002f40',
+          buttonHighlight: 'yellow'
+        }
+        break;
+      case ColorStyle.GOOP:
+        colorPalette = {
+          background: '#210009',
+          paddle: '#00ffae',
+          ball: '#00ffae',
+          net: '#00ffae',
+          text: '#00ffae',
+          button: '#00ffae',
+          buttonText: '#210009',
+          buttonHighlight: 'yellow'
+        }
+        break;
+      case ColorStyle.IBM:
+        colorPalette = {
+          background: '#323c39',
+          paddle: '#d3c9a1',
+          ball: '#d3c9a1',
+          net: '#d3c9a1',
+          text: '#d3c9a1',
+          button: '#d3c9a1',
+          buttonText: '#323c39',
+          buttonHighlight: 'yellow'
+        }
+        break;
+      case ColorStyle.CASIO:
+        colorPalette = {
+          background: '#83b07e',
+          paddle: '#000000',
+          ball: '#000000',
+          net: '#000000',
+          text: '#000000',
+          button: '#000000',
+          buttonText: '#83b07e',
+          buttonHighlight: 'yellow'
+        }
+        break;
+      case ColorStyle.MAC:
+        colorPalette = {
+          background: '#8bc8fe',
+          paddle: '#051b2c',
+          ball: '#051b2c',
+          net: '#051b2c',
+          text: '#051b2c',
+          button: '#051b2c',
+          buttonText: '#8bc8fe',
+          buttonHighlight: 'yellow'
+        }
+        break;
+      case ColorStyle.PAPERBACK:
+        colorPalette = {
+          background: '#382b26',
+          paddle: '#b8c2b9',
+          ball: '#b8c2b9',
+          net: '#b8c2b9',
+          text: '#b8c2b9',
+          button: '#b8c2b9',
+          buttonText: '#382b26',
+          buttonHighlight: 'yellow'
         }
         break;
       default:
@@ -397,8 +501,32 @@ const GameScreen = () => {
 
     let colorStyleString = '';
     switch (currentUser.pongColorStyle) {
-      case ColorStyle.NEON:
-        colorStyleString = 'NEON';
+      case ColorStyle.PORT:
+        colorStyleString = 'PORT';
+        break;
+      case ColorStyle.SANGRE:
+        colorStyleString = 'SANGRE';
+        break;
+      case ColorStyle.NOKIA:
+        colorStyleString = 'NOKIA';
+        break;
+      case ColorStyle.URINE:
+        colorStyleString = 'URINE';
+        break;
+      case ColorStyle.GOOP:
+        colorStyleString = 'GOOP';
+        break;
+      case ColorStyle.IBM:
+        colorStyleString = 'IBM';
+        break;
+      case ColorStyle.CASIO:
+        colorStyleString = 'CASIO';
+        break;
+      case ColorStyle.MAC:
+        colorStyleString = 'MAC';
+        break;
+      case ColorStyle.PAPERBACK:
+        colorStyleString = 'PAPERBACK';
         break;
       default:
         colorStyleString = 'DEFAULT';
