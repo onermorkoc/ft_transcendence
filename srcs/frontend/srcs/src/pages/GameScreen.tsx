@@ -617,12 +617,12 @@ const GameScreen = () => {
     if (leftOverSeconds < 0) {leftOverSeconds = 0;}
 
     context.fillStyle = colorPalette.text;
-    context.font = `${1 * scale}px Arial`;
+    context.font = `${3 * scale}px Arial`;
     context.textAlign = 'center';
     context.fillText(leftOverSeconds.toFixed(), AP_WIDTH / 2 * scale, AP_HEIGHT / 2 * scale);
 
-    context.font = `${0.5 * scale}px Arial`;
-    context.fillText("Oyun Başlıyor...", AP_WIDTH / 2 * scale, (AP_HEIGHT / 2 - 1) * scale);
+    context.font = `${1 * scale}px Arial`;
+    context.fillText("Oyun Başlıyor...", AP_WIDTH / 2 * scale, (AP_HEIGHT / 2 + 2) * scale);
   }
 
   const drawPausedMenu = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, scale: number, colorPalette: ColorPalette) => {
@@ -632,12 +632,12 @@ const GameScreen = () => {
     if (leftOverSeconds < 0) {leftOverSeconds = 0;}
 
     context.fillStyle = colorPalette.text;
-    context.font = `${1 * scale}px Arial`;
+    context.font = `${3 * scale}px Arial`;
     context.textAlign = 'center';
     context.fillText(leftOverSeconds.toFixed(), AP_WIDTH / 2 * scale, AP_HEIGHT / 2 * scale);
 
-    context.font = `${0.5 * scale}px Arial`;
-    context.fillText("Rakibinizin Bağlantısı Koptu...", AP_WIDTH / 2 * scale, (AP_HEIGHT / 2 - 1) * scale);
+    context.font = `${1 * scale}px Arial`;
+    context.fillText("Rakibinizin Bağlantısı Koptu...", AP_WIDTH / 2 * scale, (AP_HEIGHT / 2 + 2) * scale);
   }
 
   const drawFinishedWin = (game: Game | undefined, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, scale: number, colorPalette: ColorPalette) => {

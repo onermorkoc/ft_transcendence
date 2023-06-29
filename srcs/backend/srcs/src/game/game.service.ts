@@ -211,7 +211,6 @@ export class GameService {
                 id: gameId
             }
         });
-        console.log(gameId);
         this.gameMap.delete(gameId);
     }
 
@@ -494,40 +493,41 @@ export class GameService {
     }
 
     async achievementControl(user: User) {
+        // UNLOCKACHIEVEMENT fonksiyonunu await'siz kullanırsan bug oluyor.
         const gameHistory = await this.userService.getGameHistory(user.id);
 
         if (user.totalWin == 1) {
-            this.userService.unlockAchievement(user.id, "İlk Galibiyet");
+            await this.userService.unlockAchievement(user.id, "İlk Galibiyet");
         }
         else if (user.totalWin == 10) {
-            this.userService.unlockAchievement(user.id, "Alışıyoruz");
+            await this.userService.unlockAchievement(user.id, "Alışıyoruz");
         }
         else if (user.totalWin == 25) {
-            this.userService.unlockAchievement(user.id, "Kalite");
+            await this.userService.unlockAchievement(user.id, "Kalite");
         }
         else if (user.totalWin == 50) {
-            this.userService.unlockAchievement(user.id, "Pong'un sefiri");
+            await this.userService.unlockAchievement(user.id, "Pong'un sefiri");
         }
 
         if (user.totalGame == 10) {
-            this.userService.unlockAchievement(user.id, "Oyuncu");
+            await this.userService.unlockAchievement(user.id, "Oyuncu");
         }
         else if (user.totalGame == 25) {
-            this.userService.unlockAchievement(user.id, "Bilgili");
+            await this.userService.unlockAchievement(user.id, "Bilgili");
         }
         else if (user.totalGame == 50) {
-            this.userService.unlockAchievement(user.id, "Deneyimli");
+            await this.userService.unlockAchievement(user.id, "Deneyimli");
         }
         else if (user.totalGame == 100) {
-            this.userService.unlockAchievement(user.id, "Pong Bağımlısı");
+            await this.userService.unlockAchievement(user.id, "Pong Bağımlısı");
         }
 
         if (gameHistory.length > 0 && gameHistory[0].winnerId == user.id) {
             if (gameHistory[0].playerOneId == user.id && gameHistory[0].playerTwoScore == 0) {
-                this.userService.unlockAchievement(user.id, "Mükemmel Defans");
+                await this.userService.unlockAchievement(user.id, "Mükemmel Defans");
             }
             else if (gameHistory[0].playerTwoId == user.id && gameHistory[0].playerOneScore == 0) {
-                this.userService.unlockAchievement(user.id, "Mükemmel Defans");
+                await this.userService.unlockAchievement(user.id, "Mükemmel Defans");
             }
         }
 
@@ -540,7 +540,7 @@ export class GameService {
                 }
             }
             if (ok) {
-                this.userService.unlockAchievement(user.id, "Galibiyet Zinciri");
+                await this.userService.unlockAchievement(user.id, "Galibiyet Zinciri");
             }
         }
 
@@ -553,25 +553,25 @@ export class GameService {
                 }
             }
             if (ok) {
-                this.userService.unlockAchievement(user.id, "Ultra Galibiyet Zinciri");
+                await this.userService.unlockAchievement(user.id, "Ultra Galibiyet Zinciri");
             }
         }
 
         if (gameHistory.length >= 2 && gameHistory[0].winnerId == user.id && gameHistory[1].winnerId != user.id) {
             if (gameHistory[0].playerOneId == user.id && gameHistory[0].playerTwoScore == 0) {
                 if (gameHistory[1].playerOneId == user.id && gameHistory[1].playerOneScore == 0) {
-                    this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                    await this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
                 }
                 else if (gameHistory[1].playerTwoId == user.id && gameHistory[1].playerTwoScore == 0) {
-                    this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                    await this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
                 }
             }
             else if (gameHistory[0].playerTwoId == user.id && gameHistory[0].playerOneScore == 0) {
                 if (gameHistory[1].playerOneId == user.id && gameHistory[1].playerOneScore == 0) {
-                    this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                    await this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
                 }
                 else if (gameHistory[1].playerTwoId == user.id && gameHistory[1].playerTwoScore == 0) {
-                    this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                    await this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
                 }
             }
         }

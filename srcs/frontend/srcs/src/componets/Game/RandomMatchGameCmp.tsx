@@ -28,13 +28,18 @@ const RandomMatchGameCmp = () => {
 
     const connectBackGame = () => {
         axios.get(`users/currentgameid/${currentUser!!.id}`).then((response) => {
-            if (response.data !== "")
+            if (response.data !== "") {
                 window.location.assign(`/game/${response.data}`)
+                return true
+            }
         })
+        return false
     }
 
     const randomMatch = async () => {
-        connectBackGame()
+        if (connectBackGame()) {
+            return
+        }
         if(!searchStatus){
             animationRef.current!!.play()
             setSecond(0)
