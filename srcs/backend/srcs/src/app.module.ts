@@ -18,6 +18,7 @@ import { InitializationService } from './initialization/initialization.service';
   }), 
   ServeStaticModule.forRoot({
     rootPath: join(__dirname, '..', 'public'),
+    serveRoot: '/public'
   }),
   PrismaModule, AuthModule, UsersModule, ChatModule, StatusModule, GameModule],
 

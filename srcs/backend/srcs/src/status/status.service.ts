@@ -1,13 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Status, User } from '@prisma/client';
-import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class StatusService {
-    constructor(private userService: UsersService) {}
-
-    //private usersOnline: Array<number> = [];
-    //private usersClientCounts: Array<number> = [];
 
     private usersOnline: Array<{id: number, onlineCount: number, inGameCount: number}> = [];
 
@@ -28,10 +23,6 @@ export class StatusService {
             else if (status == 'INGAME') {
                 this.usersOnline.push({id: userId, onlineCount: 0, inGameCount: 1});
             }
-
-            /*const user = await this.userService.findUserbyID(userId);
-            user.status = Status.ONLINE;
-            await this.userService.update(user);*/
         }
     }
 
@@ -49,17 +40,6 @@ export class StatusService {
         if (this.usersOnline[index].onlineCount == 0 && this.usersOnline[index].inGameCount == 0) {
             this.usersOnline.splice(index, 1);
         }
-
-        /*if (this.usersOnline[index].clientCount > 1) {
-            this.usersOnline[index].clientCount--;
-        }
-        else { // STATUSA GÖRE FİXLE BU KISMI
-            this.usersOnline.splice(index, 1);
-
-            const user = await this.userService.findUserbyID(userId);
-            user.status = Status.OFFLINE;
-            await this.userService.update(user);
-        }*/
     }
 
     getUsersOnline(): Array<{id: number, status: Status}> {

@@ -86,4 +86,10 @@ export class UsersController {
     async getStats(@Param("userId") userId: string) {
         return (await this.userService.getStats(parseInt(userId)));
     }
+
+    @Get('globalrank')
+    @UseGuards(AuthenticatedGuard)
+    async getGlobalRank() {
+        return (await this.userService.getGlobalRank());
+    }
 }

@@ -1,7 +1,6 @@
 import { Injectable, Session } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Achievement, GameHistory, Prisma, User } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { GameHistory, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -65,7 +64,7 @@ export class UsersService {
     }
 
     async uploadAvatar(userId: number, file: Express.Multer.File) {
-        const newPhotoUrl = `${this.configService.get<string>('BACKEND_URL')}/${file.path.replace('public/', '')}`
+        const newPhotoUrl = `${this.configService.get<string>('BACKEND_URL')}/${file.path}`
         await this.update({id: userId, photoUrl: newPhotoUrl})
     }
 
@@ -183,5 +182,21 @@ export class UsersService {
         }
         const progression: number = (relevantXP / currentLevelMaxXP) * 100;
         return ({ globalRank: rank, level: level, progression: progression, xp: user.xp });
+    }
+
+    async getGlobalRank(): Promise<{id: number, photoUrl: string, displayname: string, nickname: string, level: number, progression: number, globalRank: number}[]> {
+        const allUsers: Array<User> = await this.allUsers();
+        allUsers.sort((a, b) => b.xp - a.xp);
+        const resultArray = allUsers.map((user, index) => {
+            const level = Math.floor(Math.log((user.xp / 1000) * (1.25 - 1) + 1) / Math.log(1.25)) + 1;
+            const currentLevelMaxXP = 1000 * Math.pow(1.25, level - 1);
+            let relevantXP = user.xp;
+            for (var i = 0; i < level - 1; i++) {
+                relevantXP -= 1000 * Math.pow(1.25, i);
+            }
+            const progression: number = (relevantXP / currentLevelMaxXP) * 100;
+            return ({id: user.id, photoUrl: user.photoUrl, displayname: user.displayname, nickname: user.nickname, level: level, progression: progression, globalRank: index + 1});
+        })
+        return resultArray;
     }
 }
