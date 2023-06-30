@@ -361,6 +361,11 @@ const ChatScreen = () => {
     const messageInputRef = useRef<HTMLInputElement>(null)
     const dummyRef = useRef<HTMLDivElement>(null)
 
+    useEffect(() => {
+        if (currentUser)
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser.id, status: "ONLINE"}, forceNew: true})
+    }, [currentUser])
+
     const amIinTheGroup = () => {
         if (!(usersIds!!.includes(currentUser!!.id)))
             window.location.assign("/home")
@@ -448,7 +453,7 @@ const ChatScreen = () => {
 
         if (currentUser && roomInfo) {
             if (!socket)
-                setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/chat`, {query: {userId: currentUser.id, roomId: roomId}}))
+                setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/chat`, {query: {userId: currentUser.id, roomId: roomId}, forceNew: true}))
         
             if (socket){
                 socket.on("onlineUserIdsInRoom", (data) => setOnlineIds(data))

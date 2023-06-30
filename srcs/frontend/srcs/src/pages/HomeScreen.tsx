@@ -39,7 +39,7 @@ const HomeScreen = () => {
 
     useEffect(() => {
         if (currentUser)
-            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id}})
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true})
         // eslint-disable-next-line
     }, [currentUser])
 

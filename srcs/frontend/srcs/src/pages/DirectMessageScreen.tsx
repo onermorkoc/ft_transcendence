@@ -18,6 +18,11 @@ const DirectMessageScreen = () => {
     const [allMessages, setAllMessages] = useState<Array<DirectMessage> | null>(null)
     const [receiverUser, setReceiverUser] = useState<User | null>(null)
 
+    useEffect(() => {
+        if (currentUser)
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true})
+    }, [currentUser])
+
     const goHomePage = () => {
         window.location.assign("/home")
     }
@@ -55,7 +60,7 @@ const DirectMessageScreen = () => {
             axios.get(`/users/getuser/${userId}`).then((response) => setReceiverUser(response.data))
 
         if (currentUser && !socket)
-            setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/directChat`, {query: {senderId: currentUser!!.id, receiverId: userId}}))
+            setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/directChat`, {query: {senderId: currentUser!!.id, receiverId: userId}, forceNew: true}))
 
         if (socket){
             socket.on("blockedUserIdsInRoom", (data) => setBlockIds(data))

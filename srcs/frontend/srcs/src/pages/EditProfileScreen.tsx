@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react"
 import axios from "axios"
 import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 import useCurrentUser from "../services/Auth"
+import { io } from "socket.io-client"
 
 const pathToFile = async (path: string, filename: string): Promise<File> => {
     const data = await (await fetch(path)).blob()
@@ -36,6 +37,7 @@ const EditProfileScreen = () => {
             displaynameInputRef.current!!.value = currentUser.displayname
             nicknameInputRef.current!!.value = currentUser.nickname
             setPreviewImg(currentUser.photoUrl)
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser.id, status: "ONLINE"}, forceNew: true})
         }        
     }, [currentUser])
 

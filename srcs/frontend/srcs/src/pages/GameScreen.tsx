@@ -767,7 +767,8 @@ const GameScreen = () => {
       axios.get(`/users/current`).then((response) => {setCurrentUser(response.data)});
     }
     if (currentUser && !socket) {
-      setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/game`, {query: {userId: currentUser.id, gameId: gameId}}))
+      setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/game`, {query: {userId: currentUser.id, gameId: gameId}, forceNew: true}))
+      io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser.id, status: "INGAME"}, forceNew: true})
     }
     if (socket && !socketListen) {
       socket.on("gameDataInitial", (data) => {

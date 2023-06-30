@@ -18,21 +18,28 @@ export class StatusGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
     }
 
     async handleConnection(client: Socket) {
-        const user: User = await this.userService.findUserbyID(parseInt(this.statusService.strFix(client.handshake.query.userId)));
+        const userId: number = parseInt(this.statusService.strFix(client.handshake.query.userId));
+        const status: string = this.statusService.strFix(client.handshake.query.status);
+        if (!userId || !status) {
+            client.disconnect();
+            return;
+        }
+        const user: User = await this.userService.findUserbyID(userId);
         if (!user) {
             client.disconnect();
             return;
         }
-        await this.statusService.addUserOnline(user.id);
+        await this.statusService.addUserOnline(user.id, status);
         this.server.emit('usersOnline', this.statusService.getUsersOnline());
     }
 
     async handleDisconnect(client: Socket) {
         const user: User = await this.userService.findUserbyID(parseInt(this.statusService.strFix(client.handshake.query.userId)));
-        if (!user) {
+        const status: string = this.statusService.strFix(client.handshake.query.status);
+        if (!user || !status) {
             return;
         }
-        await this.statusService.removeUserOnline(user.id);
+        await this.statusService.removeUserOnline(user.id, status);
         this.server.emit('usersOnline', this.statusService.getUsersOnline());
     }
 }
