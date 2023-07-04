@@ -5,9 +5,10 @@ import { ChatController } from "./chat.controller";
 import { UsersModule } from "src/users/users.module";
 import { DirectGateway } from "./direct.gateway";
 import { DirectService } from "./direct.service";
+import { GameModule } from "src/game/game.module";
 
 @Module({
-    imports: [UsersModule],
+    imports: [UsersModule, GameModule],
     providers: [ChatGateway, ChatService, DirectGateway, DirectService],
     controllers: [ChatController]
 })

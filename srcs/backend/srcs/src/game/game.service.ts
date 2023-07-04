@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Game, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Ball, COUNTDOWN_SECONDS, GAME_END_SCORE, GAME_FPS, GameObject, GameState, LOSE_XP, PAUSE_WAIT_SECONDS, Paddle, STARTING_SECONDS, WIN_XP } from './game.objects'
+import { Ball, GAME_END_SCORE, GAME_FPS, GameObject, GameState, LOSE_XP, PAUSE_WAIT_SECONDS, Paddle, STARTING_SECONDS, WIN_XP } from './game.objects'
 import { GameGateway } from './game.gateway';
 import { UsersService } from 'src/users/users.service';
 import { RemoteSocket, Socket } from 'socket.io';

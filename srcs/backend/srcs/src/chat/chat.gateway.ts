@@ -1,14 +1,16 @@
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io'
 import { ChatService } from "./chat.service";
-import { Chatroom, User } from "@prisma/client";
+import { Chatroom, Game, User } from "@prisma/client";
 import { UsersService } from "src/users/users.service";
+import { GameService } from "src/game/game.service";
+import { ConfigService } from "@nestjs/config";
 
 const GROUP_MUTE_TIME: number = 1800000 // 30dk
 
 @WebSocketGateway({ cors: { origin: true, credentials: true }, namespace: 'chat'})
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-    constructor(private chatService: ChatService, private userService: UsersService) {}
+    constructor(private chatService: ChatService, private userService: UsersService, private gameService: GameService, private configService: ConfigService) {}
 
     @WebSocketServer()
     server: Server;
@@ -262,5 +264,47 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             this.server.to(chatRoom.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(updatedChatRoom.id));
             this.server.to(chatRoom.id).emit('allUserIdsInRoom', await this.chatService.getAllUserIdsInRoom(chatRoom.id));
         }
+    }
+
+    @SubscribeMessage('gameInvite')
+    async handlegameInvite(client: Socket, userId: number) {
+        const selfUser: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
+        const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId);
+        const user: User = await this.userService.findUserbyID(userId);
+
+        if (!user || !selfUser) {
+            return;
+        }
+
+        const clientsOfUser = await this.chatService.userIdtoClients(user.id, chatRoomId, this.server);
+        clientsOfUser.forEach((client) => {
+            client.emit('incomingGameInvite', selfUser.id);
+        });
+    }
+
+    @SubscribeMessage('gameInviteAccept')
+    async handlegameInviteAccept(client: Socket, userId: number) {
+        const selfUser: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
+        const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId);
+        const user: User = await this.userService.findUserbyID(userId);
+
+        if (!user || !selfUser) {
+            return;
+        }
+
+        const game: Game = await this.gameService.createGame(user.id, selfUser.id);
+
+        user.currentGameId = game.id;
+        selfUser.currentGameId = game.id;
+        await this.userService.update(user);
+        await this.userService.update(selfUser);
+        
+        this.gameService.setCountDown(game.id);
+
+        const clientsOfUser = await this.chatService.userIdtoClients(user.id, chatRoomId, this.server);
+        clientsOfUser.forEach((client) => {
+            client.emit('gameBegin', `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`);
+        });
+        client.emit('gameBegin', `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`);
     }
 }
