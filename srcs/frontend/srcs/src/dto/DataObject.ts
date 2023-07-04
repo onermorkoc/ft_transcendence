@@ -14,7 +14,6 @@ export interface User {
   chatRoomIds: Array<number>,
   friendIds: Array<number>,
   blockedUserIds: Array<number>,
-  gameHistory: Array<GameHistory>,
   pongShapeStyle: number,
   pongColorStyle: number
 }
@@ -32,17 +31,49 @@ export interface Game {
   playerOneId: number,
   playerTwoId: number
 }
-  
-interface GameHistory {
-  id: number,
-  userId: number,
-  opponentId:number,
-  win: boolean,
-  userScore: number,
-  opponentScore: number
+
+export interface GlobalRankUser {
+  id: number;
+  photoUrl: string;
+  displayname: string;
+  nickname: string;
+  level: number;
+  progression: number;
+  globalRank: number;
 }
-  
-export type Title = "CAYLAK" | "USTA" | "BUYUKUSTA" | "EFSANE" | "SANLI"
+
+export interface BGameHistory {
+  createdAt: Date,
+  playerOneId: number,
+  playerTwoId: number,
+  winnerId: number,
+  playerOneScore: number,
+  playerTwoScore: number
+}
+
+export interface FGameHistory {
+  bGameHistory: BGameHistory,
+  playerOneUser: User,
+  playerOneTittle: Tittle,
+  playerTwoUser: User,
+  playerTwoTittle: Tittle
+}
+
+export interface Achievements {
+  name: string,
+  description?: string,
+  xp: number,
+  percentage: number
+}
+
+export interface Stats {
+  globalRank: number,
+  level: number,
+  progression: number,
+  xp: number,
+}
+
+export type Tittle = "ÇAYLAK" | "USTA" | "BÜYÜKUSTA" | "EFSANE" | "ŞANLI"
   
 export type Status = "ONLINE" | "OFFLINE" | "ATGAME"
 

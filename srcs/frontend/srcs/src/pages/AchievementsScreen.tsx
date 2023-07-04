@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react"
 import "../ui-design/styles/AchievementsScreen.css"
+import { Achievements, Stats } from "../dto/DataObject"
+import axios from "axios"
+import useCurrentUser from "../services/Auth"
 
-export const ProgressBar = (props: {height: number, percent: number}) => {
+export const ProgressBar = (props: {height: number, percent?: number}) => {
 
-    let barPercent: number = props.percent
+    let barPercent: number = props.percent ? props.percent : 0
 
     if (barPercent < 10)
         barPercent = 10
@@ -36,17 +40,17 @@ export const ProgressBar = (props: {height: number, percent: number}) => {
     )
 }
 
-const AchievementsViewList = () => {
+const AchievementsViewList = (data: Achievements) => {
     return (
         <>
             <div className="achievementsViewDiv">
                 <img style={{width: "150px"}} src={require("../ui-design/images/medal.png")} alt=""/>
                 <div style={{display: "flex", flexDirection: "column", flex: 1}}>
-                    <div style={{fontSize: "1.5em"}}><span style={{fontWeight: "bold"}}>Ad:</span> İlk Galibiyet</div>
-                    <div style={{marginTop: "4px", fontSize: "1.5em"}}><span style={{fontWeight: "bold"}}>Açıklama:</span> Bir oyunda galip gel.</div>
-                    <div style={{marginTop: "4px", fontSize: "1.5em"}}><span style={{fontWeight: "bold"}}>Exp:</span> 1000</div>
+                    <div style={{fontSize: "1.5em"}}><span style={{fontWeight: "bold"}}>Ad:</span> {data.name}</div>
+                    <div style={{marginTop: "4px", fontSize: "1.5em"}}><span style={{fontWeight: "bold"}}>Açıklama:</span> {data.description}</div>
+                    <div style={{marginTop: "4px", fontSize: "1.5em"}}><span style={{fontWeight: "bold"}}>Exp:</span> {data.xp}</div>
                     <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
-                        <ProgressBar height={35} percent={1}/>
+                        <ProgressBar height={35} percent={data.percentage}/>
                         <img style={{width: "50px", marginLeft: "10px"}} src={require("../ui-design/images/finish.png")} alt=""/>
                     </div>
                 </div>
@@ -56,6 +60,20 @@ const AchievementsViewList = () => {
 }
 
 const AchievementsScreen = () => {
+
+    const currentUser = useCurrentUser()
+    const [achievementsList, setAchievementsList] = useState<Array<Achievements> | null>(null)
+    const [stats, setStats] = useState<Stats | null>(null)
+
+    useEffect(() => {
+
+        if (currentUser && !achievementsList)
+            axios.get(`/users/achievements/${currentUser.id}`).then(response => setAchievementsList(response.data))
+
+        if (currentUser && !stats)
+            axios.get(`/users/stats/${currentUser.id}`).then(response => setStats(response.data))
+    
+    }, [currentUser, achievementsList, stats])
 
     const goHomePage = () => {
         window.location.assign("/home")
@@ -72,30 +90,27 @@ const AchievementsScreen = () => {
                 <div style={{display: "flex", flexDirection: "row"}}>
                     <div className="achievementsHeaderRowDiv">
                         <img style={{width: "30px"}} src={require("../ui-design/images/title.png")} alt=""/>
-                        <div style={{marginLeft: "10px", fontSize: "1.4em"}}>Level: 1</div>
+                        <div style={{marginLeft: "10px", fontSize: "1.4em"}}>Level: {stats?.level}</div>
                     </div>
                     <div className="achievementsHeaderRowDiv">
                         <img style={{width: "30px"}} src={require("../ui-design/images/rank.png")} alt=""/>
-                        <div style={{marginLeft: "10px", fontSize: "1.4em"}}>Global Sıralama: 1</div>
+                        <div style={{marginLeft: "10px", fontSize: "1.4em"}}>Global Sıralama: {stats?.globalRank}</div>
                     </div>
                 </div>
-                <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
-                    <ProgressBar height={50} percent={15}/>
+                <div style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: "10px"}}>
+                    <ProgressBar height={50} percent={stats?.progression}/>
                     <img style={{width: "60px", marginLeft: "10px"}} src={require("../ui-design/images/level-up.png")} alt=""/>
                 </div>
             </div>
 
             <div className="achievementsListDiv">
-                <AchievementsViewList/>
-                <AchievementsViewList/>
-                <AchievementsViewList/>
-                <AchievementsViewList/>
-                <AchievementsViewList/>
-                <AchievementsViewList/>
-                <AchievementsViewList/>
-                <AchievementsViewList/>
-                <AchievementsViewList/>
-                <AchievementsViewList/>
+                {
+                    achievementsList?.map((value, index) => (
+                        <div key={index}>
+                            {AchievementsViewList(value)}
+                        </div>
+                    ))
+                }
             </div>
         </>
     )
