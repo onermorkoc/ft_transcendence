@@ -127,21 +127,22 @@ export class UsersService {
         return (gameHistory);
     }
 
-    async getAchievements(userId: number): Promise<Array<{ name: string, description?: string, achieved: boolean, percentage: number }>> {
-        const allUserCount: number = (await this.allUsers()).length;
+    async getAchievements(userId: number): Promise<Array<{ name: string, description?: string, xp: number, percentage: number }>> {
         const allAchievements = await this.prismaService.achievement.findMany({
             include: {
                 users: true
             }
         });
-        const achievementObjects: Array<{ name: string, description?: string, achieved: boolean, percentage: number }> = [];
+        let achievementObjects: Array<{ name: string, description?: string, xp: number, percentage: number }> = [];
 
-        allAchievements.forEach((achievement) => {
+        for (let i = 0; i < allAchievements.length; i++) {
+            const achievement = allAchievements[i];
             let achieved: boolean;
             if (achievement.users.some((obj) => obj.userId == userId)) {achieved = true;}
             else {achieved = false;}
-            achievementObjects.push({ name: achievement.name, description: achievement.description, achieved: achieved, percentage: (achievement.users.length / allUserCount) * 100 })
-        });
+            const percentage = await this.getAchievementPercentage(achievement.name, userId, achieved);
+            achievementObjects.push({ name: achievement.name, description: achievement.description, xp: achievement.xp, percentage: percentage })
+        }
 
         return achievementObjects;
     }
@@ -198,5 +199,84 @@ export class UsersService {
             return ({id: user.id, photoUrl: user.photoUrl, displayname: user.displayname, nickname: user.nickname, level: level, progression: progression, globalRank: index + 1});
         })
         return resultArray;
+    }
+
+    async getAchievementPercentage(achievementName: string, userId: number, userAchieved: boolean): Promise<number> {
+        if (userAchieved) {
+            return 100;
+        }
+        const user = await this.findUserbyID(userId);
+        const didIWin = (game: GameHistory, userId: number) => {
+            if (game.winnerId == userId) {
+                return true;
+            }
+            return false;
+        }
+
+        if (achievementName == "İlk Galibiyet") {
+            return 0;
+        }
+        else if (achievementName == "Alışıyoruz") {
+            return (user.totalWin * 100) / 10;
+        }
+        else if (achievementName == "Kalite") {
+            return (user.totalWin * 100) / 25;
+        }
+        else if (achievementName == "Pong'un Sefiri") {
+            return (user.totalWin * 100) / 50;
+        }
+        else if (achievementName == "Oyuncu") {
+            return (user.totalGame * 100) / 10;
+        }
+        else if (achievementName == "Bilgili") {
+            return (user.totalGame * 100) / 25;
+        }
+        else if (achievementName == "Deneyimli") {
+            return (user.totalGame * 100) / 50;
+        }
+        else if (achievementName == "Pong Bağımlısı") {
+            return (user.totalGame * 100) / 100;
+        }
+        else if (achievementName == "Mükemmel Defans") {
+            return 0;
+        }
+        else if (achievementName == "Galibiyet Zinciri") {
+            const gameHistory = await this.getGameHistory(user.id);
+            let winStreak: number = 0;
+
+            gameHistory.forEach((game) => {
+                if (didIWin(game, user.id)) {
+                    winStreak++;
+                }
+                else {
+                    return;
+                }
+            })
+
+            return (winStreak * 100) / 5;
+        }
+        else if (achievementName == "Ultra Galibiyet Zinciri") {
+            const gameHistory = await this.getGameHistory(user.id);
+            let winStreak: number = 0;
+
+            gameHistory.forEach((game) => {
+                if (didIWin(game, user.id)) {
+                    winStreak++;
+                }
+                else {
+                    return;
+                }
+            })
+
+            return (winStreak * 100) / 10;
+        }
+        else if (achievementName == "Küllerinden Yeniden Doğ") {
+            const gameHistory = await this.getGameHistory(user.id);
+
+            if (gameHistory.length > 0 && !didIWin(gameHistory[0], user.id)) {
+                return 50;
+            }
+            return 0;
+        }
     }
 }

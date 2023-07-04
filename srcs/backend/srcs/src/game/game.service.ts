@@ -506,7 +506,7 @@ export class GameService {
             await this.userService.unlockAchievement(user.id, "Kalite");
         }
         else if (user.totalWin == 50) {
-            await this.userService.unlockAchievement(user.id, "Pong'un sefiri");
+            await this.userService.unlockAchievement(user.id, "Pong'un Sefiri");
         }
 
         if (user.totalGame == 10) {
@@ -560,18 +560,18 @@ export class GameService {
         if (gameHistory.length >= 2 && gameHistory[0].winnerId == user.id && gameHistory[1].winnerId != user.id) {
             if (gameHistory[0].playerOneId == user.id && gameHistory[0].playerTwoScore == 0) {
                 if (gameHistory[1].playerOneId == user.id && gameHistory[1].playerOneScore == 0) {
-                    await this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                    await this.userService.unlockAchievement(user.id, "Küllerinden Yeniden Doğ");
                 }
                 else if (gameHistory[1].playerTwoId == user.id && gameHistory[1].playerTwoScore == 0) {
-                    await this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                    await this.userService.unlockAchievement(user.id, "Küllerinden Yeniden Doğ");
                 }
             }
             else if (gameHistory[0].playerTwoId == user.id && gameHistory[0].playerOneScore == 0) {
                 if (gameHistory[1].playerOneId == user.id && gameHistory[1].playerOneScore == 0) {
-                    await this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                    await this.userService.unlockAchievement(user.id, "Küllerinden Yeniden Doğ");
                 }
                 else if (gameHistory[1].playerTwoId == user.id && gameHistory[1].playerTwoScore == 0) {
-                    await this.userService.unlockAchievement(user.id, "Külleriden Yeniden Doğ");
+                    await this.userService.unlockAchievement(user.id, "Küllerinden Yeniden Doğ");
                 }
             }
         }
