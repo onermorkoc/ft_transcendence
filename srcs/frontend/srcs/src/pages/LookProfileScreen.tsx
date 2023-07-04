@@ -1,17 +1,28 @@
 import { useParams } from "react-router-dom"
 import "../ui-design/styles/LookProfileScreen.css"
 import "../ui-design/styles/CmpMix.css"
-import { User } from "../dto/DataObject"
+import { BGameHistory, FGameHistory, Stats, Tittle, User } from "../dto/DataObject"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import useCurrentUser from "../services/Auth"
 import { historyView } from "./GameHistoryScreen"
 import { timeSplit } from "./ChatScreen"
+import { calculateTittle } from "../componets/Header/UserStatisticsCmp"
 
 const UserStatisticsCmp = (props: {data: User}) => {
 
+    const [userStats, setUserStats] = useState<Stats | null>(null)
     const totalLose = props.data.totalGame - props.data.totalWin
-    const winRate = (props.data.totalWin / props.data.totalGame) * 100 // 0/0 = NaN
+    let winRate: number = 0
+    
+    if (props.data.totalGame !== 0)
+        winRate = (props.data.totalWin / props.data.totalGame) * 100
+
+    useEffect(() => {
+        if (!userStats)
+            axios.get(`/users/stats/${props.data.id}`).then(response => setUserStats(response.data))
+        // eslint-disable-next-line
+    }, [userStats])
 
     return (
         <>
@@ -46,13 +57,13 @@ const UserStatisticsCmp = (props: {data: User}) => {
                     <div style={{flex: 1}}>
                         <div style={{display: "flex", flexDirection: "row"}}>
                             <img className="img2" src={require("../ui-design/images/title.png")} alt=""/>
-                            <div className="text2">Ünvan: {/* currentUser?.title */}</div>
+                            <div className="text2">Ünvan: {calculateTittle(userStats?.level ? userStats.level : 0)}</div>
                         </div>
                     </div>
                     <div style={{flex: 1}}>
                         <div style={{display: "flex", flexDirection: "row"}}>
                             <img className="img2" src={require("../ui-design/images/rank.png")} alt=""/>
-                            <div className="text2">Global sıralama: {/* currentUser?.globalRank  */}</div>
+                            <div className="text2">Global sıralama: {userStats?.globalRank}</div>
                         </div>
                     </div>
                 </div>
@@ -100,8 +111,28 @@ const LookProfileScreen = () => {
     const { userId, backPage, backPageArg } = useParams()
     const [userInfo, setUserInfo] = useState<User | null>(null)
     const [tab, setTab] = useState<JSX.Element | null>(null)
+    const [userBGameHistory, setUserBGameHistory] = useState<Array<BGameHistory> | null>(null)
+    const [userFGameHistory, setUserFGameHistory] = useState<Array<FGameHistory> | null>(null)
     const [blockStatus, setBlockStatus] = useState<boolean | null>(null)
     const [friendStatus, setFriendStatus] = useState<"friend" | "noFriend" | "waitRequest" | null>(null)
+
+    const setupUserFGameHistory = async () => {
+        let userFGameHistoryArray: Array<FGameHistory> = []
+        for(const obj of userBGameHistory!!){
+            const playerOneUser: User = (await axios.get(`/users/getuser/${obj.playerOneId}`)).data
+            const playerOneTittle: Tittle = calculateTittle((await axios.get(`/users/stats/${obj.playerOneId}`)).data.level)
+            const playerTwoUser: User = await (await axios.get(`/users/getuser/${obj.playerTwoId}`)).data
+            const playerTwoTittle: Tittle = calculateTittle((await axios.get(`/users/stats/${obj.playerTwoId}`)).data.level)
+            userFGameHistoryArray.push({
+                bGameHistory: obj,
+                playerOneUser: playerOneUser,
+                playerOneTittle: playerOneTittle,
+                playerTwoUser: playerTwoUser,
+                playerTwoTittle: playerTwoTittle
+            })
+        }
+        setUserFGameHistory(userFGameHistoryArray)
+    }
 
     const backButton = () => {
         if (backPageArg)
@@ -164,7 +195,14 @@ const LookProfileScreen = () => {
             }
         }
 
-    }, [userId, userInfo, tab, currentUser, blockStatus, friendStatus])
+        if (!userBGameHistory)
+            axios.get(`/users/gamehistory/${userId}`).then(response => setUserBGameHistory(response.data))
+
+        if (userBGameHistory && !userFGameHistory)
+            setupUserFGameHistory()
+
+        // eslint-disable-next-line
+    }, [userId, userInfo, tab, currentUser, blockStatus, friendStatus, userFGameHistory, userBGameHistory])
 
     return (
         <>
@@ -208,16 +246,13 @@ const LookProfileScreen = () => {
                     <div className="lookProfileHistoryHeader">Son Oynanan Oyunlar</div>
                     
                     <div className="lookProfileHistoryViewList">
-                        {historyView()}
-                        {historyView()}
-                        {historyView()}
-                        {historyView()}
-                        {historyView()}
-                        {historyView()}
-                        {historyView()}
-                        {historyView()}
-                        {historyView()}
-                        {historyView()}
+                        {
+                            userFGameHistory?.map((value, index) => (
+                                <div key={index}>
+                                    {historyView(value, userInfo!!.id, false)}
+                                </div>
+                            ))
+                        }
                     </div>
                 </div>
             </div>
