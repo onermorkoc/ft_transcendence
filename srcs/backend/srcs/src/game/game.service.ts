@@ -25,6 +25,12 @@ export class GameService {
         const playerOneUser: User = await this.userService.findUserbyID(playerOne);
         const playerTwoUser: User = await this.userService.findUserbyID(playerTwo);
 
+        if (!playerOneUser || !playerTwoUser) {
+            console.log(`id: ${playerOne} user: ${playerOneUser}`);
+            console.log(`id: ${playerTwo} user: ${playerTwoUser}`);
+            return;
+        }
+
         const game = await this.prismaService.game.create({
             data: {
                 playerOneId: playerOne,

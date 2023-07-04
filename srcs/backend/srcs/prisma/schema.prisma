@@ -36,6 +36,9 @@ model User {
   sentFriendRequests     FriendRequest[] @relation("SentRequest")
   receivedFriendRequests FriendRequest[] @relation("ReceivedRequest")
 
+  sentChatRequests       PrivateChatRequest[] @relation("SentChatRequest")
+  receivedChatRequests   PrivateChatRequest[] @relation("ReceivedChatRequest")
+
   currentGameId String @default("")
   gameHistoryAsPlayerOne GameHistory[] @relation("PlayerOne")
   gameHistoryAsPlayerTwo GameHistory[] @relation("PlayerTwo")
@@ -128,6 +131,16 @@ model FriendRequest {
   uniqueIdentifier String @unique
 
   @@id([senderId, receiverId])
+}
+
+model PrivateChatRequest {
+  sender           User   @relation("SentChatRequest", fields: [senderId], references: [id])
+  senderId         Int
+  receiver         User   @relation("ReceivedChatRequest", fields: [receiverId], references: [id])
+  receiverId       Int
+  chatRoomId       String
+
+  @@id([receiverId, chatRoomId])
 }
 
 model Achievement {

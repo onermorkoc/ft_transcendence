@@ -4,7 +4,6 @@ import { Game, User } from '@prisma/client';
 import { RemoteSocket, Server } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { GameService } from './game.service';
-import { COUNTDOWN_SECONDS } from './game.objects';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()

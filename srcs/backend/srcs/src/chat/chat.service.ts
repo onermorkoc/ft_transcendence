@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
-import { BanObject, Chatroom, Message, MuteObject, RoomStatus, User } from '@prisma/client';
+import { BanObject, Chatroom, Message, MuteObject, Prisma, PrivateChatRequest, RoomStatus, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt'
 import { UsersService } from 'src/users/users.service';
@@ -75,10 +75,7 @@ export class ChatService {
 
         const chatRoom: Chatroom = await this.findChatRoombyID(roomId);
 
-        if (chatRoom.roomStatus === RoomStatus.PRIVATE){    // Bu Kontrol frontende yapıldı
-            throw new BadRequestException('You cannot join a private chatroom.');
-        }
-        else if (chatRoom.roomStatus === RoomStatus.PROTECTED) {
+        if (chatRoom.roomStatus === RoomStatus.PROTECTED) {
             
             if (password === null)  // Bu Kontrol frontende yapıldı
                 throw new BadRequestException('Password needed.');
@@ -397,5 +394,84 @@ export class ChatService {
             }
         })
         return (true)
+    }
+
+    // Private Chat İstekleri
+    async createChatRequest(senderId: number, receiverId: number, chatRoomId: string) : Promise<PrivateChatRequest> {
+        if (senderId == receiverId)
+            throw new BadRequestException("You can't send a friend request to yourself.");
+
+        return this.prismaService.privateChatRequest.create({
+            data: {
+                sender: { connect: { id: senderId } },
+                receiver: { connect: { id: receiverId } },
+                chatRoomId: chatRoomId
+            }
+        }).catch(e => {
+            if (e.code == 'P2025')
+                throw new BadRequestException('There is no user with that id.');
+            if (e instanceof Prisma.PrismaClientKnownRequestError) {
+                throw new BadRequestException('The user already has a request from that chatroom.');
+            }
+            throw e;
+        })
+    }
+
+    async acceptRequest(requestData: { senderId: number, receiverId: number, chatRoomId: string }): Promise<boolean> {
+        const request = await this.prismaService.privateChatRequest.findUnique({
+            where: {
+                receiverId_chatRoomId: {
+                    receiverId: requestData.receiverId,
+                    chatRoomId: requestData.chatRoomId
+                }
+            }
+        })
+
+        if (request == null)
+            throw new BadRequestException("You can't accept a request that doesn't exist.");
+
+        await this.joinRoom(requestData.receiverId, requestData.chatRoomId);
+        await this.prismaService.privateChatRequest.delete({
+            where: {
+                receiverId_chatRoomId: {
+                    receiverId: requestData.receiverId,
+                    chatRoomId: requestData.chatRoomId
+                }
+            }
+        })
+        return (true)
+    }
+
+    async rejectRequest(requestData: { senderId: number, receiverId: number, chatRoomId: string }): Promise<boolean> {
+        const request = await this.prismaService.privateChatRequest.findUnique({
+            where: {
+                receiverId_chatRoomId: {
+                    receiverId: requestData.receiverId,
+                    chatRoomId: requestData.chatRoomId
+                }
+            }
+        });
+
+        if (request == null)
+            throw new BadRequestException("You can't reject a request that doesn't exist.")
+
+        await this.prismaService.privateChatRequest.delete({
+            where: {
+                receiverId_chatRoomId: {
+                    receiverId: requestData.receiverId,
+                    chatRoomId: requestData.chatRoomId
+                }
+            }
+        })
+        return (true)
+    }
+
+    async getReceivedRequests(userId: number): Promise<Array<PrivateChatRequest>> {
+        const requests: Array<PrivateChatRequest> = await this.prismaService.privateChatRequest.findMany({
+            where: {
+                receiverId: userId
+            }
+        });
+        return (requests);
     }
 }

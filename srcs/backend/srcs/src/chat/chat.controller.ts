@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post, Session, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, Session, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
-import { Chatroom, RoomStatus } from '@prisma/client';
+import { Chatroom, PrivateChatRequest, RoomStatus } from '@prisma/client';
 
 @Controller('chat')
 export class ChatController {
@@ -39,5 +39,34 @@ export class ChatController {
     @UseGuards(AuthenticatedGuard)
     async getMyChatRooms(@Session() session: Record<string, any>){
         return (await this.chatService.getMyChatRooms(session.passport.user.chatRoomIds))
+    }
+
+    // Private ChatRoom İstekleri
+    @Get(':userId/received-requests')
+    @UseGuards(AuthenticatedGuard)
+    async getReceivedRequests(@Param('userId') userId: string): Promise<Array<PrivateChatRequest>> {
+        return (await this.chatService.getReceivedRequests(parseInt(userId)))
+    }
+
+    @Post('send-request/:receiverId/:chatRoomId')
+    @UseGuards(AuthenticatedGuard)
+    async sendRequest(@Param('receiverId') receiverId: string, @Param('chatRoomId') chatRoomId: string, @Session() session: Record<string, any>): Promise<PrivateChatRequest> {
+        return (await this.chatService.createChatRequest(session.passport.user.id, parseInt(receiverId), chatRoomId))
+    }
+
+    @Post('accept')
+    @UseGuards(AuthenticatedGuard)
+    async acceptRequest(@Body() requestData: { senderId: number, receiverId: number, chatRoomId: string }, @Session() session: Record<string, any>): Promise<boolean> {
+        if (session.passport.user.id != requestData.receiverId)
+            throw new BadRequestException('You have no permission to do that.')
+        return (await this.chatService.acceptRequest(requestData))
+    }
+
+    @Post('reject')
+    @UseGuards(AuthenticatedGuard)
+    async rejectRequest(@Body() requestData: { senderId: number, receiverId: number, chatRoomId: string }, @Session() session: Record<string, any>): Promise<boolean> {
+        if (session.passport.user.id != requestData.receiverId)
+            throw new BadRequestException('You have no permission to do that.')
+        return (await this.chatService.rejectRequest(requestData))
     }
 }
