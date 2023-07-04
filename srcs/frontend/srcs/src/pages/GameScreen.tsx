@@ -772,6 +772,7 @@ const GameScreen = () => {
     }
     if (socket && !socketListen) {
       socket.on("gameDataInitial", (data) => {
+        // eslint-disable-next-line
         gameData = JSON.parse(data);
         if (gameData.playerPaddle.position.x < gameData.opponentPaddle.position.x) {
           setPlayerOneName(gameData.playerPaddle.name);

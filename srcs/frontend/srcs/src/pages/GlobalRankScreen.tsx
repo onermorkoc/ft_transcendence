@@ -3,9 +3,9 @@ import { ProgressBar } from "./AchievementsScreen"
 
 const RankViewList = () => {
 
-    const goLookProfilePage = (userId: number) => {
+    /* const goLookProfilePage = (userId: number) => {
         window.location.assign(`/profile/${userId}/rank`)
-    }
+    } */
 
     return (
         <>

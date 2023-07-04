@@ -164,7 +164,7 @@ const LookProfileScreen = () => {
             }
         }
 
-    }, [userId, userInfo, tab])
+    }, [userId, userInfo, tab, currentUser, blockStatus, friendStatus])
 
     return (
         <>
