@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom"
 import { Socket, io } from "socket.io-client"
 import useCurrentUser from "../services/Auth"
 import axios from "axios"
+import SearchUserCmp from "../componets/Friends/SearchUserCmp"
 
 const allCommand = (socket: Socket, command: string, id: number) => {
     socket.emit(command, id)
@@ -337,12 +338,22 @@ const ChatAllBanList = (props: {socket: Socket}) => {
     )
 }
 
+const ChatAddMember = (props: {chatRoomId: string}) => {
+    return (
+        <>
+            <div  className="chatAddMemberCenterDiv">
+                <SearchUserCmp context="chat" chatRoomId={props.chatRoomId}/>
+            </div>
+        </>
+    )
+}
+
 const ChatScreen = () => {
 
     const currentUser = useCurrentUser()
     const [show, setShow] = useState<boolean>(false)
     const [point, setPoint] = useState<Point | null>(null)
-    const [topBarButtonSelect, setTopBarButtonSelect] = useState<"messages" | "settings" | "banList">("messages")
+    const [topBarButtonSelect, setTopBarButtonSelect] = useState<"messages" | "settings" | "banList" | "addMember">("messages")
     const { roomId } = useParams()
     const [usersIds, setUserIds] = useState<Array<number>>()
     const [usersInfo, setUsersInfo] = useState<Array<User>>()
@@ -434,11 +445,13 @@ const ChatScreen = () => {
         goHomePage()
     }
 
-    const topBarButtonSelectAlgorithm = (context: "settings" | "banList") => {
+    const topBarButtonSelectAlgorithm = (context: "settings" | "banList" | "addMember") => {
         if (context === "settings")
             topBarButtonSelect !== "settings" ? setTopBarButtonSelect("settings") : setTopBarButtonSelect("messages")
         else if (context === "banList")
             topBarButtonSelect !== "banList" ? setTopBarButtonSelect("banList") : setTopBarButtonSelect("messages")
+        else if (context === "addMember")
+            topBarButtonSelect !== "addMember" ? setTopBarButtonSelect("addMember") : setTopBarButtonSelect("messages")
     }
 
     useEffect(() => {
@@ -490,6 +503,8 @@ const ChatScreen = () => {
                         <div style={{color: "black", fontSize: "1.1em"}} >{members?.length} üye, {onlineIds?.length} çevrimiçi</div>
                     </div>
                     <div style={{marginRight: "50px", marginLeft: "auto", display: "flex", flexDirection: "row", alignItems: "center"}}>
+                        {((ownerId === currentUser?.id || adminIds?.includes(currentUser!!.id)) && roomInfo?.roomStatus === "PRIVATE") && 
+                            <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("addMember")} src={require("../ui-design/images/add-chat-user.png")} alt=""/>}
                         {(ownerId === currentUser?.id || adminIds?.includes(currentUser!!.id)) && <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("banList")} src={require("../ui-design/images/all-users-ban.png")} alt=""/>}
                         <img onClick={leaveRoom} className="chatScreenTopBarImgs" src={require("../ui-design/images/exit.png")} alt=""/>
                         {ownerId === currentUser?.id && <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("settings")} src={require("../ui-design/images/settings.png")} alt=""/>} 
@@ -559,7 +574,10 @@ const ChatScreen = () => {
                                 topBarButtonSelect === "settings" ?
                                     <ChatSetting data={roomInfo!!}/>
                                 :
-                                    <ChatAllBanList socket={socket!!}/>
+                                    topBarButtonSelect === "banList" ? 
+                                        <ChatAllBanList socket={socket!!}/>
+                                    :
+                                        <ChatAddMember chatRoomId={roomId!!}/>
                         }
                     </div>
                 </div> 

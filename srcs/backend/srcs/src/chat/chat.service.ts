@@ -404,8 +404,10 @@ export class ChatService {
         return this.prismaService.privateChatRequest.create({
             data: {
                 sender: { connect: { id: senderId } },
+                senderName: (await this.userService.findUserbyID(senderId)).displayname,
                 receiver: { connect: { id: receiverId } },
-                chatRoomId: chatRoomId
+                chatRoomId: chatRoomId,
+                chatRoomName: (await this.findChatRoombyID(chatRoomId)).name
             }
         }).catch(e => {
             if (e.code == 'P2025')

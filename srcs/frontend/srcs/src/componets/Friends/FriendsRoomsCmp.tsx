@@ -16,7 +16,7 @@ const FriendsRoomsCmp = () => {
                 <div style={{display: "flex", flexDirection: "row"}}>
                     <button className="roomsButton" onClick={() => setFriendsTab(<MyFriendsRoomCmp/>)}>Arkadaşlarım</button>
                     <button className="roomsButton" onClick={() => setFriendsTab(<FriendsRequestCmp/>)}>Arkadaşlık İstekleri</button>
-                    <button className="roomsButton" onClick={() => setFriendsTab(<SearchUserCmp/>)}>Kullanıcı ara</button>
+                    <button className="roomsButton" onClick={() => setFriendsTab(<SearchUserCmp context="friends"/>)}>Kullanıcı ara</button>
                 </div>
                 <hr/>
                 {friendsTab}

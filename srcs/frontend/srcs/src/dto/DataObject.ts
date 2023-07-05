@@ -89,6 +89,14 @@ export interface RoomMember {
   authority: RoomAuthority
 }
 
+export interface ChatInvitation {
+  senderId: number,
+  senderName: string,
+  receiverId: number,
+  chatRoomId: string,
+  chatRoomName: string
+}
+
 export interface RequestData {
   receiverId: number,
   senderId: number

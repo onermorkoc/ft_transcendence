@@ -134,11 +134,13 @@ model FriendRequest {
 }
 
 model PrivateChatRequest {
-  sender           User   @relation("SentChatRequest", fields: [senderId], references: [id])
-  senderId         Int
-  receiver         User   @relation("ReceivedChatRequest", fields: [receiverId], references: [id])
-  receiverId       Int
-  chatRoomId       String
+  sender            User   @relation("SentChatRequest", fields: [senderId], references: [id])
+  senderId          Int
+  senderName String
+  receiver          User   @relation("ReceivedChatRequest", fields: [receiverId], references: [id])
+  receiverId        Int
+  chatRoomId        String
+  chatRoomName      String
 
   @@id([receiverId, chatRoomId])
 }

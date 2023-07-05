@@ -3,7 +3,7 @@ import { User } from "../../dto/DataObject"
 import axios from "axios"
 import useCurrentUser from "../../services/Auth"
 
-const SearchUserCmp = () => {
+const SearchUserCmp = (props: {context: "friends" | "chat", chatRoomId?: string}) => {
 
     const currentUser = useCurrentUser()
     const [allUsers, setAllUsers] = useState<Array<User> | null>()
@@ -24,13 +24,21 @@ const SearchUserCmp = () => {
             setFilterArray([])
     }
 
-    const sendFriendRequest = async (value: User) => {
+    const sendRequestOrInvitations = async (value: User) => {
+        
         setFilterArray(filterArray.filter(predicate => predicate !== value))
-        await axios.post(`/friends/send-request/${value.id}`)
+        
+        if (props.context === "friends")
+            await axios.post(`/friends/send-request/${value.id}`)
+        else
+            await axios.post(`/chat/send-request/${value.id}/${props.chatRoomId}`)
     }
 
     const goLookProfilePage = (userId: number) => {
-        window.location.assign(`/profile/${userId}/home`)
+        if (props.context === "friends")
+            window.location.assign(`/profile/${userId}/home`)
+        else
+            window.location.assign(`/profile/${userId}/chat/${props.chatRoomId}`)
     }
 
     useEffect(() => {
@@ -45,7 +53,7 @@ const SearchUserCmp = () => {
                 <img className="searchImg" src={require("../../ui-design/images/search.png")} alt=""/>
             </div>
 
-            <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
+            <div style={{display: "block", overflowY: "scroll", height: "300px", marginTop: "10px"}}>
                 {
                     filterArray?.map((value, index) => (
                         <div key={index}>
@@ -55,7 +63,12 @@ const SearchUserCmp = () => {
                                     <div>Ad: {value.displayname}</div>
                                     <div>Nickname: {value.nickname}</div>
                                 </div>
-                                <img className="addFriendImg" onClick={() => sendFriendRequest(value)} src={require("../../ui-design/images/addfriend.png")} alt=""/>
+                                {
+                                    props.context === "friends" ? 
+                                        <img className="addFriendImg" onClick={() => sendRequestOrInvitations(value)} src={require("../../ui-design/images/addfriend.png")} alt=""/>
+                                    :
+                                        <img className="addFriendImg" onClick={() => sendRequestOrInvitations(value)} src={require("../../ui-design/images/addfriend-black.png")} alt=""/>
+                                }
                             </div>
                         </div>
                     ))
