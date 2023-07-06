@@ -6,6 +6,7 @@ import { Socket, io } from "socket.io-client"
 import { DirectMessage, User } from "../dto/DataObject"
 import { MessageUi } from "./ChatScreen"
 import axios from "axios"
+import Lottie from "lottie-react"
 
 const DirectMessageScreen = () => {
 
@@ -15,6 +16,7 @@ const DirectMessageScreen = () => {
     const { userId } = useParams() // karşı tarafın idsi
     const [blockIds, setBlockIds] = useState<Array<number> | null>(null)
     const [socket, setSocket] = useState<Socket | null>()
+    const [gameInvite, setGameInvite] = useState<boolean>(false)
     const [allMessages, setAllMessages] = useState<Array<DirectMessage> | null>(null)
     const [receiverUser, setReceiverUser] = useState<User | null>(null)
 
@@ -48,6 +50,18 @@ const DirectMessageScreen = () => {
         socket!!.emit("unBlockUser")
     }
 
+    const gameInviteReject = () => {
+        socket!!.emit("gameInviteReject")
+    }
+
+    const gameInviteAccept = () => {
+        socket!!.emit("gameInviteAccept")
+    }
+
+    const sendGameInvite = () => {
+        socket!!.emit("gameInvite")
+    }
+
     const goLookProfilePage = (userId: number) => {
         window.location.assign(`/profile/${userId}/directmessage/${userId}`)
     }
@@ -65,6 +79,13 @@ const DirectMessageScreen = () => {
         if (socket){
             socket.on("blockedUserIdsInRoom", (data) => setBlockIds(data))
             socket.on("allMessages", (data) => setAllMessages(data))
+            socket.on("gameBegin", (data) => window.location.assign(data))
+            socket.on("incomingGameInvite", (data) => {
+                if (!data)
+                    setGameInvite(false)
+                else if (data === currentUser?.id)
+                    setGameInvite(true)
+            })
         }
 
     }, [currentUser, socket, allMessages, receiverUser, blockIds, userId])
@@ -86,6 +107,16 @@ const DirectMessageScreen = () => {
                             }
                         </div>
                     </div>
+                    {
+                        gameInvite ? 
+                            <div className="direcMessageGameInviteView">
+                                <img className="directMessageRejectImg" onClick={gameInviteReject} src={require("../ui-design/images/reject.png")} alt=""/>
+                                <Lottie style={{width: "80px"}} animationData={require("../ui-design/animation/game.json")}/>
+                                <img className="directMessageAcceptImg" onClick={gameInviteAccept} src={require("../ui-design/images/accept.png")} alt=""/>
+                            </div>
+                        :
+                            null
+                    }
                     {
                         blockIds?.includes(parseInt(userId!!)) ? 
                             <img className="directMessageBlockImg" onClick={unblock} src={require("../ui-design/images/unblock.png")} alt=""/>
@@ -113,7 +144,7 @@ const DirectMessageScreen = () => {
                             </div>
                         </div>
                         <div className="directMessageLowerBar">
-                            <img className="directMessageSendAndGameImg" src={require("../ui-design/images/game-request.png")} alt=""/>
+                            <img className="directMessageSendAndGameImg" onClick={sendGameInvite} src={require("../ui-design/images/game-request.png")} alt=""/>
                             <input onKeyDown={(event) => keyboardListener(event.key)} ref={messageInputRef} className="chatScreenInput" type="text" placeholder="Mesaj"/>
                             {
                                 blockIds?.includes(currentUser!!.id) ?

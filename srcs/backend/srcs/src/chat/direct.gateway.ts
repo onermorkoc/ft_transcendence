@@ -2,11 +2,14 @@ import { SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/web
 import { Server, Socket } from "socket.io";
 import { DirectService } from "./direct.service";
 import { UsersService } from "src/users/users.service";
+import { Game } from "@prisma/client";
+import { GameService } from "src/game/game.service";
+import { ConfigService } from "@nestjs/config";
 
 @WebSocketGateway({cors: { origin: true, credentials: true }, namespace: "directChat"})
 export class DirectGateway {
 
-    constructor(private directService: DirectService, private usersService: UsersService){}
+    constructor(private directService: DirectService, private usersService: UsersService, private gameService: GameService, private configService: ConfigService){}
 
     @WebSocketServer()
     server: Server
@@ -53,5 +56,43 @@ export class DirectGateway {
 
         if (await this.usersService.unBlockUser(userId, blockedUserId))
             this.server.to(uniqueIdentifier).emit("blockedUserIdsInRoom", await this.directService.getBlockedUserIdsInRoom(userId, blockedUserId))
+    }
+
+    @SubscribeMessage('gameInvite')
+    async handlegameInvite(client: Socket) {
+
+        const senderId = parseInt(this.directService.strFix(client.handshake.query.senderId))
+        const receiverId = parseInt(this.directService.strFix(client.handshake.query.receiverId))
+        const uniqueIdentifier = this.directService.createUniqueIdentifier(senderId, receiverId)
+
+        this.server.to(uniqueIdentifier).emit("incomingGameInvite", receiverId)
+    }
+
+    @SubscribeMessage('gameInviteAccept')
+    async handlegameInviteAccept(client: Socket) {
+
+        const senderUser = await this.usersService.findUserbyID(parseInt(this.directService.strFix(client.handshake.query.senderId)))
+        const receiverUser = await this.usersService.findUserbyID(parseInt(this.directService.strFix(client.handshake.query.receiverId)))
+        const uniqueIdentifier = this.directService.createUniqueIdentifier(senderUser.id, receiverUser.id)
+
+        const game: Game = await this.gameService.createGame(senderUser.id, receiverUser.id);
+
+        senderUser.currentGameId = game.id;
+        receiverUser.currentGameId = game.id;
+        await this.usersService.update(senderUser);
+        await this.usersService.update(receiverUser);
+        this.gameService.setCountDown(game.id);
+
+        this.server.to(uniqueIdentifier).emit("gameBegin", `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`)
+    }
+
+    @SubscribeMessage('gameInviteReject')
+    async handlegameInviteReject(client: Socket) {
+        
+        const senderId = parseInt(this.directService.strFix(client.handshake.query.senderId))
+        const receiverId = parseInt(this.directService.strFix(client.handshake.query.receiverId))
+        const uniqueIdentifier = this.directService.createUniqueIdentifier(senderId, receiverId)
+
+        this.server.to(uniqueIdentifier).emit("incomingGameInvite", null)
     }
 }

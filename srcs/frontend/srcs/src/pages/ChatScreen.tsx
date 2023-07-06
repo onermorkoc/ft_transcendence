@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { ChatBan, ChatRoom, DirectMessage, Message, Point, RoomAuthority, RoomMember, RoomStatus, User } from "../dto/DataObject"
+import Lottie from "lottie-react"
 import "../ui-design/styles/ChatScreen.css"
 import { useParams } from "react-router-dom"
 import { Socket, io } from "socket.io-client"
@@ -7,8 +8,11 @@ import useCurrentUser from "../services/Auth"
 import axios from "axios"
 import SearchUserCmp from "../componets/Friends/SearchUserCmp"
 
-const allCommand = (socket: Socket, command: string, id: number) => {
-    socket.emit(command, id)
+const allCommand = (socket: Socket, command: string, id?: number) => {
+    if(id)
+        socket.emit(command, id)
+    else
+        socket.emit(command)
 }
 
 const goLookProfilePage = (userId: number, roomId: string) => {
@@ -19,6 +23,10 @@ const viewForNormal = (member: RoomMember, point: Point, socket: Socket, roomId:
     return (
         <>
             <div className="chatMenuDiv" style={{top: `${point.y}px`, left: `${point.x}px`}}>
+                <div onClick={() => allCommand(socket, "gameInvite", member.user.id)} className="chatMenuListDiv">
+                    <img style={{width: "25px"}} src={require("../ui-design/images/game-black.png")} alt=""/>
+                    <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Oyun isteği yolla</div>
+                </div>
                 <div onClick={() => goLookProfilePage(member.user.id, roomId)} className="chatMenuListDiv">
                     <img style={{width: "25px"}} src={require("../ui-design/images/eye.png")} alt=""/>
                     <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Profili incele</div>
@@ -44,6 +52,10 @@ const viewForAdmin = (member: RoomMember, point: Point, socket: Socket, roomId: 
     return (
         <>
             <div className="chatMenuDiv" style={{top: `${point.y}px`, left: `${point.x}px`}}>
+                <div onClick={() => allCommand(socket, "gameInvite", member.user.id)} className="chatMenuListDiv">
+                    <img style={{width: "25px"}} src={require("../ui-design/images/game-black.png")} alt=""/>
+                    <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Oyun isteği yolla</div>
+                </div>
                 <div onClick={() => goLookProfilePage(member.user.id, roomId)} className="chatMenuListDiv">
                     <img style={{width: "25px"}} src={require("../ui-design/images/eye.png")} alt=""/>
                     <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Profili incele</div>
@@ -89,6 +101,10 @@ const viewForLeader = (member: RoomMember, point: Point, socket: Socket, roomId:
     return (
         <>
             <div className="chatMenuDiv" style={{top: `${point.y}px`, left: `${point.x}px`}}>
+                <div onClick={() => allCommand(socket, "gameInvite", member.user.id)} className="chatMenuListDiv">
+                    <img style={{width: "25px"}} src={require("../ui-design/images/game-black.png")} alt=""/>
+                    <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Oyun isteği yolla</div>
+                </div>
                 <div onClick={() => goLookProfilePage(member.user.id, roomId)} className="chatMenuListDiv">
                     <img style={{width: "25px"}} src={require("../ui-design/images/eye.png")} alt=""/>
                     <div style={{marginLeft: "10px", fontSize: "1.2em"}}>Profili incele</div>
@@ -162,16 +178,22 @@ const chatMenu = (currentUserAuthority: RoomAuthority, member: RoomMember, point
         return (viewForNormal(member, point, socket, roomId))
 }
 
-const memberList = (member: RoomMember) => {
+const memberList = (member: RoomMember, socket: Socket) => {
     return (
         <>
-            <img style={{width: "50px", height: "50px", borderRadius: "25px", objectFit: "cover"}} src={member.user.photoUrl} alt=""/>
+            {
+                member.gameInvite ?
+                    <Lottie style={{width: "50px"}} animationData={require("../ui-design/animation/game.json")}/>
+                :
+                    <img style={{width: "50px", height: "50px", borderRadius: "25px", objectFit: "cover"}} src={member.user.photoUrl} alt=""/> 
+            }
+            
             <div style={{display: "flex", flexDirection: "column", marginLeft: "10px", marginTop: "4px"}}>
 
                 <div style={{display: "flex", flexDirection: "row"}}>
                     <div style={{fontSize: "1.1em"}}>{member.user.displayname}</div>
-                    {member.muted && <img style={{width: "25px", height: "25px", marginLeft: "10px"}} src={require("../ui-design/images/muted.png")} alt=""/>}
-                    {member.blocked && <img style={{width: "25px", height: "25px", marginLeft: "10px"}} src={require("../ui-design/images/blocked.png")} alt=""/>}
+                    {!member.gameInvite && member.muted && <img style={{width: "25px", height: "25px", marginLeft: "10px"}} src={require("../ui-design/images/muted.png")} alt=""/>}
+                    {!member.gameInvite && member.blocked && <img style={{width: "25px", height: "25px", marginLeft: "10px"}} src={require("../ui-design/images/blocked.png")} alt=""/>}
                 </div>
                 {
                     member.status === "ONLINE" ? 
@@ -181,17 +203,23 @@ const memberList = (member: RoomMember) => {
                 }
             </div>
             {
-                member.authority !== "NORMAL" ? 
-                <>
-                    {
-                        member.authority === "LEADER" ?
-                            <img style={{width: "37.5px", height: "37.5px", marginRight: "10px", marginLeft: "auto"}} src={require("../ui-design/images/owner.png")} alt=""/>
-                        :
-                            <img style={{width: "37.5px", height: "37.5px", marginRight: "10px", marginLeft: "auto"}} src={require("../ui-design/images/admins.png")} alt=""/>
-                    }
-                </>
+                member.gameInvite ? 
+                    <>
+                        <img className="chatGameInviteRejectImg" onClick={() => allCommand(socket, "gameInviteReject")} src={require("../ui-design/images/reject.png")} alt=""/>
+                        <img className="chatGameInviteAcceptImg" onClick={() => allCommand(socket, "gameInviteAccept", member.user.id)} src={require("../ui-design/images/accept.png")} alt=""/>
+                    </>
                 :
-                    null
+                    member.authority !== "NORMAL" ? 
+                    <>
+                        {
+                            member.authority === "LEADER" ?
+                                <img style={{width: "37.5px", height: "37.5px", marginRight: "10px", marginLeft: "auto"}} src={require("../ui-design/images/owner.png")} alt=""/>
+                            :
+                                <img style={{width: "37.5px", height: "37.5px", marginRight: "10px", marginLeft: "auto"}} src={require("../ui-design/images/admins.png")} alt=""/>
+                        }
+                    </>
+                    :
+                        null
             }
         </>
     )
@@ -297,7 +325,7 @@ const ChatAllBanList = (props: {socket: Socket}) => {
     const [bannedUsers, setBannedUsers] = useState<Array<ChatBan> | null>(null)
 
     useEffect(() => {
-        props.socket.emit("getBannedUsersInRoom")
+        allCommand(props.socket, "getBannedUsersInRoom")
         props.socket.on("bannedUsersInRoom", (data) => setBannedUsers(data))
         // eslint-disable-next-line
     }, [])
@@ -362,6 +390,7 @@ const ChatScreen = () => {
     const [roomInfo, setRoomInfo] = useState<ChatRoom | null>(null)
     const [mutedIds, setMutedIds] = useState<Array<number>>()
     const [ownerId, setOwnerId] = useState<number | null>(null)
+    const [incomingGameInviteId, setIncomingGameInviteId] = useState<number | null>(null)
     const [blockUserIds, setBlockUserIds] = useState<Array<number> | null>(null)
     const [members, setMembers] = useState<Array<RoomMember> | null>()
     const [currentUserAuthority, setCurrentUserAuthority] = useState<RoomAuthority | null>(null)
@@ -411,6 +440,11 @@ const ChatScreen = () => {
                 member.blocked = true
             else
                 member.blocked = false
+            
+            if (incomingGameInviteId && member.user.id === incomingGameInviteId)
+                member.gameInvite = true
+            else
+                member.gameInvite = false
         })
 
         setMembers(membersArray)
@@ -441,7 +475,7 @@ const ChatScreen = () => {
     }
 
     const leaveRoom = () => {
-        socket!!.emit("leaveRoom")
+        allCommand(socket!!, "leaveRoom")
         goHomePage()
     }
 
@@ -477,6 +511,8 @@ const ChatScreen = () => {
                 socket.on("allUserIdsInRoom", (data) => setUserIds(data))
                 socket.on("allMessages", (data) => setAllMessages(data))
                 socket.on("blockUserIds", (data) => setBlockUserIds(data))
+                socket.on("incomingGameInvite", (data) => setIncomingGameInviteId(data))
+                socket.on("gameBegin", (data) => window.location.assign(data))
             }
 
             if (allMessages && blockUserIds)
@@ -491,7 +527,7 @@ const ChatScreen = () => {
 
         return () => window.removeEventListener("click", eventListener)
         // eslint-disable-next-line
-    }, [currentUser, roomInfo, socket, adminIds, usersInfo, mutedIds, ownerId, onlineIds, allMessages, usersIds, blockUserIds])
+    }, [currentUser, roomInfo, socket, adminIds, usersInfo, mutedIds, ownerId, onlineIds, allMessages, usersIds, blockUserIds, incomingGameInviteId])
 
     return (
         <>
@@ -518,7 +554,7 @@ const ChatScreen = () => {
                                 <img style={{width: "50px", height: "50px"}} src={require("../ui-design/images/team.png")} alt=""/>
                                 <div style={{color: "black", marginLeft: "10px"}}>Grup Üyeleri</div>
                             </div>
-                            <div style={{height: "60vh", overflowX: "auto"}}>
+                            <div style={{height: "80vh", overflowX: "auto"}}>
                                 {
                                      members?.map((value, index) => (
                                         <div className="memberListDiv" key={index} onContextMenu={(context) => {
@@ -527,7 +563,7 @@ const ChatScreen = () => {
                                             setShow(true)
                                             setSelectedContex(value)
                                             }}>
-                                            {memberList(value)}
+                                            {memberList(value, socket!!)}
                                         </div>
                                      ))
                                 }
@@ -559,14 +595,12 @@ const ChatScreen = () => {
                                     </div>
 
                                     <div className="chatScreenLowerBar">
-                                        <img className="chatScreenSendAndGameImg" src={require("../ui-design/images/game-request.png")} alt=""/>
                                         <input onKeyDown={(event) => keyboardListener(event.key)} ref={messageInputRef} className="chatScreenInput" type="text" placeholder="Mesaj" />
-                                        
                                         {
                                             mutedIds?.includes(currentUser!!.id) ?
-                                                <img className="chatScreenSendAndGameImg" src={require("../ui-design/images/nosend.png")} alt=""/>
+                                                <img className="chatScreenSendImg" src={require("../ui-design/images/nosend.png")} alt=""/>
                                             :
-                                                <img onClick={sendMessage} className="chatScreenSendAndGameImg" src={require("../ui-design/images/send.png")} alt=""/>
+                                                <img onClick={sendMessage} className="chatScreenSendImg" src={require("../ui-design/images/send.png")} alt=""/>
                                         }
                                     </div>
                                 </>

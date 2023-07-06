@@ -156,7 +156,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         const userId: number = parseInt(this.chatService.strFix(client.handshake.query.userId));
         const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
 
-        if (this.chatService.unMute(mutedUserId, chatRoomId))
+        if (await this.chatService.unMute(mutedUserId, chatRoomId))
             this.server.to(chatRoomId).emit('mutedUserIdsInRoom', await this.chatService.getMutedUserIdsInRoom(chatRoomId));
     }
 
@@ -272,9 +272,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId);
         const user: User = await this.userService.findUserbyID(userId);
 
-        if (!user || !selfUser) {
+        if (!user || !selfUser)
             return;
-        }
 
         const clientsOfUser = await this.chatService.userIdtoClients(user.id, chatRoomId, this.server);
         clientsOfUser.forEach((client) => {
@@ -288,9 +287,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId);
         const user: User = await this.userService.findUserbyID(userId);
 
-        if (!user || !selfUser) {
+        if (!user || !selfUser)
             return;
-        }
 
         const game: Game = await this.gameService.createGame(user.id, selfUser.id);
 
@@ -306,5 +304,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             client.emit('gameBegin', `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`);
         });
         client.emit('gameBegin', `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`);
+    }
+
+    @SubscribeMessage('gameInviteReject')
+    async handlegameInviteReject(client: Socket) {
+        client.emit('incomingGameInvite', null);
     }
 }

@@ -86,7 +86,8 @@ export interface RoomMember {
   status?: Status,
   muted?: Boolean,
   blocked?: Boolean,
-  authority: RoomAuthority
+  authority: RoomAuthority,
+  gameInvite?: boolean
 }
 
 export interface ChatInvitation {
