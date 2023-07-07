@@ -14,20 +14,27 @@ services:
       - dbvol:/var/lib/postgresql/data
   
   backend:
-    build: ./backend/
+    build: ./
     container_name: ft_transcendence_backend
     restart: always
     ports:
       - 3001:3001
+      - 5555:5555
     depends_on:
       - database
+    volumes:
+      - ./backend/srcs/:/app
+    command: sh -c 'npm install && npx prisma db push && npm run start:dev'
   
   frontend:
-    build: ./frontend/
+    build: ./
     container_name: ft_transcendence_frontend
     restart: always
     ports:
       - 3000:3000
+    volumes:
+      - ./frontend/srcs/:/app
+    command: sh -c 'npm install && npm run start'
       
 volumes:
   dbvol:
