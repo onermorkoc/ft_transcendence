@@ -18,7 +18,7 @@ const SearchChatRoomCmp = () => {
     }, [allChatRooms, filterArray])
 
     const onChangeText = (searchText: string) => {
-        if (allChatRooms && searchText && searchText.length > 3){
+        if (allChatRooms && searchText && searchText.length != 0){
             const roomArray: Array<ChatRoom> = []
             allChatRooms.forEach((value) => {
                 if (value.name.includes(searchText)){
