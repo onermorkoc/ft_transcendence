@@ -141,7 +141,7 @@ export class UsersService {
             if (achievement.users.some((obj) => obj.userId == userId)) {achieved = true;}
             else {achieved = false;}
             const percentage = await this.getAchievementPercentage(achievement.name, userId, achieved);
-            achievementObjects.push({ name: achievement.name, description: achievement.description, xp: achievement.xp, percentage: percentage })
+            achievementObjects.push({ name: achievement.name, description: achievement.description, xp: achievement.xp, percentage: Math.floor(percentage) })
         }
 
         return achievementObjects;
@@ -182,7 +182,7 @@ export class UsersService {
             relevantXP -= 1000 * Math.pow(1.25, i);
         }
         const progression: number = (relevantXP / currentLevelMaxXP) * 100;
-        return ({ globalRank: rank, level: level, progression: progression, xp: user.xp });
+        return ({ globalRank: rank, level: Math.floor(level), progression: Math.floor(progression), xp: user.xp });
     }
 
     async getGlobalRank(): Promise<{id: number, photoUrl: string, displayname: string, nickname: string, level: number, progression: number, globalRank: number}[]> {
@@ -196,7 +196,7 @@ export class UsersService {
                 relevantXP -= 1000 * Math.pow(1.25, i);
             }
             const progression: number = (relevantXP / currentLevelMaxXP) * 100;
-            return ({id: user.id, photoUrl: user.photoUrl, displayname: user.displayname, nickname: user.nickname, level: level, progression: progression, globalRank: index + 1});
+            return ({id: user.id, photoUrl: user.photoUrl, displayname: user.displayname, nickname: user.nickname, level: Math.floor(level), progression: Math.floor(progression), globalRank: index + 1});
         })
         return resultArray;
     }
