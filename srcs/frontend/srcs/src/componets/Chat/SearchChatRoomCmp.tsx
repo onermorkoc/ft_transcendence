@@ -79,7 +79,7 @@ const SearchChatRoomCmp = () => {
 
                         <div style={{textAlign: "center", marginBottom: "6px", fontSize: "1.2em", color: "red"}}>{warningMessage}</div>
 
-                        <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
+                        <div style={{display: "block", overflowY: "scroll", height: "30vh"}}>
                             {
                                 filterArray?.map((value, index) => (
                                     <div onClick={() => setSelectedRoom(value)} key={index}>

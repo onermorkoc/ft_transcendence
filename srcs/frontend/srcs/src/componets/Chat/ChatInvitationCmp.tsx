@@ -27,10 +27,10 @@ const ChatInvitationCmp = () => {
     return (
         <>
             {
-                !invitations || invitations?.length === 0 ? <EmptyPage/>
+                !invitations || invitations?.length === 0 ? EmptyPage(300, 50)
                 :
                     <>
-                        <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
+                        <div style={{display: "block", overflowY: "scroll", height: "40vh"}}>
                             {
                                 invitations?.map((value, index) => (
                                     <div key={index}>

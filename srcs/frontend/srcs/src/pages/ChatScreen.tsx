@@ -366,11 +366,11 @@ const ChatAllBanList = (props: {socket: Socket}) => {
     )
 }
 
-const ChatAddMember = (props: {chatRoomId: string}) => {
+const ChatAddMember = (props: {chatRoomId: string, chatRoomUserIds: Array<number>}) => {
     return (
         <>
             <div  className="chatAddMemberCenterDiv">
-                <SearchUserCmp context="chat" chatRoomId={props.chatRoomId}/>
+                <SearchUserCmp context="chat" chatRoomId={props.chatRoomId} chatRoomUserIds={props.chatRoomUserIds}/>
             </div>
         </>
     )
@@ -611,7 +611,7 @@ const ChatScreen = () => {
                                     topBarButtonSelect === "banList" ? 
                                         <ChatAllBanList socket={socket!!}/>
                                     :
-                                        <ChatAddMember chatRoomId={roomId!!}/>
+                                        <ChatAddMember chatRoomId={roomId!!} chatRoomUserIds={usersIds!!}/>
                         }
                     </div>
                 </div> 

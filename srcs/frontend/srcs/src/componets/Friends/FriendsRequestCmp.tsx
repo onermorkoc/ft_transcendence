@@ -41,9 +41,9 @@ const FriendsRequestCmp = () => {
     return (
         <>
             {
-                !usersInfo || usersInfo?.length === 0 ? <EmptyPage/>
+                !usersInfo || usersInfo?.length === 0 ? EmptyPage(300, 50)
                 :
-                <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
+                <div style={{display: "block", overflowY: "scroll", height: "40vh"}}>
                 {
                     usersInfo?.map((value, index) => (
                         <div key={index}>

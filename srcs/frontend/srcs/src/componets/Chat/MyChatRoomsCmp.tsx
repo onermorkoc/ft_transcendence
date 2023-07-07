@@ -19,10 +19,10 @@ const MyChatRoomsCmp = () => {
     return (
         <>
             {
-                !chatRooms || chatRooms?.length === 0 ? <EmptyPage/>
+                !chatRooms || chatRooms?.length === 0 ? EmptyPage(300, 50)
                 :
                     <>
-                        <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
+                        <div style={{display: "block", overflowY: "scroll", height: "40vh"}}>
                             {
                                 chatRooms?.map((value, index) => (
                                     <div onClick={() => goChatScreenPage(value.id)} key={index}>

@@ -3,7 +3,7 @@ import { User } from "../../dto/DataObject"
 import axios from "axios"
 import useCurrentUser from "../../services/Auth"
 
-const SearchUserCmp = (props: {context: "friends" | "chat", chatRoomId?: string}) => {
+const SearchUserCmp = (props: {context: "friends" | "chat", chatRoomId?: string, chatRoomUserIds?: Array<number>}) => {
 
     const currentUser = useCurrentUser()
     const [allUsers, setAllUsers] = useState<Array<User> | null>()
@@ -13,8 +13,10 @@ const SearchUserCmp = (props: {context: "friends" | "chat", chatRoomId?: string}
         if (allUsers && searchText && searchText.length !== 0){
             const userArray: Array<User> = []
             allUsers.forEach((value) => {
-                if (value.nickname.includes(searchText)){
-                    if(!(currentUser?.friendIds.find(userId => userId === value.id)) && value.id !== currentUser?.id)
+                if (value.nickname.includes(searchText) && value.id !== currentUser?.id){
+                    if(props.context === "friends" && !currentUser?.friendIds.includes(value.id))
+                        userArray.push(value)
+                    else if (props.context === "chat" && !props.chatRoomUserIds?.includes(value.id))
                         userArray.push(value)
                 }
             })
@@ -53,7 +55,7 @@ const SearchUserCmp = (props: {context: "friends" | "chat", chatRoomId?: string}
                 <img className="searchImg" src={require("../../ui-design/images/search.png")} alt=""/>
             </div>
 
-            <div style={{display: "block", overflowY: "scroll", height: "300px", marginTop: "10px"}}>
+            <div style={{display: "block", overflowY: "scroll", height: "30vh", marginTop: "10px"}}>
                 {
                     filterArray?.map((value, index) => (
                         <div key={index}>

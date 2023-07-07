@@ -4,6 +4,7 @@ import "../ui-design/styles/GameHistoryScreen.css"
 import { FGameHistory, BGameHistory, User, Tittle } from "../dto/DataObject"
 import axios from "axios"
 import { calculateTittle } from "../componets/Header/UserStatisticsCmp"
+import { EmptyPage } from "../componets/Friends/MyFriendsRoomCmp"
 
 export const historyView = (data: FGameHistory, userId: number, backBool: boolean) => {
 
@@ -97,15 +98,20 @@ const GameHistoryCmp = () => {
                 <div className="gameHistoryTextTabDiv">Maç Geçmişim</div>
             </div>
             
-            <div className="historyViewList">
-                {
-                    fGameHistory?.map((value, index) => (
-                        <div key={index}>
-                            {historyView(value, currentUser!!.id, true)}
-                        </div>
-                    ))
-                }
-            </div>
+            {
+                !fGameHistory || fGameHistory?.length === 0 ?
+                EmptyPage(500, 200)
+                :
+                    <div className="historyViewList">
+                    {
+                        fGameHistory?.map((value, index) => (
+                            <div key={index}>
+                                {historyView(value, currentUser!!.id, true)}
+                            </div>
+                        ))
+                    }
+                </div>
+            }
         </>
     )
 }

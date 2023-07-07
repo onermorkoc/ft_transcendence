@@ -3,9 +3,9 @@ import { User } from "../../dto/DataObject"
 import axios from "axios"
 import Lottie from "lottie-react"
 
-export const EmptyPage = (): JSX.Element => {
+export const EmptyPage = (width: number, top: number): JSX.Element => {
     return (
-        <Lottie style={{marginLeft: "auto", marginRight: "auto", width: "300px", marginTop: "50px"}} animationData={require("../../ui-design/animation/empty.json")}/>
+        <Lottie style={{marginLeft: "auto", marginRight: "auto", width: `${width}px`, marginTop: `${top}px`}} animationData={require("../../ui-design/animation/empty.json")}/>
     )
 }
 
@@ -35,9 +35,9 @@ const MyFriendsRoomCmp = () => {
     return(
         <>
             {
-                !usersInfo || usersInfo?.length === 0 ? <EmptyPage/>
+                !usersInfo || usersInfo?.length === 0 ? EmptyPage(300, 50)
                 :
-                    <div style={{display: "block", overflowY: "scroll", height: "300px"}}>
+                    <div style={{display: "block", overflowY: "scroll", height: "40vh"}}>
                         {
                             usersInfo?.map((value, index) => (
                                 <div key={index}>
