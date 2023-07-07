@@ -10,7 +10,7 @@ const SearchUserCmp = (props: {context: "friends" | "chat", chatRoomId?: string}
     const [filterArray, setFilterArray] = useState<Array<User>>([])
 
     const onChangeText = (searchText: string) => {
-        if (allUsers && searchText && searchText.length != 0){
+        if (allUsers && searchText && searchText.length !== 0){
             const userArray: Array<User> = []
             allUsers.forEach((value) => {
                 if (value.nickname.includes(searchText)){
