@@ -281,7 +281,13 @@ export class ChatService {
         
         if (chatRoom.ownerId === user.id) {
             
-            let newOwner = chatRoom.adminIds[0] // İlk admin olan kişi yeni owner
+            let newOwner;
+	    chatRoom.adminIds.forEach((adminId) => {
+	    	if (adminId != user.id) {
+			newOwner = adminId;
+			return;
+		}
+	    });
 
             if (newOwner === undefined) { // Eğer grupta hiç admin yoksa
                 const usersIds: Array<number> = await this.getAllUserIdsInRoom(chatRoom.id)
@@ -291,6 +297,7 @@ export class ChatService {
                         return;
                     }
                 });
+		console.log("SA GIRDIM");
             }
 
             if (newOwner === undefined) { // Yine owner yoksa grubu sil
@@ -300,9 +307,11 @@ export class ChatService {
                 return (false);
             }
             else
-                chatRoom.ownerId = newOwner;     
+                chatRoom.ownerId = newOwner;
+
+	    console.log(newOwner);	
         }
-        else if (chatRoom.adminIds.includes(user.id))
+        if (chatRoom.adminIds.includes(user.id))
             chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(user.id), 1);
 
         user.chatRoomIds.splice(user.chatRoomIds.indexOf(chatRoom.id), 1);
