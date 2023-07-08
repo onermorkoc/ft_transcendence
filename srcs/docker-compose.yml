@@ -23,7 +23,7 @@ services:
     depends_on:
       - database
     volumes:
-      - ./backend/srcs/:/app
+      - ./backend/:/app
     command: sh -c 'npm install && npx prisma db push && npm run start:dev'
   
   frontend:
@@ -33,7 +33,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./frontend/srcs/:/app
+      - ./frontend/:/app
     command: sh -c 'npm install && npm run start'
       
 volumes:
