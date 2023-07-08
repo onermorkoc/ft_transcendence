@@ -19,11 +19,7 @@ const DirectMessageScreen = () => {
     const [gameInvite, setGameInvite] = useState<boolean>(false)
     const [allMessages, setAllMessages] = useState<Array<DirectMessage> | null>(null)
     const [receiverUser, setReceiverUser] = useState<User | null>(null)
-
-    useEffect(() => {
-        if (currentUser)
-            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true})
-    }, [currentUser])
+    const [receiverStatus, setReceiverStatus] = useState<boolean | null>(null)
 
     const goHomePage = () => {
         window.location.assign("/home")
@@ -80,6 +76,7 @@ const DirectMessageScreen = () => {
             socket.on("blockedUserIdsInRoom", (data) => setBlockIds(data))
             socket.on("allMessages", (data) => setAllMessages(data))
             socket.on("gameBegin", (data) => window.location.assign(data))
+            socket.on("receiverStatus", (data) => setReceiverStatus(data))
             socket.on("incomingGameInvite", (data) => {
                 if (!data)
                     setGameInvite(false)
@@ -88,7 +85,7 @@ const DirectMessageScreen = () => {
             })
         }
 
-    }, [currentUser, socket, allMessages, receiverUser, blockIds, userId])
+    }, [currentUser, socket, allMessages, receiverUser, blockIds, userId, receiverStatus])
 
     return (
         <>
@@ -100,10 +97,10 @@ const DirectMessageScreen = () => {
                         <div style={{color: "black", fontSize: "1.6em"}} >{receiverUser?.displayname}</div>
                         <div style={{color: "black", fontSize: "1.1em"}} >
                             {
-                                receiverUser?.status === "ONLINE" ?
-                                    <span style={{color: "green"}}>{receiverUser?.status}</span>
+                                receiverStatus ?
+                                    <span style={{color: "green"}}>Çevrimiçi</span>
                                 :
-                                    <span style={{color: "red"}}>{receiverUser?.status}</span>
+                                    <span style={{color: "red"}}>Çevrimdışı</span>
                             }
                         </div>
                     </div>

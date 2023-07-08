@@ -23,6 +23,16 @@ export class DirectGateway {
         client.join(uniqueIdentifier)
         this.server.to(uniqueIdentifier).emit("allMessages", await this.directService.getAllMessages(uniqueIdentifier))
         this.server.to(uniqueIdentifier).emit("blockedUserIdsInRoom", await this.directService.getBlockedUserIdsInRoom(senderId, receiverId))
+        this.server.to(uniqueIdentifier).emit("receiverStatus", await this.directService.getReceiverStatus(receiverId, uniqueIdentifier, this.server))
+    }
+
+    async handleDisconnect(client: Socket) {
+
+        const senderId = parseInt(this.directService.strFix(client.handshake.query.senderId))
+        const receiverId = parseInt(this.directService.strFix(client.handshake.query.receiverId))
+        const uniqueIdentifier = this.directService.createUniqueIdentifier(senderId, receiverId)
+        
+        this.server.to(uniqueIdentifier).emit("receiverStatus", await this.directService.getReceiverStatus(receiverId, uniqueIdentifier, this.server))
     }
 
     @SubscribeMessage("sendDirectMessage")

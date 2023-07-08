@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UsersService } from "src/users/users.service";
 import { DirectMessage, User } from '@prisma/client';
+import { Server, RemoteSocket } from "socket.io";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
 @Injectable()
 export class DirectService {
@@ -58,5 +60,11 @@ export class DirectService {
             });
             messages.splice(0, 1);
         }
+    }
+
+    async getReceiverStatus(receiverId: number, uniqueIdentifier: string, server: Server): Promise<boolean> {
+        const directRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(uniqueIdentifier).fetchSockets();
+        const roomCLientsIds: Array<number> = directRoom.map((obj) => parseInt(this.strFix(obj.handshake.query.senderId)));
+        return (roomCLientsIds.includes(receiverId))
     }
 }

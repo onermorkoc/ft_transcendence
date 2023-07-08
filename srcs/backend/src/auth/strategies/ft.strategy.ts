@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, Profile } from 'passport-42'
 import { PrismaService } from "src/prisma/prisma.service";
-import { Status } from "@prisma/client"
 import { ConfigService } from "@nestjs/config";
 
 @Injectable()

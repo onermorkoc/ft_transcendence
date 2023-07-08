@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Status, User } from '@prisma/client';
+
+enum Status { ONLINE, OFFLINE, ATGAME }
 
 @Injectable()
 export class StatusService {

@@ -25,10 +25,10 @@ run_front:
 	sudo npm start --prefix ./srcs/frontend/
 
 prisma:
-	cd srcs/backend/srcs; sudo npx prisma db push
+	cd srcs/backend; sudo npx prisma db push
 
 studio:
-	cd srcs/backend/srcs; sudo npx prisma studio
+	cd srcs/backend; sudo npx prisma studio
 
 down:
 	sudo docker-compose -f $(YML_FILE) down

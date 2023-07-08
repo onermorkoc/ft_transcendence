@@ -73,6 +73,11 @@ export interface Stats {
   xp: number,
 }
 
+export interface UserStatus {
+  id: number,
+  status: Status
+}
+
 export type Tittle = "ÇAYLAK" | "USTA" | "BÜYÜKUSTA" | "EFSANE" | "ŞANLI"
   
 export type Status = "ONLINE" | "OFFLINE" | "ATGAME"

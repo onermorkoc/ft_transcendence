@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react"
-import { User } from "../../dto/DataObject"
+import { User, UserStatus } from "../../dto/DataObject"
 import axios from "axios"
 import Lottie from "lottie-react"
+import { Socket, io } from "socket.io-client"
+import useCurrentUser from "../../services/Auth"
 
 export const EmptyPage = (width: number, top: number): JSX.Element => {
     return (
@@ -11,7 +13,10 @@ export const EmptyPage = (width: number, top: number): JSX.Element => {
 
 const MyFriendsRoomCmp = () => {
 
+    const currentUser = useCurrentUser()
     const [usersInfo, setUsersInfo] = useState<Array<User> | null>(null)
+    const [usersStatus, setUsersStatus] = useState<Array<UserStatus> | null>(null)
+    const [socket, setSocket] = useState<Socket | null>(null)
 
     const unFriend = (value: User) => {
         axios.post(`/friends/unfriend`, {userId: value.id}).then(() => {
@@ -26,11 +31,29 @@ const MyFriendsRoomCmp = () => {
     const goLookProfilePage = (userId: number) => {
         window.location.assign(`/profile/${userId}/home`)
     }
+
+    const setupStatus = (usersInfo: Array<User>) => {
+        const newUsersInfo: Array<User> = []
+        usersInfo.forEach((value) => {
+            const user = value
+            user.status = usersStatus?.find(predicate => predicate.id === value.id)?.status!!
+            newUsersInfo.push(user)
+        })
+        setUsersInfo(newUsersInfo)
+    }
     
     useEffect(() => {
-        if (!usersInfo)
-            axios.get(`/friends/myfriends`).then( response => setUsersInfo(response.data))
-    }, [usersInfo])
+
+        if (currentUser && !socket)
+            setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true}))
+
+        if (socket && !usersStatus)
+            socket.on("usersOnline", (data) => {setUsersStatus(data)})
+
+        if (usersStatus && !usersInfo)
+            axios.get(`/friends/myfriends`).then( response => setupStatus(response.data))
+            
+    }, [currentUser, socket, usersInfo, usersStatus])
 
     return(
         <>
@@ -48,9 +71,12 @@ const MyFriendsRoomCmp = () => {
                                             <div>Durum:
                                                 {
                                                     value.status === "ONLINE" ? 
-                                                        <span style={{color: "green"}}> {value.status}</span>
+                                                        <span style={{color: "green"}}> Çevrimiçi</span>
                                                     :
-                                                        <span style={{color: "red"}}> {value.status}</span>
+                                                        value.status === "ATGAME" ?
+                                                            <span style={{color: "blueviolet"}}> Oyunda</span>
+                                                        :
+                                                            <span style={{color: "red"}}> Çevrimdışı</span>
                                                 }
                                             </div>
                                         </div>

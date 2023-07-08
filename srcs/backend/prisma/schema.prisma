@@ -19,7 +19,6 @@ model User {
   email       String @unique
   nickname    String @unique
   photoUrl    String
-  status      Status @default(OFFLINE)
 
   twoFactorEnabled Boolean @default(false)
   twoFactorSecret  String?
@@ -161,12 +160,6 @@ model UserAchievement {
   achievementName String
 
   @@unique([userId, achievementName])
-}
-
-enum Status {
-  ONLINE
-  OFFLINE
-  ATGAME
 }
 
 enum RoomStatus {
