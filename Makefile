@@ -24,6 +24,15 @@ run_front:
 	sudo npm install --prefix ./srcs/frontend/
 	sudo npm start --prefix ./srcs/frontend/
 
+tail_back:
+	docker logs -f ft_transcendence_backend
+
+tail_front:
+	docker logs -f ft_transcendence_frontend
+
+tail_db:
+	docker logs -f ft_transcendence_database
+
 prisma:
 	cd srcs/backend; sudo npx prisma db push
 
