@@ -26,7 +26,6 @@ services:
       - ./backend/:/app
     environment:
       - IP_ADDRESS=${IP_ADDRESS}
-      - POSTGRES_HOST=${POSTGRES_HOST}
     command: sh -c 'npm install && npx prisma db push && npm run start:dev'
   
   frontend:
@@ -39,7 +38,6 @@ services:
       - ./frontend/:/app
     environment:
       - IP_ADDRESS=${IP_ADDRESS}
-      - POSTGRES_HOST=${POSTGRES_HOST}
     command: sh -c 'npm install && npm run start'
       
 volumes:
