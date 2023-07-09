@@ -11,9 +11,14 @@ import { ConfigService } from "@nestjs/config";
 export class AuthService {
     constructor(private userService: UsersService, private configService: ConfigService) {}
 
-    callback(@Res() res: Response) {
+    callback(firstLogin: boolean, res: Response) {
+        
         res.cookie('twoFactorOkCookie', '', { expires: new Date(0) })
-        res.redirect(this.configService.get<string>("REACT_APP_HOMEPAGE") + "/home")
+
+        if (firstLogin)
+            res.redirect(this.configService.get<string>("REACT_APP_HOMEPAGE") + "/editprofile")
+        else
+            res.redirect(this.configService.get<string>("REACT_APP_HOMEPAGE") + "/home")
     }
 
     logout(@Session() session: Record<string, any>) {

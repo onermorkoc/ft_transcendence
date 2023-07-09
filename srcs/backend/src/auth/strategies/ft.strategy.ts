@@ -30,7 +30,6 @@ export class FtStrategy extends PassportStrategy(Strategy, '42') {
                 photoUrl: profile._json.image.link
             },
         });
-
         return (user);
     }
 }

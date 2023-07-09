@@ -50,6 +50,7 @@ const EditProfileScreen = () => {
 
             const newUserInfo: Partial<User> = {
                 id: currentUser?.id,
+                firstLogin: false,
                 displayname: newDisplayname,
                 nickname: newNickname
             }

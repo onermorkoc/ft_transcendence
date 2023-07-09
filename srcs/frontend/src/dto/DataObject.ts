@@ -1,6 +1,7 @@
 export interface User {
   id: number,
   createdAt: Date,
+  firstLogin: boolean,
   displayname: string,
   email: string,
   nickname: string,

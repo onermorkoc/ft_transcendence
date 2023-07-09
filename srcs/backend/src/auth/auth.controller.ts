@@ -15,8 +15,8 @@ export class AuthController {
 
     @Get('callback')
     @UseGuards(FtAuthGuard)
-    callback(@Res() res: Response) {
-        this.authService.callback(res)
+    callback(@Session() session: Record<string, any>, @Res() res: Response) {
+        this.authService.callback(session.passport.user.firstLogin, res)
     }
 
     @Get('logout')
