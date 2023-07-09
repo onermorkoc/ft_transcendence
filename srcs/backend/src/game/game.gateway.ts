@@ -13,12 +13,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @WebSocketServer()
     server: Server;
 
-    afterInit(server: Server) {
-        console.log("Game Socket Initialized.");
-    }
+    afterInit(server: Server) {}
 
     async handleConnection(client: Socket) {
-        console.log(client.id + " connected to game.");
+
         const user: User = await this.userService.findUserbyID(parseInt(this.gameService.strFix(client.handshake.query.userId)));
         const game: Game = await this.gameService.findGameByID(this.gameService.strFix(client.handshake.query.gameId));
 
@@ -32,7 +30,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     async handleDisconnect(client: Socket) {
-        console.log(client.id + " disconnected from game.");
+        
         const game: Game = await this.gameService.findGameByID(this.gameService.strFix(client.handshake.query.gameId));
 
         const socketsInGame: RemoteSocket<DefaultEventsMap, any>[] = await this.server.in(game.id).fetchSockets();

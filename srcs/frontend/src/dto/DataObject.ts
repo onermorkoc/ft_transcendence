@@ -80,7 +80,7 @@ export interface UserStatus {
 
 export type Tittle = "ÇAYLAK" | "USTA" | "BÜYÜKUSTA" | "EFSANE" | "ŞANLI"
   
-export type Status = "ONLINE" | "OFFLINE" | "ATGAME"
+export type Status = "ONLINE" | "OFFLINE" | "ATGAME" | "INGAME"
 
 export type RoomStatus = "PRIVATE" | "PUBLIC" | "PROTECTED"
 

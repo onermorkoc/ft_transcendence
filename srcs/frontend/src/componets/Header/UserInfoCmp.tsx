@@ -2,11 +2,11 @@ import { useEffect, useState } from "react"
 import "../../ui-design/styles/CmpMix.css"
 import axios from "axios"
 import OTPInput from "react-otp-input"
-import { User } from "../../dto/DataObject"
+import useCurrentUser from "../../services/Auth"
 
 const UserInfoCmp = () => {
 
-    const [ currentUser, setCurrentUser ] = useState<User | null>(null)
+    const currentUser = useCurrentUser()
     const [ otp, setOtp ] = useState<string>("")
     const [ warningMessage, setWarningMesage ] = useState<string>("")
     const [ status2fa, setStatus2fa ] = useState<JSX.Element | null>(null)
@@ -18,6 +18,20 @@ const UserInfoCmp = () => {
         axios.post(`/auth/2fa/disable`).then(() => setStatus2fa(inactive2faView))
     }
 
+    const reset = () => {
+        setOtp("")
+        setWarningMesage("")
+        setQrCode(null)
+        setSecretKey(null)
+    }
+
+    const enable2fa = async () => {
+        axios.get(`/auth/2fa/generate`).then(response => {
+            setSecretKey(response.data)
+            setEnable2faClick(true)
+        })
+    }
+
     const active2faView: JSX.Element = <>
         <div className="text2">2 faktörlü kimlik doğrulaması: etkin</div>
         <img className="attachAndUnLinkImg" onClick={disable2fa} src={require("../../ui-design/images/unlink.png")} alt=""/>
@@ -25,14 +39,15 @@ const UserInfoCmp = () => {
     
     const inactive2faView: JSX.Element = <>
         <div className="text2">2 faktörlü kimlik doğrulaması: devredışı</div>
-        <img className="attachAndUnLinkImg" onClick={() => setEnable2faClick(true)} src={require("../../ui-design/images/attach.png")} alt=""/>
+        <img className="attachAndUnLinkImg" onClick={enable2fa} src={require("../../ui-design/images/attach.png")} alt=""/>
     </>
 
-    const enable2fa = () => {
+    const verify2fa = () => {
         if (otp.length === 6){
             axios.post(`/auth/2fa/verify`, {code: otp}).then((response) => {
                 if (response.data === true){
-                    setOtp("")
+                    reset()
+                    setStatus2fa(active2faView)
                     setEnable2faClick(false)
                 }
                 else
@@ -45,20 +60,21 @@ const UserInfoCmp = () => {
 
     useEffect(() => {
 
-        axios.get(`/users/current`).then(response => {
-            setCurrentUser(response.data)
-            response.data.twoFactorEnabled ? setStatus2fa(active2faView) : setStatus2fa(inactive2faView)
-        })
-
-        if (enable2faClick){
-            if (!secretKey)
-                axios.get(`/auth/2fa/generate`).then(response => setSecretKey(response.data))
-            if (!qrcode)
-                axios.get(`/auth/2fa/showqr`).then(response => setQrCode(response.data))
+        if (currentUser && !status2fa)
+            currentUser.twoFactorEnabled ? setStatus2fa(active2faView) : setStatus2fa(inactive2faView)
+        
+        if (enable2faClick && !qrcode){
+            axios.get(`/auth/2fa/showqr`).then(response => setQrCode(response.data))
         }
-        // eslint-disable-next-line
-    }, [currentUser, enable2faClick])
 
+        // eslint-disable-next-line
+    }, [currentUser, status2fa, enable2faClick, qrcode])
+
+
+    const close2faVerify = () => {
+        reset()
+        setEnable2faClick(false)
+    }
 
     if (enable2faClick){
         return (
@@ -86,10 +102,10 @@ const UserInfoCmp = () => {
                         <div style={{marginTop: "10px", display: "flex", flexDirection: "row", alignItems: "center"}}>
                             <img style={{width: "30px", height: "30px",marginRight: "6px"}} src={require("../../ui-design/images/secure.png")} alt=""/>
                             <OTPInput inputStyle="verifyTwofaInput" inputType="number" numInputs={6} value={otp} onChange={setOtp} renderInput={(props) => <input {...props}/>}/>
-                            <img className="verifyTwofaNextImg" onClick={enable2fa} src={require("../../ui-design/images/next.png")} alt=""/>
+                            <img className="verifyTwofaNextImg" onClick={verify2fa} src={require("../../ui-design/images/next.png")} alt=""/>
                         </div>
                     </div>
-                    <img className="verifyCloseImg" onClick={() => setEnable2faClick(false)} src={require("../../ui-design/images/close.png")} alt=""/>
+                    <img className="verifyCloseImg" onClick={close2faVerify} src={require("../../ui-design/images/close.png")} alt=""/>
                 </div>
             </>
         )

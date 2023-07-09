@@ -668,7 +668,6 @@ const GameScreen = () => {
 
     document.addEventListener('mousemove', (e) => {
       if (game.gameState === GameState.PLAYING) {
-        console.log(e.y);
         const newY = (e.y - 175) / (canvas.width / AP_WIDTH);
         playerPaddle.position.y = newY;
         paddleControl(playerPaddle);

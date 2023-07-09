@@ -32,7 +32,7 @@ export class DirectGateway {
         const receiverId = parseInt(this.directService.strFix(client.handshake.query.receiverId))
         const uniqueIdentifier = this.directService.createUniqueIdentifier(senderId, receiverId)
         
-        this.server.to(uniqueIdentifier).emit("receiverStatus", await this.directService.getReceiverStatus(receiverId, uniqueIdentifier, this.server))
+        this.server.to(uniqueIdentifier).emit("receiverStatus", await this.directService.getReceiverStatus(senderId, uniqueIdentifier, this.server))
     }
 
     @SubscribeMessage("sendDirectMessage")

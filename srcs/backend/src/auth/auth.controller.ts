@@ -23,7 +23,6 @@ export class AuthController {
     @UseGuards(AuthenticatedGuard)
     logoff(@Session() session: Record<string, any>) {
         this.authService.logout(session)
-        // burada adam offline olmalı
     }
 
     @Get('2fa/status')

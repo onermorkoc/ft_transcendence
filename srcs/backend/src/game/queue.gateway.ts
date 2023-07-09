@@ -9,23 +9,15 @@ export class QueueGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     @WebSocketServer()
     server: Server;
 
-    afterInit(server: Server) {
-        console.log("Game Queue Socket Initialized.");
-    }
+    afterInit(server: Server) {}
 
     async handleConnection(client: Socket) {
-        console.log(client.id + " connected.");
-
         const userId: number = parseInt(this.queueService.strFix(client.handshake.query.userId));
         await this.queueService.addToQueue(userId, this.server);
     }
 
     handleDisconnect(client: Socket) {
-        console.log(client.id + " disconnected.");
-
         const userId: number = parseInt(this.queueService.strFix(client.handshake.query.userId));
         this.queueService.removeFromQueue(userId);
     }
-    
-    
 }

@@ -8,6 +8,8 @@ import useCurrentUser from "../services/Auth"
 import { historyView } from "./GameHistoryScreen"
 import { timeSplit } from "./ChatScreen"
 import { calculateTittle } from "../componets/Header/UserStatisticsCmp"
+import { io } from "socket.io-client"
+import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 const UserStatisticsCmp = (props: {data: User}) => {
 
@@ -169,6 +171,9 @@ const LookProfileScreen = () => {
 
     useEffect(() => {
 
+        if (currentUser)
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true})
+
         if (!userInfo)
             axios.get(`/users/getuser/${userId}`).then((response) => setUserInfo(response.data))
 
@@ -204,60 +209,63 @@ const LookProfileScreen = () => {
         // eslint-disable-next-line
     }, [userId, userInfo, tab, currentUser, blockStatus, friendStatus, userFGameHistory, userBGameHistory])
 
-    return (
-        <>
-            <div style={{display: "flex", flexDirection: "column"}}>
-                <div style={{flex: "30vh"}}>
-                    <div style={{display: "flex", flexDirection: "row"}}>
-                        <img onClick={backButton} className="lookProfileImgTabDiv" src={require("../ui-design/images/back.png")} alt=""/>
-                        <img className="lookProfileAvatarImg" src={userInfo?.photoUrl} alt=""/>
-                        <div style={{flex: 1}}>
-                            <div style={{display: "flex", flexDirection: "column"}}>
-                                <div>
-                                    <div style={{display: "flex", flexDirection: "row"}}>
-                                        <div className="lookProfileTextTabDiv" onClick={() => setTab(<UserInfoCmp data={userInfo!!}/>)}>Profil Bilgileri</div>
-                                        <div className="lookProfileTextTabDiv" onClick={() => setTab(<UserStatisticsCmp data={userInfo!!}/>)}>İstatistikler</div>
-                                        {
-                                            friendStatus === "friend" ? 
-                                                <img onClick={unFriend} className="lookProfileImgTabDiv" src={require("../ui-design/images/unfriend-black.png")} alt=""/>
-                                            :
-                                                friendStatus === "noFriend" ?
-                                                    <img onClick={addFriend} className="lookProfileImgTabDiv" src={require("../ui-design/images/addfriend-black.png")} alt=""/>
-                                                : 
-                                                    <img className="lookProfileImgTabDiv" src={require("../ui-design/images/hourglass.png")} alt=""/>
-                                        }
-                                        {
-                                            blockStatus ? 
-                                                <img className="lookProfileImgTabDiv" onClick={unblock} src={require("../ui-design/images/unblock.png")} alt=""/>
-                                            :
-                                                <img className="lookProfileImgTabDiv" onClick={block} src={require("../ui-design/images/block.png")} alt=""/>
-                                        }
+    if (currentUser){
+        return (
+            <>
+                <div style={{display: "flex", flexDirection: "column"}}>
+                    <div style={{flex: "30vh"}}>
+                        <div style={{display: "flex", flexDirection: "row"}}>
+                            <img onClick={backButton} className="lookProfileImgTabDiv" src={require("../ui-design/images/back.png")} alt=""/>
+                            <img className="lookProfileAvatarImg" src={userInfo?.photoUrl} alt=""/>
+                            <div style={{flex: 1}}>
+                                <div style={{display: "flex", flexDirection: "column"}}>
+                                    <div>
+                                        <div style={{display: "flex", flexDirection: "row"}}>
+                                            <div className="lookProfileTextTabDiv" onClick={() => setTab(<UserInfoCmp data={userInfo!!}/>)}>Profil Bilgileri</div>
+                                            <div className="lookProfileTextTabDiv" onClick={() => setTab(<UserStatisticsCmp data={userInfo!!}/>)}>İstatistikler</div>
+                                            {
+                                                friendStatus === "friend" ? 
+                                                    <img onClick={unFriend} className="lookProfileImgTabDiv" src={require("../ui-design/images/unfriend-black.png")} alt=""/>
+                                                :
+                                                    friendStatus === "noFriend" ?
+                                                        <img onClick={addFriend} className="lookProfileImgTabDiv" src={require("../ui-design/images/addfriend-black.png")} alt=""/>
+                                                    : 
+                                                        <img className="lookProfileImgTabDiv" src={require("../ui-design/images/hourglass.png")} alt=""/>
+                                            }
+                                            {
+                                                blockStatus ? 
+                                                    <img className="lookProfileImgTabDiv" onClick={unblock} src={require("../ui-design/images/unblock.png")} alt=""/>
+                                                :
+                                                    <img className="lookProfileImgTabDiv" onClick={block} src={require("../ui-design/images/block.png")} alt=""/>
+                                            }
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    {tab}
+                                    <div>
+                                        {tab}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div style={{flex: "70vh"}}>
-                    
-                    <div className="lookProfileHistoryHeader">Son Oynanan Oyunlar</div>
-                    
-                    <div className="lookProfileHistoryViewList">
-                        {
-                            userFGameHistory?.map((value, index) => (
-                                <div key={index}>
-                                    {historyView(value, userInfo!!.id, false)}
-                                </div>
-                            ))
-                        }
+                    <div style={{flex: "70vh"}}>
+                        
+                        <div className="lookProfileHistoryHeader">Son Oynanan Oyunlar</div>
+                        
+                        <div className="lookProfileHistoryViewList">
+                            {
+                                userFGameHistory?.map((value, index) => (
+                                    <div key={index}>
+                                        {historyView(value, userInfo!!.id, false)}
+                                    </div>
+                                ))
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
-        </>
-    )
+            </>
+        )
+    }
+    return (<PageNotFoundCmp/>)
 }
 
 export default LookProfileScreen

@@ -7,6 +7,7 @@ import { Socket, io } from "socket.io-client"
 import useCurrentUser from "../services/Auth"
 import axios from "axios"
 import SearchUserCmp from "../componets/Friends/SearchUserCmp"
+import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 const allCommand = (socket: Socket, command: string, id?: number) => {
     if(id)
@@ -529,95 +530,98 @@ const ChatScreen = () => {
         // eslint-disable-next-line
     }, [currentUser, roomInfo, socket, adminIds, usersInfo, mutedIds, ownerId, onlineIds, allMessages, usersIds, blockUserIds, incomingGameInviteId])
 
-    return (
-        <>
-            <div style={{display: "flex", flexDirection: "column"}}>
-                <div style={{display: "flex", flexDirection: "row", flex: "10vh", alignItems: "center"}} >
-                    <img className="chatScreenBackImg" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
-                    <div style={{display: "flex", flexDirection: "column"}}>
-                        <div style={{color: "black", fontSize: "1.6em"}} >{roomInfo?.name}</div>
-                        <div style={{color: "black", fontSize: "1.1em"}} >{members?.length} üye, {onlineIds?.length} çevrimiçi</div>
-                    </div>
-                    <div style={{marginRight: "50px", marginLeft: "auto", display: "flex", flexDirection: "row", alignItems: "center"}}>
-                        {((ownerId === currentUser?.id || adminIds?.includes(currentUser!!.id)) && roomInfo?.roomStatus === "PRIVATE") && 
-                            <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("addMember")} src={require("../ui-design/images/add-chat-user.png")} alt=""/>}
-                        {(ownerId === currentUser?.id || adminIds?.includes(currentUser!!.id)) && <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("banList")} src={require("../ui-design/images/all-users-ban.png")} alt=""/>}
-                        <img onClick={leaveRoom} className="chatScreenTopBarImgs" src={require("../ui-design/images/exit.png")} alt=""/>
-                        {ownerId === currentUser?.id && <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("settings")} src={require("../ui-design/images/settings.png")} alt=""/>} 
-                    </div>
-                </div>
-                <div style={{display: "flex", flexDirection: "row", flex: "90vh"}}>
-                    <div style={{display: "flex", flexDirection: "column", flex: "3"}}>
-                        
-                        <div style={{display: "flex", flexDirection: "column", flex: "1"}}>
-                            <div className="membersListBraceDiv">
-                                <img style={{width: "50px", height: "50px"}} src={require("../ui-design/images/team.png")} alt=""/>
-                                <div style={{color: "black", marginLeft: "10px"}}>Grup Üyeleri</div>
-                            </div>
-                            <div style={{height: "80vh", overflowX: "auto"}}>
-                                {
-                                     members?.map((value, index) => (
-                                        <div className="memberListDiv" key={index} onContextMenu={(context) => {
-                                            context.preventDefault()
-                                            setPoint({x: context.clientX, y: context.clientY})
-                                            setShow(true)
-                                            setSelectedContex(value)
-                                            }}>
-                                            {memberList(value, socket!!)}
-                                        </div>
-                                     ))
-                                }
-                                {show && chatMenu(currentUserAuthority!!, selectedContex!!, point!!, socket!!, currentUser!!, roomId!!)}
-                            </div>
+    if (currentUser){
+        return (
+            <>
+                <div style={{display: "flex", flexDirection: "column"}}>
+                    <div style={{display: "flex", flexDirection: "row", flex: "10vh", alignItems: "center"}} >
+                        <img className="chatScreenBackImg" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
+                        <div style={{display: "flex", flexDirection: "column"}}>
+                            <div style={{color: "black", fontSize: "1.6em"}} >{roomInfo?.name}</div>
+                            <div style={{color: "black", fontSize: "1.1em"}} >{members?.length} üye, {onlineIds?.length} çevrimiçi</div>
+                        </div>
+                        <div style={{marginRight: "50px", marginLeft: "auto", display: "flex", flexDirection: "row", alignItems: "center"}}>
+                            {((ownerId === currentUser?.id || adminIds?.includes(currentUser!!.id)) && roomInfo?.roomStatus === "PRIVATE") && 
+                                <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("addMember")} src={require("../ui-design/images/add-chat-user.png")} alt=""/>}
+                            {(ownerId === currentUser?.id || adminIds?.includes(currentUser!!.id)) && <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("banList")} src={require("../ui-design/images/all-users-ban.png")} alt=""/>}
+                            <img onClick={leaveRoom} className="chatScreenTopBarImgs" src={require("../ui-design/images/exit.png")} alt=""/>
+                            {ownerId === currentUser?.id && <img className="chatScreenTopBarImgs" onClick={() => topBarButtonSelectAlgorithm("settings")} src={require("../ui-design/images/settings.png")} alt=""/>} 
                         </div>
                     </div>
+                    <div style={{display: "flex", flexDirection: "row", flex: "90vh"}}>
+                        <div style={{display: "flex", flexDirection: "column", flex: "3"}}>
+                        
+                            <div style={{display: "flex", flexDirection: "column", flex: "1"}}>
+                                <div className="membersListBraceDiv">
+                                    <img style={{width: "50px", height: "50px"}} src={require("../ui-design/images/team.png")} alt=""/>
+                                    <div style={{color: "black", marginLeft: "10px"}}>Grup Üyeleri</div>
+                                </div>
+                                <div style={{height: "80vh", overflowX: "auto"}}>
+                                    {
+                                        members?.map((value, index) => (
+                                            <div className="memberListDiv" key={index} onContextMenu={(context) => {
+                                                context.preventDefault()
+                                                setPoint({x: context.clientX, y: context.clientY})
+                                                setShow(true)
+                                                setSelectedContex(value)
+                                                }}>
+                                                {memberList(value, socket!!)}
+                                            </div>
+                                        ))
+                                    }
+                                    {show && chatMenu(currentUserAuthority!!, selectedContex!!, point!!, socket!!, currentUser!!, roomId!!)}
+                                </div>
+                            </div>
+                        </div>
 
-                    <div className="chatMessagesRoot">
-                        {
-                            topBarButtonSelect === "messages" ?
-                                <>
-                                    <div style={{flex: "9"}}>
-                                        <div style={{overflowX: "auto", height: "80vh"}}>
-                                            {
-                                                messages.map((value, index) => (
-                                                    <div key={index}>
-                                                        {
-                                                            value.userId === currentUser?.id ?
-                                                                MessageUi("right", value)
-                                                            :
-                                                                MessageUi("left", value)
-                                                        }
-                                                    </div>
-                                                ))
-                                            }
-                                            <div ref={dummyRef}/>
+                        <div className="chatMessagesRoot">
+                            {
+                                topBarButtonSelect === "messages" ?
+                                    <>
+                                        <div style={{flex: "9"}}>
+                                            <div style={{overflowX: "auto", height: "80vh"}}>
+                                                {
+                                                    messages.map((value, index) => (
+                                                        <div key={index}>
+                                                            {
+                                                                value.userId === currentUser?.id ?
+                                                                    MessageUi("right", value)
+                                                                :
+                                                                    MessageUi("left", value)
+                                                            }
+                                                        </div>
+                                                    ))
+                                                }
+                                                <div ref={dummyRef}/>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="chatScreenLowerBar">
-                                        <input onKeyDown={(event) => keyboardListener(event.key)} ref={messageInputRef} className="chatScreenInput" type="text" placeholder="Mesaj" />
-                                        {
-                                            mutedIds?.includes(currentUser!!.id) ?
-                                                <img className="chatScreenSendImg" src={require("../ui-design/images/nosend.png")} alt=""/>
-                                            :
-                                                <img onClick={sendMessage} className="chatScreenSendImg" src={require("../ui-design/images/send.png")} alt=""/>
-                                        }
-                                    </div>
-                                </>
-                            :
-                                topBarButtonSelect === "settings" ?
-                                    <ChatSetting data={roomInfo!!}/>
+                                        <div className="chatScreenLowerBar">
+                                            <input onKeyDown={(event) => keyboardListener(event.key)} ref={messageInputRef} className="chatScreenInput" type="text" placeholder="Mesaj" />
+                                            {
+                                                mutedIds?.includes(currentUser!!.id) ?
+                                                    <img className="chatScreenSendImg" src={require("../ui-design/images/nosend.png")} alt=""/>
+                                                :
+                                                    <img onClick={sendMessage} className="chatScreenSendImg" src={require("../ui-design/images/send.png")} alt=""/>
+                                            }
+                                        </div>
+                                    </>
                                 :
-                                    topBarButtonSelect === "banList" ? 
-                                        <ChatAllBanList socket={socket!!}/>
+                                    topBarButtonSelect === "settings" ?
+                                        <ChatSetting data={roomInfo!!}/>
                                     :
-                                        <ChatAddMember chatRoomId={roomId!!} chatRoomUserIds={usersIds!!}/>
-                        }
-                    </div>
-                </div> 
-            </div>
-        </>
-    )
+                                        topBarButtonSelect === "banList" ? 
+                                            <ChatAllBanList socket={socket!!}/>
+                                        :
+                                            <ChatAddMember chatRoomId={roomId!!} chatRoomUserIds={usersIds!!}/>
+                            }
+                        </div>
+                    </div> 
+                </div>
+            </>
+        )
+    }
+    return (<PageNotFoundCmp/>)
 }
 
 export default ChatScreen

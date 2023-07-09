@@ -25,12 +25,14 @@ export class ChatController {
         return (await this.chatService.updateRoom(session.passport.user.id, body.roomId, body.roomName, body.roomStatus, body.password));
     }
 
-    @Get('room/find/:id') // frontend url güvenliği eksik 
+    @Get('room/find/:id')
+    @UseGuards(AuthenticatedGuard)
     async getRoom(@Param('id') roomId: string){
         return (await this.chatService.findChatRoombyID(roomId))
     }
 
-    @Get('room/all') // backend url güvenliği eksik
+    @Get('room/all')
+    @UseGuards(AuthenticatedGuard)
     async getAllRooms(): Promise<Array<Chatroom>> {
         return (await this.chatService.getAllRooms())
     }

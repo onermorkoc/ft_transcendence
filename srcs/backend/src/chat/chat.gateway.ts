@@ -15,13 +15,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @WebSocketServer()
     server: Server;
 
-    afterInit(server: Server) {
-        console.log("Chat socket initialized.");
-    }
+    afterInit(server: Server) {}
 
     async handleConnection(client: Socket) {
-        
-        console.log("Client connected: " + client.id);
 
         const user: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));
         const chatRoom: Chatroom = await this.chatService.findChatRoombyID(this.chatService.strFix(client.handshake.query.roomId));
@@ -43,9 +39,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     async handleDisconnect(client: Socket) {
-        
-        console.log("Client disconnected: " + client.id);
-
         const chatRoomId: string = this.chatService.strFix(client.handshake.query.roomId)
         this.server.to(chatRoomId).emit('onlineUserIdsInRoom', await this.chatService.getOnlineUserIdsInRoom(chatRoomId, this.server));
     }
@@ -266,6 +259,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
     }
 
+    // Chat oyun davetiye gönderme.
     @SubscribeMessage('gameInvite')
     async handlegameInvite(client: Socket, userId: number) {
         const selfUser: User = await this.userService.findUserbyID(parseInt(this.chatService.strFix(client.handshake.query.userId)));

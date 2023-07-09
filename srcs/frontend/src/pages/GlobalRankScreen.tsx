@@ -3,6 +3,9 @@ import "../ui-design/styles/GlobalRankScreen.css"
 import { ProgressBar } from "./AchievementsScreen"
 import { GlobalRankUser } from "../dto/DataObject"
 import axios from "axios"
+import { io } from "socket.io-client"
+import useCurrentUser from "../services/Auth"
+import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 const RankViewList = (data: GlobalRankUser) => {
 
@@ -58,6 +61,7 @@ const RankViewList = (data: GlobalRankUser) => {
 
 const GlobalRankScreen = () => {
 
+    const currentUser = useCurrentUser()
     const [rankList, setRankList] = useState<Array<GlobalRankUser> | null>(null)
 
     const goHomePage = () => {
@@ -65,28 +69,35 @@ const GlobalRankScreen = () => {
     }
 
     useEffect(() => {
+
+        if (currentUser)
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true})
+
         if (!rankList)
             axios.get("/users/globalrank").then(response => setRankList(response.data))
-    }, [rankList])
+    }, [currentUser, rankList])
 
-    return (
-        <>
-            <div style={{display: "flex", flexDirection: "row", marginRight: "100px"}}>
-                <img className="rankImgTabDiv" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
-                <div className="rankTextTabDiv">Global Sıralama</div>
-            </div>
-
-            <div className="rankViewListDiv">
-                {
-                    rankList?.map((value, index) => (
-                        <div key={index}>
-                            {RankViewList(value)}
-                        </div>
-                    ))
-                }
-            </div>
-        </>
-    )
+    if (currentUser) {
+        return (
+            <>
+                <div style={{display: "flex", flexDirection: "row", marginRight: "100px"}}>
+                    <img className="rankImgTabDiv" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
+                    <div className="rankTextTabDiv">Global Sıralama</div>
+                </div>
+    
+                <div className="rankViewListDiv">
+                    {
+                        rankList?.map((value, index) => (
+                            <div key={index}>
+                                {RankViewList(value)}
+                            </div>
+                        ))
+                    }
+                </div>
+            </>
+        )
+    }
+    return (<PageNotFoundCmp/>)
 }
 
 export default GlobalRankScreen

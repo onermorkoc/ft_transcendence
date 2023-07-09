@@ -11,11 +11,7 @@ export class StatusGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
     @WebSocketServer()
     server: Server;
 
-    afterInit() {
-        this.server.on("connection", (client) => {
-            //console.log(`[DEBUG]: Servere biri bağlandı. (${client.id})`)
-        })
-    }
+    afterInit(server: Server) {}
 
     async handleConnection(client: Socket) {
         const userId: number = parseInt(this.statusService.strFix(client.handshake.query.userId));

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-enum Status { ONLINE, OFFLINE, ATGAME }
+type Status = "ONLINE" | "OFFLINE" | "ATGAME" | "INGAME"
 
 @Injectable()
 export class StatusService {
@@ -46,10 +46,10 @@ export class StatusService {
     getUsersOnline(): Array<{id: number, status: Status}> {
         const userArray: Array<{id: number, status: Status}> = this.usersOnline.map((user) => {
             if (user.inGameCount > 0) {
-                return ({id: user.id, status: Status.ATGAME});
+                return ({id: user.id, status: "ATGAME"});
             }
             else {
-                return ({id: user.id, status: Status.ONLINE});
+                return ({id: user.id, status: "ONLINE"});
             }
         });
         return userArray;

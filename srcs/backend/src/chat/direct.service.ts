@@ -62,9 +62,9 @@ export class DirectService {
         }
     }
 
-    async getReceiverStatus(receiverId: number, uniqueIdentifier: string, server: Server): Promise<boolean> {
+    async getReceiverStatus(userId: number, uniqueIdentifier: string, server: Server): Promise<boolean> {
         const directRoom: RemoteSocket<DefaultEventsMap, any>[] = await server.in(uniqueIdentifier).fetchSockets();
         const roomCLientsIds: Array<number> = directRoom.map((obj) => parseInt(this.strFix(obj.handshake.query.senderId)));
-        return (roomCLientsIds.includes(receiverId))
+        return (roomCLientsIds.includes(userId))
     }
 }

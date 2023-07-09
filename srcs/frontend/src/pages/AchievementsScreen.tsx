@@ -3,6 +3,8 @@ import "../ui-design/styles/AchievementsScreen.css"
 import { Achievements, Stats } from "../dto/DataObject"
 import axios from "axios"
 import useCurrentUser from "../services/Auth"
+import { io } from "socket.io-client"
+import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 export const ProgressBar = (props: {height: number, percent?: number}) => {
 
@@ -67,6 +69,9 @@ const AchievementsScreen = () => {
 
     useEffect(() => {
 
+        if (currentUser)
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true})
+
         if (currentUser && !achievementsList)
             axios.get(`/users/achievements/${currentUser.id}`).then(response => setAchievementsList(response.data))
 
@@ -79,41 +84,44 @@ const AchievementsScreen = () => {
         window.location.assign("/home")
     }
 
-    return (
-        <>
-            <div style={{display: "flex", flexDirection: "row", marginRight: "100px"}}>
-                <img className="achievementsImgTabDiv" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
-                <div className="achievementsTextTabDiv">Başarılarım</div>
-            </div>
-
-            <div className="achievementsHeaderDiv">
-                <div style={{display: "flex", flexDirection: "row"}}>
-                    <div className="achievementsHeaderRowDiv">
-                        <img style={{width: "30px"}} src={require("../ui-design/images/title.png")} alt=""/>
-                        <div style={{marginLeft: "10px", fontSize: "1.4em"}}>Level: {stats?.level}</div>
-                    </div>
-                    <div className="achievementsHeaderRowDiv">
-                        <img style={{width: "30px"}} src={require("../ui-design/images/rank.png")} alt=""/>
-                        <div style={{marginLeft: "10px", fontSize: "1.4em"}}>Global Sıralama: {stats?.globalRank}</div>
-                    </div>
+    if (currentUser){
+        return (
+            <>
+                <div style={{display: "flex", flexDirection: "row", marginRight: "100px"}}>
+                    <img className="achievementsImgTabDiv" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
+                    <div className="achievementsTextTabDiv">Başarılarım</div>
                 </div>
-                <div style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: "10px"}}>
-                    <ProgressBar height={50} percent={stats?.progression}/>
-                    <img style={{width: "60px", marginLeft: "10px"}} src={require("../ui-design/images/level-up.png")} alt=""/>
-                </div>
-            </div>
-
-            <div className="achievementsListDiv">
-                {
-                    achievementsList?.map((value, index) => (
-                        <div key={index}>
-                            {AchievementsViewList(value)}
+    
+                <div className="achievementsHeaderDiv">
+                    <div style={{display: "flex", flexDirection: "row"}}>
+                        <div className="achievementsHeaderRowDiv">
+                            <img style={{width: "30px"}} src={require("../ui-design/images/title.png")} alt=""/>
+                            <div style={{marginLeft: "10px", fontSize: "1.4em"}}>Level: {stats?.level}</div>
                         </div>
-                    ))
-                }
-            </div>
-        </>
-    )
+                        <div className="achievementsHeaderRowDiv">
+                            <img style={{width: "30px"}} src={require("../ui-design/images/rank.png")} alt=""/>
+                            <div style={{marginLeft: "10px", fontSize: "1.4em"}}>Global Sıralama: {stats?.globalRank}</div>
+                        </div>
+                    </div>
+                    <div style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: "10px"}}>
+                        <ProgressBar height={50} percent={stats?.progression}/>
+                        <img style={{width: "60px", marginLeft: "10px"}} src={require("../ui-design/images/level-up.png")} alt=""/>
+                    </div>
+                </div>
+    
+                <div className="achievementsListDiv">
+                    {
+                        achievementsList?.map((value, index) => (
+                            <div key={index}>
+                                {AchievementsViewList(value)}
+                            </div>
+                        ))
+                    }
+                </div>
+            </>
+        )
+    }
+    return (<PageNotFoundCmp/>)
 }
 
 export default AchievementsScreen

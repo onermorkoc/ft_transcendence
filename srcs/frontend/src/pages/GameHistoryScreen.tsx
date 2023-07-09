@@ -5,6 +5,8 @@ import { FGameHistory, BGameHistory, User, Tittle } from "../dto/DataObject"
 import axios from "axios"
 import { calculateTittle } from "../componets/Header/UserStatisticsCmp"
 import { EmptyPage } from "../componets/Friends/MyFriendsRoomCmp"
+import { io } from "socket.io-client"
+import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 export const historyView = (data: FGameHistory, userId: number, backBool: boolean) => {
 
@@ -79,8 +81,12 @@ const GameHistoryCmp = () => {
 
     useEffect(() => {
 
+        if (currentUser)
+            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true})
+
         if (currentUser && !bGameHistory)
             axios.get(`/users/gamehistory/${currentUser.id}`).then(response => setBGameHistory(response.data))
+        
         if (bGameHistory && !fGameHistory)
             setupFGameHistory()
 
@@ -91,29 +97,31 @@ const GameHistoryCmp = () => {
         window.location.assign("/home")
     }
 
-    return (
-        <>
-            <div className="gameHistoryTabsDiv">
-                <img className="gameHistoryImgTabDiv" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
-                <div className="gameHistoryTextTabDiv">Maç Geçmişim</div>
-            </div>
-            
-            {
-                !fGameHistory || fGameHistory?.length === 0 ?
-                EmptyPage(500, 200)
-                :
-                    <div className="historyViewList">
-                    {
-                        fGameHistory?.map((value, index) => (
-                            <div key={index}>
-                                {historyView(value, currentUser!!.id, true)}
-                            </div>
-                        ))
-                    }
+    if (currentUser) {
+        return (
+            <>
+                <div className="gameHistoryTabsDiv">
+                    <img className="gameHistoryImgTabDiv" onClick={goHomePage} src={require("../ui-design/images/back.png")} alt=""/>
+                    <div className="gameHistoryTextTabDiv">Maç Geçmişim</div>
                 </div>
-            }
-        </>
-    )
+                {
+                    !fGameHistory || fGameHistory?.length === 0 ?
+                    EmptyPage(500, 200)
+                    :
+                        <div className="historyViewList">
+                        {
+                            fGameHistory?.map((value, index) => (
+                                <div key={index}>
+                                    {historyView(value, currentUser!!.id, true)}
+                                </div>
+                            ))
+                        }
+                    </div>
+                }
+            </>
+        )
+    }
+    return (<PageNotFoundCmp/>)
 }
 
 export default GameHistoryCmp
