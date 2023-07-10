@@ -1,14 +1,14 @@
 import { useParams } from "react-router-dom"
 import "../ui-design/styles/LookProfileScreen.css"
 import "../ui-design/styles/CmpMix.css"
-import { BGameHistory, FGameHistory, Stats, Tittle, User } from "../dto/DataObject"
+import { BGameHistory, FGameHistory, Stats, Status, Tittle, User, UserStatus } from "../dto/DataObject"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import useCurrentUser from "../services/Auth"
 import { historyView } from "./GameHistoryScreen"
 import { timeSplit } from "./ChatScreen"
 import { calculateTittle } from "../componets/Header/UserStatisticsCmp"
-import { io } from "socket.io-client"
+import { Socket, io } from "socket.io-client"
 import PageNotFoundCmp from "../componets/PageNotFoundCmp"
 
 const UserStatisticsCmp = (props: {data: User}) => {
@@ -74,7 +74,20 @@ const UserStatisticsCmp = (props: {data: User}) => {
     )
 }
 
-const UserInfoCmp = (props: {data: User}) => {
+const UserInfoCmp = (props: {data: User, socket: Socket}) => {
+    
+    const [usersStatus, setUsersStatus] = useState<Array<UserStatus> | null>(null)
+
+    const getUserStatus = (userId: number): Status | undefined => {
+        return (usersStatus?.find(predicate => predicate.id === userId)?.status)
+    }
+
+    useEffect(() => {
+        if (!usersStatus)
+            props.socket.on("usersOnline", (data) => setUsersStatus(data))
+        // eslint-disable-next-line
+    }, [usersStatus])
+    
     return (
         <>
             <div style={{display: "flex", flexDirection: "column"}}>
@@ -96,10 +109,13 @@ const UserInfoCmp = (props: {data: User}) => {
                 <div className="infoRowDiv">
                     <img className="img2" src={require("../ui-design/images/wifi-signal.png")} alt=""/>
                     <div className="text2">Durum: {
-                        props.data.status === "ONLINE" ?
-                            <span style={{color: "green"}}> {props.data.status}</span>
+                        getUserStatus(props.data.id) === "ONLINE" ? 
+                            <span style={{color: "green"}}> Çevrimiçi</span>
                         :
-                            <span style={{color: "red"}}> {props.data.status}</span>
+                            getUserStatus(props.data.id) === "ATGAME" ?
+                                <span style={{color: "blueviolet"}}> Oyunda</span>
+                            :
+                                <span style={{color: "red"}}> Çevrimdışı</span>
                     }</div>
                 </div>
             </div>
@@ -113,6 +129,7 @@ const LookProfileScreen = () => {
     const { userId, backPage, backPageArg } = useParams()
     const [userInfo, setUserInfo] = useState<User | null>(null)
     const [tab, setTab] = useState<JSX.Element | null>(null)
+    const [socket, setSocket] = useState<Socket | null>(null)
     const [userBGameHistory, setUserBGameHistory] = useState<Array<BGameHistory> | null>(null)
     const [userFGameHistory, setUserFGameHistory] = useState<Array<FGameHistory> | null>(null)
     const [blockStatus, setBlockStatus] = useState<boolean | null>(null)
@@ -171,14 +188,14 @@ const LookProfileScreen = () => {
 
     useEffect(() => {
 
-        if (currentUser)
-            io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true})
+        if (currentUser && !socket)
+            setSocket(io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser!!.id, status: "ONLINE"}, forceNew: true}))
 
         if (!userInfo)
             axios.get(`/users/getuser/${userId}`).then((response) => setUserInfo(response.data))
 
-        if (userInfo && !tab)
-            setTab(<UserInfoCmp data={userInfo}/>)
+        if (userInfo && socket && !tab)
+            setTab(<UserInfoCmp data={userInfo} socket={socket}/>)
         
         if (userInfo && currentUser && !blockStatus){
             if (currentUser.blockedUserIds.includes(userInfo.id))
@@ -207,7 +224,7 @@ const LookProfileScreen = () => {
             setupUserFGameHistory()
 
         // eslint-disable-next-line
-    }, [userId, userInfo, tab, currentUser, blockStatus, friendStatus, userFGameHistory, userBGameHistory])
+    }, [currentUser, socket, userInfo, tab, blockStatus, friendStatus, userBGameHistory, userFGameHistory])
 
     if (currentUser){
         return (
@@ -221,7 +238,7 @@ const LookProfileScreen = () => {
                                 <div style={{display: "flex", flexDirection: "column"}}>
                                     <div>
                                         <div style={{display: "flex", flexDirection: "row"}}>
-                                            <div className="lookProfileTextTabDiv" onClick={() => setTab(<UserInfoCmp data={userInfo!!}/>)}>Profil Bilgileri</div>
+                                            <div className="lookProfileTextTabDiv" onClick={() => setTab(<UserInfoCmp data={userInfo!!} socket={socket!!}/>)}>Profil Bilgileri</div>
                                             <div className="lookProfileTextTabDiv" onClick={() => setTab(<UserStatisticsCmp data={userInfo!!}/>)}>İstatistikler</div>
                                             {
                                                 friendStatus === "friend" ? 

@@ -6,7 +6,6 @@ export interface User {
   email: string,
   nickname: string,
   photoUrl: string
-  status: Status,
   twoFactorEnabled: boolean,
   twoFactorSecret: string,
   twoFactorQrCode: string,
