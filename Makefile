@@ -11,33 +11,24 @@ dev:
 	sudo docker-compose -f $(DEV_YML_FILE) --env-file $(ENV_FILE) up --build
 
 clean_local:
-	sudo rm -rf ./srcs/backend/node_modules
-	sudo rm -rf ./srcs/backend/public/uploads
-	sudo rm -rf ./srcs/backend/dist
-	sudo rm -rf ./srcs/frontend/node_modules
+	sudo rm -rf ./srcs/backend/srcs/node_modules
+	sudo rm -rf ./srcs/backend/srcs/public/uploads
+	sudo rm -rf ./srcs/backend/srcs/dist
+	sudo rm -rf ./srcs/frontend/srcs/node_modules
 
 run_back: prisma
-	sudo npm install --prefix ./srcs/backend/
-	sudo npm start --prefix ./srcs/backend/
+	sudo npm install --prefix ./srcs/backend/srcs
+	sudo npm start --prefix ./srcs/backend/srcs
 
 run_front:
-	sudo npm install --prefix ./srcs/frontend/
-	sudo npm start --prefix ./srcs/frontend/
-
-tail_back:
-	docker logs -f ft_transcendence_backend
-
-tail_front:
-	docker logs -f ft_transcendence_frontend
-
-tail_db:
-	docker logs -f ft_transcendence_database
+	sudo npm install --prefix ./srcs/frontend/srcs
+	sudo npm start --prefix ./srcs/frontend/srcs
 
 prisma:
-	cd srcs/backend; sudo npx prisma db push
+	cd srcs/backend/srcs; sudo npx prisma db push
 
 studio:
-	cd srcs/backend; sudo npx prisma studio
+	cd srcs/backend/srcs; sudo npx prisma studio
 
 down:
 	sudo docker-compose -f $(YML_FILE) down

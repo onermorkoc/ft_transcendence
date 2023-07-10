@@ -57,8 +57,8 @@ export class FriendsService {
         sender.friendIds.push(requestData.receiverId);
         receiver.friendIds.push(requestData.senderId);
 
-        await this.userService.update(sender);
-        await this.userService.update(receiver);
+        await this.userService.update(sender, "a");
+        await this.userService.update(receiver, "a");
 
         await this.prismaService.friendRequest.delete({
             where: {
@@ -123,8 +123,8 @@ export class FriendsService {
         const otherFriends = (await this.userService.findUserbyID(otherID)).friendIds
         myFriendIds.splice(myFriendIds.indexOf(otherID), 1)
         otherFriends.splice(otherFriends.indexOf(myID), 1)
-        await this.userService.update({id: myID, friendIds: myFriendIds})
-        await this.userService.update({id: otherID, friendIds: otherFriends})
+        await this.userService.update({id: myID, friendIds: myFriendIds}, "a")
+        await this.userService.update({id: otherID, friendIds: otherFriends}, "a")
     }
 
     async myFriends(myFriendIds: Array<number>): Promise<Array<User>> {
