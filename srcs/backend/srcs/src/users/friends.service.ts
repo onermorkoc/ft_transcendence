@@ -57,8 +57,8 @@ export class FriendsService {
         sender.friendIds.push(requestData.receiverId);
         receiver.friendIds.push(requestData.senderId);
 
-        await this.userService.update(sender, "a");
-        await this.userService.update(receiver, "a");
+        await this.userService.update(sender);
+        await this.userService.update(receiver);
 
         await this.prismaService.friendRequest.delete({
             where: {
@@ -123,13 +123,14 @@ export class FriendsService {
         const otherFriends = (await this.userService.findUserbyID(otherID)).friendIds
         myFriendIds.splice(myFriendIds.indexOf(otherID), 1)
         otherFriends.splice(otherFriends.indexOf(myID), 1)
-        await this.userService.update({id: myID, friendIds: myFriendIds}, "a")
-        await this.userService.update({id: otherID, friendIds: otherFriends}, "a")
+        await this.userService.update({id: myID, friendIds: myFriendIds})
+        await this.userService.update({id: otherID, friendIds: otherFriends})
     }
 
-    async myFriends(myFriendIds: Array<number>): Promise<Array<User>> {
+    async getUserFriends(userId: number): Promise<Array<User>> {
+        const friendIds = (await this.userService.findUserbyID(userId)).friendIds // session test fix
         let usersInfo: Array<User> = []
-        for(const id of myFriendIds)
+        for(const id of friendIds)
             usersInfo.push(await this.userService.findUserbyID(id))
         return (usersInfo)
     }

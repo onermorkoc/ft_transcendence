@@ -10,7 +10,7 @@ export class FriendsController {
     @Get('/myfriends')
     @UseGuards(AuthenticatedGuard)
     async getMyFriends(@Session() session: Record<string, any>){
-        return (await this.friendsService.myFriends(session.passport.user.friendIds))
+        return (await this.friendsService.getUserFriends(session.passport.user.id))
     }
 
     @Get(':userId/sent-requests') // Kullanıcının attığı istekler

@@ -16,7 +16,7 @@ export class UsersService {
         return (session.passport.user)
     }
 
-    async update(newUserInfo: Partial<User>, src?: string): Promise<boolean> { // newUserIfo içinde kesinlikle id olmalı
+    async update(newUserInfo: Partial<User>): Promise<boolean> { // newUserIfo içinde kesinlikle id olmalı
         try {
             await this.prismaService.user.update({
                 where: {
@@ -24,7 +24,7 @@ export class UsersService {
                 },
                 data: newUserInfo
             })
-            await this.updateSession(newUserInfo.id, src)
+            await this.updateSession(newUserInfo.id)
         }catch(error){
             return (false)
         }
@@ -68,7 +68,8 @@ export class UsersService {
         await this.update({id: userId, photoUrl: newPhotoUrl})
     }
 
-    async updateSession(intraId: number, src?: string) {
+    async updateSession(intraId: number) {
+        
         const user: User = await this.findUserbyID(intraId);
         const sessionDataString: string = (await this.prismaService.session.findFirstOrThrow({
             where: {
@@ -77,13 +78,12 @@ export class UsersService {
                 }
             }
         })).data;
+
         const sessionDataJSON = JSON.parse(sessionDataString);
         sessionDataJSON.passport.user = user;
         const sessionDataStringUpdated = JSON.stringify(sessionDataJSON);
-        if (src == "a") {
-            console.log(`ID: ${sessionDataJSON.passport.user.id} Friends: [${sessionDataJSON.passport.user.friendIds}]`);
-        }
-        const sad = await this.prismaService.session.updateMany({
+        
+        await this.prismaService.session.updateMany({
             where: {
                 data: {
                     contains: '"id":' + intraId.toString()
@@ -93,7 +93,6 @@ export class UsersService {
                 data: sessionDataStringUpdated
             }
         });
-        console.log(sad);
     }
     
     async blockUser(userId: number, blockedUserId: number): Promise<boolean>{
