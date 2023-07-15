@@ -75,10 +75,13 @@ export class ChatService {
 
         const chatRoom: Chatroom = await this.findChatRoombyID(roomId);
 
+        if (chatRoom.roomStatus === RoomStatus.PRIVATE)
+            throw new BadRequestException('Private odaya katılamazsın');
+
         if (chatRoom.roomStatus === RoomStatus.PROTECTED) {
             
-            if (password === null)  // Bu Kontrol frontende yapıldı
-                throw new BadRequestException('Password needed.');
+            if (password === null || password === undefined)  // Bu Kontrol frontende yapıldı
+                throw new BadRequestException('Şifre gerekli.');
             
             const isPassCorrect: boolean = await this.comparePassword(password, chatRoom.password);
             if (!isPassCorrect)
@@ -399,8 +402,12 @@ export class ChatService {
 
     // Private Chat İstekleri
     async createChatRequest(senderId: number, receiverId: number, chatRoomId: string) : Promise<PrivateChatRequest> {
+        
+        if ((await this.getAllUserIdsInRoom(chatRoomId)).includes(receiverId))
+            throw new BadRequestException("The person you invited is already in the room.");
+
         if (senderId == receiverId)
-            throw new BadRequestException("You can't send a friend request to yourself.");
+            throw new BadRequestException("You can't send a chat request to yourself.");
 
         return this.prismaService.privateChatRequest.create({
             data: {

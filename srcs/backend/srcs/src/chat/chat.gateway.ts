@@ -297,6 +297,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         clientsOfUser.forEach((client) => {
             client.emit('gameBegin', `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`);
         });
+        client.emit('incomingGameInvite', null); // frontende game istegini 'kabul et' tıklayınca animasyonu kapatma istegi yollar
         client.emit('gameBegin', `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`);
     }
 

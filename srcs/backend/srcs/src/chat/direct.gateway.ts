@@ -93,6 +93,7 @@ export class DirectGateway {
         await this.usersService.update(receiverUser);
         this.gameService.setCountDown(game.id);
 
+        this.server.to(uniqueIdentifier).emit("incomingGameInvite", null) // frontende game istegini 'kabul et' tıklayınca animasyonu kapatma istegi yollar
         this.server.to(uniqueIdentifier).emit("gameBegin", `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`)
     }
 
