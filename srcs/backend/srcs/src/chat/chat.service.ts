@@ -71,11 +71,11 @@ export class ChatService {
         return (chatRoom);
     }
 
-    async joinRoom(userId: number, roomId: string, password?: string): Promise<Chatroom> {
+    async joinRoom(userId: number, roomId: string, password?: string, privateRoom: boolean = false): Promise<Chatroom> {
 
         const chatRoom: Chatroom = await this.findChatRoombyID(roomId);
 
-        if (chatRoom.roomStatus === RoomStatus.PRIVATE)
+        if (chatRoom.roomStatus === RoomStatus.PRIVATE && !privateRoom)
             throw new BadRequestException('Private odaya katılamazsın');
 
         if (chatRoom.roomStatus === RoomStatus.PROTECTED) {
@@ -447,7 +447,7 @@ export class ChatService {
         if (request == null)
             throw new BadRequestException("You can't accept a request that doesn't exist.");
 
-        await this.joinRoom(requestData.receiverId, requestData.chatRoomId);
+        await this.joinRoom(requestData.receiverId, requestData.chatRoomId, undefined, true);
         await this.prismaService.privateChatRequest.delete({
             where: {
                 receiverId_chatRoomId: {
