@@ -117,6 +117,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         if (await this.chatService.kickUser(kickedUserId, chatRoom)){
             this.server.to(chatRoom.id).emit('allUserIdsInRoom', await this.chatService.getAllUserIdsInRoom(chatRoom.id));
             this.server.to(chatRoom.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(chatRoom.id));
+            this.server.to(chatRoom.id).emit('adminUserIdsInRoom', chatRoom.adminIds);
         }
 
         const clientsOfUser = await this.chatService.userIdtoClients(kickedUserId, chatRoom.id, this.server);
@@ -172,7 +173,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         if (await this.chatService.createNewBan(bannedUserId, chatRoom)){
             this.server.to(chatRoom.id).emit('allUserIdsInRoom', await this.chatService.getAllUserIdsInRoom(chatRoom.id));
             this.server.to(chatRoom.id).emit('allUsersInRoom', await this.chatService.getAllUsersInRoom(chatRoom.id));
-            this.server.to(chatRoom.id).emit('bannedUsersInRoom', await this.chatService.getBannedUsersInRoom(chatRoom.id))
+            this.server.to(chatRoom.id).emit('bannedUsersInRoom', await this.chatService.getBannedUsersInRoom(chatRoom.id));
+            this.server.to(chatRoom.id).emit('adminUserIdsInRoom', chatRoom.adminIds);
         }
 
         const clientsOfUser = await this.chatService.userIdtoClients(bannedUserId, chatRoom.id, this.server);
@@ -285,6 +287,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             return;
 
         const game: Game = await this.gameService.createGame(user.id, selfUser.id);
+        if (!game) {
+            client.emit('incomingGameInvite', null); // frontende game istegini 'kabul et' tıklayınca animasyonu kapatma istegi yollar
+            return;
+        }
 
         user.currentGameId = game.id;
         selfUser.currentGameId = game.id;
@@ -297,7 +303,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         clientsOfUser.forEach((client) => {
             client.emit('gameBegin', `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`);
         });
-        client.emit('incomingGameInvite', null); // frontende game istegini 'kabul et' tıklayınca animasyonu kapatma istegi yollar
         client.emit('gameBegin', `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`);
     }
 

@@ -174,6 +174,9 @@ export class ChatService {
 
         const bannedUser: User = await this.userService.findUserbyID(bannedUserId)
 
+        if (chatRoom.adminIds.includes(bannedUserId)) // Tekmelenen kişi eğer adminse
+            chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(bannedUserId), 1) // Adminliğinden çıkart
+
         bannedUser.chatRoomIds.splice(bannedUser.chatRoomIds.indexOf(chatRoom.id), 1);
         chatRoom.userCount--
         
@@ -284,6 +287,7 @@ export class ChatService {
         
         if (chatRoom.ownerId === user.id) {
             
+            console.log(chatRoom.adminIds);
             let newOwner = chatRoom.adminIds[0];
 
             if (newOwner === undefined) { // Eğer grupta hiç admin yoksa
@@ -304,6 +308,9 @@ export class ChatService {
             }
             else
                 chatRoom.ownerId = newOwner;
+
+            if (chatRoom.adminIds.includes(newOwner))
+                chatRoom.adminIds.splice(chatRoom.adminIds.indexOf(newOwner), 1);
         }
 
         if (chatRoom.adminIds.includes(user.id))

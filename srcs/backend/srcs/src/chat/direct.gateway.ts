@@ -86,6 +86,10 @@ export class DirectGateway {
         const uniqueIdentifier = this.directService.createUniqueIdentifier(senderUser.id, receiverUser.id)
 
         const game: Game = await this.gameService.createGame(senderUser.id, receiverUser.id);
+        if (!game) {
+            this.server.to(uniqueIdentifier).emit("incomingGameInvite", null) // frontende game istegini 'kabul et' tıklayınca animasyonu kapatma istegi yollar
+            return;
+        }
 
         senderUser.currentGameId = game.id;
         receiverUser.currentGameId = game.id;
@@ -93,7 +97,6 @@ export class DirectGateway {
         await this.usersService.update(receiverUser);
         this.gameService.setCountDown(game.id);
 
-        this.server.to(uniqueIdentifier).emit("incomingGameInvite", null) // frontende game istegini 'kabul et' tıklayınca animasyonu kapatma istegi yollar
         this.server.to(uniqueIdentifier).emit("gameBegin", `${this.configService.get<string>('REACT_APP_HOMEPAGE')}/game/${game.id}`)
     }
 
