@@ -32,13 +32,23 @@ const EditProfileScreen = () => {
     const [previewImg, setPreviewImg] = useState<string | null>(null)
     const [warningMessage, setWarnnigMessage] = useState<string>("")
 
+    const disableFirstLogin = async () => {
+        const newUserInfo: Partial<User> = {
+            id: currentUser?.id,
+            firstLogin: false
+        }
+        await axios.put(`/users/update`, newUserInfo)
+    }
+
     useEffect(() => {
         if (currentUser){
             displaynameInputRef.current!!.value = currentUser.displayname
             nicknameInputRef.current!!.value = currentUser.nickname
             setPreviewImg(currentUser.photoUrl)
             io(`${process.env.REACT_APP_BACKEND_URI}/status`, {query: {userId: currentUser.id, status: "ONLINE"}, forceNew: true})
-        }        
+            disableFirstLogin()
+        }
+        // eslint-disable-next-line
     }, [currentUser])
 
     const updateProfileInfo = async() => {
@@ -50,7 +60,6 @@ const EditProfileScreen = () => {
 
             const newUserInfo: Partial<User> = {
                 id: currentUser?.id,
-                firstLogin: false,
                 displayname: newDisplayname,
                 nickname: newNickname
             }

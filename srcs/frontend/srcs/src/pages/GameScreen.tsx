@@ -6,6 +6,7 @@ import { Socket, io } from "socket.io-client";
 import { User } from "../dto/DataObject";
 import "../ui-design/styles/GameScreen.css"
 import chroma from "chroma-js";
+import mouse from "../ui-design/images/mouse.png";
 
 const AP_WIDTH = 16;
 const AP_HEIGHT = 9;
@@ -354,6 +355,9 @@ const GameScreen = () => {
     return colorPalette;
   }
 
+  let image = new Image();
+  image.src = mouse;
+
   const draw = (game: Game | undefined) => {
     if (!game) {return;}
 
@@ -598,6 +602,14 @@ const GameScreen = () => {
     }
     else if (!opponentPaddle.isReady) {
       context.fillText("Rakibinizin hazır olması bekleniyor...", AP_WIDTH / 2 * scale, (AP_HEIGHT / 2 + 3.9) * scale);
+    }
+
+    const imgWidth = 1 * scale;
+    if (playerPaddle.position.x < opponentPaddle.position.x) {
+      context.drawImage(image, ((AP_WIDTH / 2 - 5.5 - (0.5)) * scale), (AP_HEIGHT / 10 * scale), imgWidth, imgWidth);
+    }
+    else {
+      context.drawImage(image, ((AP_WIDTH / 2 + 5.5 - (0.5)) * scale), (AP_HEIGHT / 10 * scale), imgWidth, imgWidth);
     }
   }
 

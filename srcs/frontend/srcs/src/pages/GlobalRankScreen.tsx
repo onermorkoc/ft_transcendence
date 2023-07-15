@@ -27,7 +27,7 @@ const RankViewList = (data: GlobalRankUser) => {
                             data.globalRank === 3 ?
                                 <img style={{width: "100px", height: "100px", marginRight: "10px"}} src={require("../ui-design/images/bronze-medal.png")} alt=""/>
                             :
-                                null
+                                <img style={{width: "100px", height: "100px", marginRight: "10px"}} alt=""/>
                 }
                 <img className="globalRankUserImg" onClick={() => goLookProfilePage(data.id)} src={data.photoUrl} alt=""/>
                 <div className="rankViewUserInfoDiv">

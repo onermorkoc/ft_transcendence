@@ -15,21 +15,34 @@ export class FtStrategy extends PassportStrategy(Strategy, '42') {
     }
 
     async validate(accessToken: string, refreshToken: string, profile: Profile) {
-        const user = await this.prisma.user.upsert({
-            where: {
-                id: profile._json.id,
-            },
-            update: {
+        let nickname = profile._json.login;
+        let i: number = 1;
+        while (true) {
+            try {
+                const user = await this.prisma.user.upsert({
+                    where: {
+                        id: profile._json.id,
+                    },
+                    update: {
+    
+                    },
+                    create: {
+                        id: profile._json.id,
+                        displayname: profile._json.displayname,
+                        email: profile._json.email,
+                        nickname: nickname,
+                        photoUrl: profile._json.image.link
+                    },
+                });
 
-            },
-            create: {
-                id: profile._json.id,
-                displayname: profile._json.displayname,
-                email: profile._json.email,
-                nickname: profile._json.login,
-                photoUrl: profile._json.image.link
-            },
-        });
-        return (user);
+                return (user);
+            }
+            catch (error) {
+                if (error.code == 'P2002') {
+                    nickname = profile._json.login;
+                    nickname += i++;
+                }
+            }
+        }
     }
 }

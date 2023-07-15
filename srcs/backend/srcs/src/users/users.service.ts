@@ -252,6 +252,7 @@ export class UsersService {
                     winStreak++;
                 }
                 else {
+                    winStreak = 0;
                     return;
                 }
             })
@@ -267,6 +268,7 @@ export class UsersService {
                     winStreak++;
                 }
                 else {
+                    winStreak = 0;
                     return;
                 }
             })

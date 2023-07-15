@@ -5,10 +5,10 @@ CLEAN_FILE	= ./srcs/tools/clean-docker.sh
 DOCKER_INSTALL_FILE = ./srcs/tools/install-docker.sh 
 
 all:
-	sudo docker-compose -f $(YML_FILE) --env-file $(ENV_FILE) up --build
+	sudo docker-compose -f $(YML_FILE) up --build
 
 dev:
-	sudo docker-compose -f $(DEV_YML_FILE) --env-file $(ENV_FILE) up --build
+	sudo docker-compose -f $(DEV_YML_FILE) up --build
 
 clean_local:
 	sudo rm -rf ./srcs/backend/srcs/node_modules
