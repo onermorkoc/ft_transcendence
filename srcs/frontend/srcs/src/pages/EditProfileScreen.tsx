@@ -76,8 +76,6 @@ const EditProfileScreen = () => {
                 }else{
                     setWarnnigMessage("Bu nickname önceden alınmış !")
                 }
-            }).catch((error) => {
-                console.log(error)
             })
         }else {
             setWarnnigMessage("Gerekli bilgiler eksik olamaz !")

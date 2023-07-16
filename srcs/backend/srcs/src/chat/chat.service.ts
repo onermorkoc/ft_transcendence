@@ -287,7 +287,6 @@ export class ChatService {
         
         if (chatRoom.ownerId === user.id) {
             
-            console.log(chatRoom.adminIds);
             let newOwner = chatRoom.adminIds[0];
 
             if (newOwner === undefined) { // Eğer grupta hiç admin yoksa
